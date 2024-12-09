@@ -309,7 +309,7 @@ namespace MiBocaRecuerda
 
                         if(e.Button == MouseButtons.Right)
                         {
-                            tmp = tmp.OrderBy(q => q.QuizNum).ToList();
+                            tmp = tmp.OrderBy(q => int.Parse(q.QuizNum)).ToList();
                         }
 
                         resultForm = new ResultForm(tmp, this)
