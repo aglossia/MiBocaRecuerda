@@ -30,7 +30,7 @@ namespace MiBocaRecuerda
             Load += (o, e) =>
             {
                 // maxWidthは文字列のピッタリサイズのはずなので、余白分をたす
-                int maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 20;
+                int maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 22;
 
                 int newLineCount = txtMensaje.Text.Where(c => c == '\n').Count() + 1;
 

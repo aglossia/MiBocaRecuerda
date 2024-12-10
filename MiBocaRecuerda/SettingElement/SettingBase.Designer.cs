@@ -82,25 +82,55 @@
             0,
             0,
             0});
+            this.nudQuizNum.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nudQuizNum.Name = "nudQuizNum";
             this.nudQuizNum.Size = new System.Drawing.Size(56, 25);
             this.nudQuizNum.TabIndex = 1;
+            this.nudQuizNum.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // nudMinChapter
             // 
             this.nudMinChapter.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.nudMinChapter.Location = new System.Drawing.Point(67, 91);
+            this.nudMinChapter.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nudMinChapter.Name = "nudMinChapter";
             this.nudMinChapter.Size = new System.Drawing.Size(56, 25);
             this.nudMinChapter.TabIndex = 1;
+            this.nudMinChapter.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // nudMaxChapter
             // 
             this.nudMaxChapter.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.nudMaxChapter.Location = new System.Drawing.Point(67, 119);
+            this.nudMaxChapter.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nudMaxChapter.Name = "nudMaxChapter";
             this.nudMaxChapter.Size = new System.Drawing.Size(56, 25);
             this.nudMaxChapter.TabIndex = 1;
+            this.nudMaxChapter.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // chboxCapital
             // 

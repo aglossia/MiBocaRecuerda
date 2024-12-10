@@ -124,27 +124,36 @@ namespace MiBocaRecuerda
                 if (IsKeyDown) return;
 
                 bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
-                bool designatedKeyPressed = (e.KeyCode == Keys.R);
-                bool keyQ = (e.KeyCode == Keys.Q);
-                bool keyF1 = (e.KeyCode == Keys.F1);
+                bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
 
-                //Console.WriteLine($"{ctrlPressed}, {designatedKeyPressed}");
-
-                if (ctrlPressed && designatedKeyPressed)
+                if (ctrlPressed)
                 {
-                    IsKeyDown = true;
-                    btnShowAnswer.PerformClick();
+                    switch (e.KeyCode)
+                    {
+                        case Keys.R:
+                            // Respuesta
+                            IsKeyDown = true;
+                            btnShowAnswer.PerformClick();
+                            break;
+                        case Keys.Q:
+                            // Empezar
+                            IsKeyDown = true;
+                            InitQuiz(true);
+                            break;
+                        case Keys.Right:
+                            if (shiftPressed) MoveQuiz(true);
+                            break;
+                        case Keys.Left:
+                            if (shiftPressed)  MoveQuiz(false);
+                            break;
+                    }
                 }
-
-                if (ctrlPressed && keyQ)
+                else
                 {
-                    IsKeyDown = true;
-                    InitQuiz(true);
-                }
-
-                if (keyF1)
-                {
-                    btnTranslate.PerformClick();
+                    if(e.KeyCode == Keys.F1)
+                    {
+                        btnTranslate.PerformClick();
+                    }
                 }
             };
 
@@ -279,12 +288,7 @@ namespace MiBocaRecuerda
 
                         break;
                     case MouseButtons.Right:
-
-                        if ((QuizFileConfig.MinChapter - 1 <= 0) || (QuizFileConfig.MaxChapter - 1 <= 0)) return;
-
-                        QuizFileConfig.MinChapter--;
-                        QuizFileConfig.MaxChapter--;
-                        InitQuiz(true);
+                        MoveQuiz(false);
                         break;
                 }
             };
@@ -771,6 +775,27 @@ namespace MiBocaRecuerda
             labels[current_label_group].ForEach(l => l.Visible = true);
         }
 
+        // Siguiente制御
+        private void MoveQuiz(bool isForward)
+        {
+            if (isForward)
+            {
+                if ((QuizFileConfig.MinChapter + 1 > (MaxRow / 10)) || (QuizFileConfig.MaxChapter + 1 > (MaxRow / 10))) return;
+
+                QuizFileConfig.MinChapter++;
+                QuizFileConfig.MaxChapter++;
+                InitQuiz(true);
+            }
+            else
+            {
+                if ((QuizFileConfig.MinChapter - 1 <= 0) || (QuizFileConfig.MaxChapter - 1 <= 0)) return;
+
+                QuizFileConfig.MinChapter--;
+                QuizFileConfig.MaxChapter--;
+                InitQuiz(true);
+            }
+        }
+
         #endregion
 
         #region 登録用イベント
@@ -1077,11 +1102,7 @@ namespace MiBocaRecuerda
 
         private void siguienteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if ((QuizFileConfig.MinChapter + 1 > (MaxRow / 10)) || (QuizFileConfig.MaxChapter + 1 > (MaxRow / 10))) return;
-
-            QuizFileConfig.MinChapter++;
-            QuizFileConfig.MaxChapter++;
-            InitQuiz(true);
+            MoveQuiz(true);
         }
 
         #endregion
