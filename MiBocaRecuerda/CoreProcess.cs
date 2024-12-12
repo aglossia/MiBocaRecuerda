@@ -13,16 +13,7 @@ namespace MiBocaRecuerda
         {
             string s1 = Comparelize(user_input);
 
-            // ()のある文字列を分離させる
-            List<string> abbreviation = ProcessString(correct_answer);
-
-            List<string> _correct = new List<string>();
-
-            // [^]のある文字列を分離させる
-            foreach (string str in abbreviation)
-            {
-                _correct.AddRange(ParseString(str));
-            }
+            List<string> _correct = ParseAnswer(correct_answer);
 
             // 比較用に成形する
             List<string> correct = _correct.Select(s => Comparelize(s)).ToList();
@@ -52,17 +43,24 @@ namespace MiBocaRecuerda
             return DisplayDifferences(s1, _adopt_str);
         }
 
-        // 正解を整形して出力
-        public List<string> ShowAnswer(string correct_answer)
+        // 解答DBの定義形式から解答群を抽出する ()とか[^]とかを使ってる時用
+        public List<string> ParseAnswer(string s)
         {
-            List<string> abbreviation = ProcessString(correct_answer);
+            // ()のある文字列を分離させる
+            List<string> abbreviation = ParseBrackets(s);
 
             List<string> ans = new List<string>();
 
+            // [^]のある文字列を分離させる
             foreach (string str in abbreviation)
             {
-                ans.AddRange(ParseString(str));
+                ans.AddRange(ExpandAlternatives(str));
             }
+
+            ans.Sort();
+            ans = ans.Distinct().ToList();
+
+            ans.ForEach(a => ReplaceConsecutiveSpaces(a));
 
             return ans;
         }
@@ -99,66 +97,141 @@ namespace MiBocaRecuerda
             return s2;
         }
 
-        private List<string> ProcessString(string input)
+        // ()で囲まれた部分を任意文字列とする
+        // a(b)c(d)e -> ace,abce,acde,abcde これを生成する
+        // ネストには対応していない a(b(c)) こういうやつ
+        static List<string> ParseBrackets(string cadena)
         {
-            List<string> outputList = new List<string>();
+            List<int> start = new List<int>();
+            List<int> end = new List<int>();
+            List<string> sp_res = new List<string>();
+            List<int> must = new List<int>();
+            int plane_idx = -1;
 
-            // 正規表現を使用して(***)の形式の部分を探す
-            string pattern = @"\(([^)]+)\)";
-            Regex regex = new Regex(pattern);
-            MatchCollection matches = regex.Matches(input);
-
-            if (matches.Count > 0)
+            for (int i = 0; i < cadena.Length; i++)
             {
-                foreach (Match match in matches)
+                switch (cadena[i])
                 {
-                    string prefix = input.Substring(0, match.Index);
-                    string suffix = input.Substring(match.Index + match.Length);
-                    string part = match.Groups[1].Value;
+                    case '(':
 
-                    // (***)の形式の部分を削除した文字列を出力リストに追加
-                    outputList.Add(prefix + suffix);
-                    // (***)の形式の部分を置き換えて出力リストに追加
-                    outputList.Add(prefix + part + suffix);
+                        start.Add(i);
+
+                        if(start.Count == 1 && plane_idx != -1)
+                        {
+                            // (が始まるときに、強制文字列があればそれを保存
+                            must.Add(sp_res.Count);
+                            sp_res.Add(cadena.Substring(plane_idx, i - plane_idx));
+                        }
+
+                        break;
+                    case ')':
+
+                        end.Add(i);
+
+                        // ()形式が行儀よくあるときしか想定していないからこの条件式はたぶん役に立たない
+                        if(start.Count == end.Count)
+                        {
+                            // ()の中身ほ保存、次に移るために作業スペースをクリア
+                            sp_res.Add(cadena.Substring(start[0] + 1, i - (start[0] + 1)));
+                            start.Clear();
+                            end.Clear();
+                            plane_idx = -1;
+                        }
+
+                        break;
+
+                    default:
+                        
+                        // 強制文字列の始まり位置を保存
+                        if(plane_idx == -1)
+                        {
+                            plane_idx = i;
+                        }
+
+                        break;
                 }
             }
-            else
+
+            // 強制文字列で終わっていたらそれを保存
+            if(plane_idx != -1)
             {
-                outputList.Add(input);
+                must.Add(sp_res.Count);
+                sp_res.Add(cadena.Substring(plane_idx));
             }
 
-            return outputList.Select(s => ReplaceConsecutiveSpaces(s)).ToList();
-        }
-
-        private List<string> ParseString(string input)
-        {
+            int rom = 0;
             List<string> result = new List<string>();
-            result.Add(input);
-            Regex regex = new Regex(@"\[(.*?)\]");
-            MatchCollection matches = regex.Matches(input);
 
-            if(matches.Count != 0)
+            // 強制文字列の位置をbitで表示
+            foreach (int n in must)
             {
-                // [^]形式が見つかった
-                foreach (Match ma in matches)
-                {
-                    string content = ma.Groups[1].Value;
-                    string[] parts = content.Split('^');
-                    List<string> tmp = new List<string>();
+                rom |= (0x1 << n);
+            }
 
-                    foreach (string part in parts)
+            for (int n = 0; n < Math.Pow(2, sp_res.Count); n++)
+            {
+                // 強制文字列があるやつだけを対象にする
+                if((n & rom) == rom)
+                {
+                    // nのbitが立っているところが表示する文字列
+                    // (n & rom)でフィルタしてるから強制文字列は絶対に表示される
+
+                    string s = "";
+
+                    for (int m = 0; m < sp_res.Count; m++)
                     {
-                        foreach (string res in result)
+                        if((n & (0x1 << m)) != 0)
                         {
-                            tmp.Add(res.Replace("[" + content + "]", part));
+                            // onのbitに対応する文字列を追加していく
+                            s += sp_res[m];
                         }
                     }
-                    // 現在の置換分を結果に入れておく[^]の形式が複数あるとき用
-                    result = tmp;
+
+                    result.Add(s);
                 }
             }
 
             return result;
+        }
+
+        static List<string> ExpandAlternatives(string input)
+        {
+            // 再帰的に文字列を展開するためのヘルパー関数
+            List<string> Expand(string text)
+            {
+                // 正規表現で最も外側の [^] を検出
+                var match = Regex.Match(text, @"\[(?<content>[^\[\]]+?)\]");
+                if (!match.Success)
+                {
+                    // [^] がない場合、リストにそのまま返す
+                    return new List<string> { text };
+                }
+
+                // マッチした部分を分解
+                string before = text.Substring(0, match.Index); // マッチの前
+                string after = text.Substring(match.Index + match.Length); // マッチの後
+                string[] options = match.Groups["content"].Value.Split('^'); // [^]の中身を分解
+
+                // 各選択肢を展開し、再帰的に結合
+                var results = new List<string>();
+                foreach (string option in options)
+                {
+                    foreach (string expanded in Expand(before + option + after))
+                    {
+                        if (!results.Contains(expanded))
+                        {
+                            results.Add(expanded);
+                        }
+                    }
+                }
+
+                results.Sort();
+
+                return results;
+            }
+
+            // 展開処理の呼び出し
+            return Expand(input);
         }
 
         private string ReplaceConsecutiveSpaces(string input)

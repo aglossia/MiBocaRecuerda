@@ -55,6 +55,10 @@ namespace MiBocaRecuerda
         {
             InitializeComponent();
 
+#if DEBUG
+            Text += " [debug]";
+#endif
+
             chboxComplete.Checked = true;
 
             lblResult.Visible = false;
@@ -308,7 +312,7 @@ namespace MiBocaRecuerda
 
                         foreach (QuizContents qc in QuizContents)
                         {
-                            tmp.Add(new QuizResult(qc.Quiz, qc.CorrectAnswer, "", qc.QuizNum, qc.Supplement));
+                            tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
                         }
 
                         if(e.Button == MouseButtons.Right)
@@ -918,7 +922,7 @@ namespace MiBocaRecuerda
 
             // 進捗ラベルに紐づく解答を追加
             // ShowAnswerで複数の表現があるやつを分離する
-            label_info.Add(Tuple.Create(CoreProcess.ShowAnswer(QuizContents[curProgress].CorrectAnswer), txtAnswer.Text == "" ? "NONE" : txtAnswer.Text));
+            label_info.Add(Tuple.Create(CoreProcess.ParseAnswer(QuizContents[curProgress].CorrectAnswer), txtAnswer.Text == "" ? "NONE" : txtAnswer.Text));
             txtAnswer.Text = "";
 
             QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, res));
@@ -1016,7 +1020,7 @@ namespace MiBocaRecuerda
             if (MessageForm_respuesta.IsDisposed == false) MessageForm_respuesta.Dispose();
             if (ws == null) return;
 
-            List<string> processedAnswer = CoreProcess.ShowAnswer(QuizContents[curProgress].CorrectAnswer);
+            List<string> processedAnswer = CoreProcess.ParseAnswer(QuizContents[curProgress].CorrectAnswer);
 
             MessageForm_respuesta = new MessageForm(processedAnswer, "RESPUESTA", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
