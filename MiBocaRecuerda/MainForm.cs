@@ -47,6 +47,29 @@ namespace MiBocaRecuerda
         // 現在の問題のインデックス
         int curProgress = -1;
 
+        bool isAcento = false;
+        bool isDieresis = false;
+
+        private static readonly Dictionary<char, char> letra_acento = new Dictionary<char, char>()
+        {
+            ['a'] = 'á',
+            ['e'] = 'é',
+            ['i'] = 'í',
+            ['o'] = 'ó',
+            ['u'] = 'ú',
+            ['A'] = 'Á',
+            ['E'] = 'É',
+            ['I'] = 'Í',
+            ['O'] = 'Ó',
+            ['U'] = 'Ú',
+        };
+
+        private static readonly Dictionary<char, char> letra_dieresis = new Dictionary<char, char>()
+        {
+            ['u'] = 'ü',
+            ['U'] = 'Ü',
+        };
+
         Dictionary<string, Dictionary<string, QuizFileConfig>> ArchivosDeLengua = new Dictionary<string, Dictionary<string, QuizFileConfig>>();
 
         bool IsKeyDown = false;
@@ -108,6 +131,33 @@ namespace MiBocaRecuerda
 
                 switch (e.KeyChar)
                 {
+                    case '\'':
+                        isAcento = true;
+                        e.Handled = true;
+                        break;
+                    case '"':
+                        isDieresis = true;
+                        e.Handled = true;
+                        break;
+                    case 'a':
+                    case 'e':
+                    case 'i':
+                    case 'o':
+                    case 'u':
+                    case 'A':
+                    case 'E':
+                    case 'I':
+                    case 'O':
+                    case 'U':
+                        if (isAcento)
+                        {
+                            e.KeyChar = letra_acento[e.KeyChar];
+                        }
+                        else if (isDieresis)
+                        {
+                            e.KeyChar = letra_dieresis[e.KeyChar];
+                        }
+                        break;
                     case ';':
                         e.KeyChar = 'ñ';
                         break;
@@ -119,6 +169,17 @@ namespace MiBocaRecuerda
                         break;
                     case '>':
                         e.KeyChar = ':';
+                        break;
+                }
+
+                switch (e.KeyChar)
+                {
+                    case '\'':
+                    case '"':
+                        break;
+                    default:
+                        isAcento = false;
+                        isDieresis = false;
                         break;
                 }
             };
@@ -1043,39 +1104,6 @@ namespace MiBocaRecuerda
                 ParseFile();
                 InitQuiz(true);
             }
-        }
-
-        private void txtAnswer_TextChanged(object sender, EventArgs e)
-        {
-            TextBox t = sender as TextBox;
-            string s = t.Text;
-
-            string s_bf = s;
-
-            // キャレット位置を記憶する
-            int caret = t.SelectionStart;
-
-            s = s.Replace("'a", "á");
-            s = s.Replace("'e", "é");
-            s = s.Replace("'i", "í");
-            s = s.Replace("'o", "ó");
-            s = s.Replace("'u", "ú");
-            s = s.Replace("'A", "Á");
-            s = s.Replace("'E", "É");
-            s = s.Replace("'I", "Í");
-            s = s.Replace("'O", "Ó");
-            s = s.Replace("'U", "Ú");
-
-            s = s.Replace("\"u", "ü");
-            s = s.Replace("\"U", "Ü");
-
-
-            // 2文字が1文字に変換されるのでキャレットを一つ減らす
-            if (s_bf != s) caret--;
-
-            t.Text = s;
-
-            t.Select(caret, 0);
         }
 
         // Traducir

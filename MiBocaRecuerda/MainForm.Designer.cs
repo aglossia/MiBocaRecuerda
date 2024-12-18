@@ -72,7 +72,6 @@
             this.txtAnswer.Name = "txtAnswer";
             this.txtAnswer.Size = new System.Drawing.Size(339, 65);
             this.txtAnswer.TabIndex = 0;
-            this.txtAnswer.TextChanged += new System.EventHandler(this.txtAnswer_TextChanged);
             // 
             // btnAnswer
             // 
