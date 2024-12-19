@@ -205,10 +205,10 @@ namespace MiBocaRecuerda
                             IsKeyDown = true;
                             InitQuiz(true);
                             break;
-                        case Keys.Right:
+                        case Keys.N:
                             if (shiftPressed) MoveQuiz(true);
                             break;
-                        case Keys.Left:
+                        case Keys.B:
                             if (shiftPressed)  MoveQuiz(false);
                             break;
                     }

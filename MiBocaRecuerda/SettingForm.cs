@@ -118,8 +118,8 @@ namespace MiBocaRecuerda
             mensaje_de_ayuda.Add("Mostrar la respuesta correcta: Ctrl + R");
             mensaje_de_ayuda.Add("Enviar tu respuesta: Shift + Enter");
             mensaje_de_ayuda.Add("Traducir lo que escribiste: F1");
-            mensaje_de_ayuda.Add("Siguiente +: Ctrl + Shift + →");
-            mensaje_de_ayuda.Add("Siguiente -: Ctrl + Shift + ←");
+            mensaje_de_ayuda.Add("Siguiente +: Ctrl + Shift + N");
+            mensaje_de_ayuda.Add("Siguiente -: Ctrl + Shift + B");
 
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             System.Reflection.AssemblyName asmName = assembly.GetName();
