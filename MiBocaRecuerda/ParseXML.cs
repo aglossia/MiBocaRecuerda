@@ -38,9 +38,7 @@ namespace MiBocaRecuerda
                 string tableXml = inputText.Substring(tableStart, tableEnd - tableStart + 8);
 
                 // テーブルをテキスト形式に変換して追加
-                result.AppendLine();
                 result.Append(ConvertXmlToTextTable(tableXml));
-                result.AppendLine();
 
                 // 次の部分に進む
                 currentIndex = tableEnd + 8;
@@ -103,7 +101,8 @@ namespace MiBocaRecuerda
                 result.AppendLine(CreateRow(row, columnWidths));
             }
 
-            return result.ToString();
+            // 最後にも\r\nがつくからそれを削除
+            return result.ToString().Substring(0, result.Length - 2);
         }
 
         static private string CreateRow(List<string> row, List<int> columnWidths)

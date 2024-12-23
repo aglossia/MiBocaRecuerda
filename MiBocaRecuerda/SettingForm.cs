@@ -114,12 +114,36 @@ namespace MiBocaRecuerda
         {
             List<string> mensaje_de_ayuda = new List<string>();
 
-            mensaje_de_ayuda.Add("Comenzar un nuevo ejercicio: Ctrl + Q");
-            mensaje_de_ayuda.Add("Mostrar la respuesta correcta: Ctrl + R");
-            mensaje_de_ayuda.Add("Enviar tu respuesta: Shift + Enter");
-            mensaje_de_ayuda.Add("Traducir lo que escribiste: F1");
-            mensaje_de_ayuda.Add("Siguiente +: Ctrl + Shift + N");
-            mensaje_de_ayuda.Add("Siguiente -: Ctrl + Shift + B");
+            string xml_s = @"<table>
+                                  <tbody>
+                                    <tr>
+                                      <th>Comenzar un nuevo ejercicio</th>
+                                      <td>Ctrl + Q</td>
+                                      </tr>
+                                    <tr>
+                                      <th>Mostrar la respuesta correcta</th>
+                                      <td>Ctrl + R</td>
+                                      </tr>
+                                    <tr>
+                                      <th>Enviar tu respuesta</th>
+                                      <td>Shift + Enter</td>
+                                    </tr>
+                                    <tr>
+                                      <th>Traducir lo que escribiste</th>
+                                      <td>F1</td>
+                                    </tr>
+                                    <tr>
+                                      <th>Siguiente +</th>
+                                      <td>Ctrl + Shift + N</td>
+                                    </tr>
+                                    <tr>
+                                      <th>Siguiente -</th>
+                                      <td>Ctrl + Shift + B</td>
+                                    </tr>
+                                  </tbody>
+                                </table>";
+
+            mensaje_de_ayuda.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
 
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             System.Reflection.AssemblyName asmName = assembly.GetName();

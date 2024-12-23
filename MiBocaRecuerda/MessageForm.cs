@@ -23,14 +23,16 @@ namespace MiBocaRecuerda
         {
             InitializeComponent();
 
-            txtMensaje.Text = string.Join("\r\n", mensajes);
+            // テキストボックスが\nだと改行されないんだが？
+            // mensajes.ForEach(s => s.Replace("\n", "\r\n")がきかないのはなぜだ？
+            txtMensaje.Text = string.Join("\r\n", mensajes.Select(s => s.Replace("\n", "\r\n")));
             txtMensaje.SelectionStart = 0;
             txtMensaje.ReadOnly = readOnly;
 
             Load += (o, e) =>
             {
                 // maxWidthは文字列のピッタリサイズのはずなので、余白分をたす
-                int maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 22;
+                int maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 30;
 
                 int newLineCount = txtMensaje.Text.Where(c => c == '\n').Count() + 1;
 
