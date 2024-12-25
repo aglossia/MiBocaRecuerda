@@ -48,6 +48,7 @@
             this.chboxResult = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnTranslate = new System.Windows.Forms.Button();
+            this.lbl_PruebaChallengeCount = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,7 +60,7 @@
             this.txtQuiz.Location = new System.Drawing.Point(25, 37);
             this.txtQuiz.Multiline = true;
             this.txtQuiz.Name = "txtQuiz";
-            this.txtQuiz.Size = new System.Drawing.Size(339, 44);
+            this.txtQuiz.Size = new System.Drawing.Size(371, 44);
             this.txtQuiz.TabIndex = 0;
             // 
             // txtAnswer
@@ -70,14 +71,14 @@
             this.txtAnswer.Location = new System.Drawing.Point(25, 93);
             this.txtAnswer.Multiline = true;
             this.txtAnswer.Name = "txtAnswer";
-            this.txtAnswer.Size = new System.Drawing.Size(339, 65);
+            this.txtAnswer.Size = new System.Drawing.Size(371, 65);
             this.txtAnswer.TabIndex = 0;
             // 
             // btnAnswer
             // 
             this.btnAnswer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAnswer.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.btnAnswer.Location = new System.Drawing.Point(276, 243);
+            this.btnAnswer.Location = new System.Drawing.Point(308, 243);
             this.btnAnswer.Name = "btnAnswer";
             this.btnAnswer.Size = new System.Drawing.Size(85, 23);
             this.btnAnswer.TabIndex = 1;
@@ -124,7 +125,7 @@
             this.txtConsole.Location = new System.Drawing.Point(23, 190);
             this.txtConsole.Multiline = true;
             this.txtConsole.Name = "txtConsole";
-            this.txtConsole.Size = new System.Drawing.Size(338, 47);
+            this.txtConsole.Size = new System.Drawing.Size(370, 47);
             this.txtConsole.TabIndex = 5;
             // 
             // chboxQuizNum
@@ -163,7 +164,7 @@
             this.siguienteToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(376, 27);
+            this.menuStrip1.Size = new System.Drawing.Size(408, 27);
             this.menuStrip1.TabIndex = 7;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -231,11 +232,22 @@
             this.btnTranslate.UseVisualStyleBackColor = true;
             this.btnTranslate.Click += new System.EventHandler(this.btnTranslate_Click);
             // 
+            // lbl_PruebaChallengeCount
+            // 
+            this.lbl_PruebaChallengeCount.AutoSize = true;
+            this.lbl_PruebaChallengeCount.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.lbl_PruebaChallengeCount.Location = new System.Drawing.Point(291, 250);
+            this.lbl_PruebaChallengeCount.Name = "lbl_PruebaChallengeCount";
+            this.lbl_PruebaChallengeCount.Size = new System.Drawing.Size(11, 12);
+            this.lbl_PruebaChallengeCount.TabIndex = 12;
+            this.lbl_PruebaChallengeCount.Text = "0";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(376, 279);
+            this.ClientSize = new System.Drawing.Size(408, 279);
+            this.Controls.Add(this.lbl_PruebaChallengeCount);
             this.Controls.Add(this.btnTranslate);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.chboxResult);
@@ -283,6 +295,7 @@
         private System.Windows.Forms.ToolStripMenuItem siguienteToolStripMenuItem;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnTranslate;
+        private System.Windows.Forms.Label lbl_PruebaChallengeCount;
     }
 }
 

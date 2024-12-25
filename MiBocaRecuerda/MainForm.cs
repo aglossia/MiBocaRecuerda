@@ -33,6 +33,9 @@ namespace MiBocaRecuerda
         List<QuizResult> QuizResult = new List<QuizResult>();
         // 現在の読込ファイルの設定
         public static QuizFileConfig QuizFileConfig;
+        // 前回のクイズ設定
+        private int preMinChapter;
+        private int preMaxChapter;
         // 現在の問題集(InitQuizで作成)
         private List<QuizContents> QuizContents = new List<QuizContents>();
 
@@ -46,6 +49,8 @@ namespace MiBocaRecuerda
         string langType = "";
         // 現在の問題のインデックス
         int curProgress = -1;
+
+        int PruebaChallengeCount = 0;
 
         bool isAcento = false;
         bool isDieresis = false;
@@ -87,6 +92,7 @@ namespace MiBocaRecuerda
             lblResult.Visible = false;
             label1.Visible = false;
             btnAnswer.Enabled = false;
+            lbl_PruebaChallengeCount.Visible = false;
 
             resultForm.Dispose();
             MessageForm_respuesta.Dispose();
@@ -283,6 +289,7 @@ namespace MiBocaRecuerda
             chboxComplete.CheckedChanged += (o, e) =>
             {
                 if (!IsLoaded) return;
+                PruebaChallengeCount = -1;
                 InitQuiz(true);
             };
 
@@ -451,6 +458,10 @@ namespace MiBocaRecuerda
             ParseFile();
 
             QuizFileConfig = SettingManager.AppConfig.quizFileConfig;
+
+            // 最初のクイズ設定を保持
+            preMinChapter = QuizFileConfig.MinChapter;
+            preMaxChapter = QuizFileConfig.MaxChapter;
         }
 
         #region 内部処理
@@ -645,26 +656,7 @@ namespace MiBocaRecuerda
 
             labels.ForEach(l1 => l1.ForEach(l2 => l2.Text = "○"));
 
-            Text = $"MBR [{QuizFileConfig.MinChapter * 10 - 9}~{QuizFileConfig.MaxChapter * 10}]";
-
-            // 完答モードでないとき
-            if (!chboxComplete.Checked)
-            {
-                Text += " prueba ";
-
-                // 練習が1章だけならPRUEBA回数を表示する
-                if(QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
-                {
-                    string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
-
-                    if (File.Exists(path))
-                    {
-                        string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
-
-                        Text += int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString();
-                    }
-                }
-            } 
+            RefreshDisplay();
 
             // nからmまでの整数のリストを作成
             List<int> numberList = new List<int>();
@@ -695,7 +687,56 @@ namespace MiBocaRecuerda
                 QuizContents.Add(new QuizContents(quizTxt, correctAnswer, quizNum, chapterTitle, chapterExample, supplement));
             }
 
+            // 今回のクイズ設定を保持
+            preMinChapter = QuizFileConfig.MinChapter;
+            preMaxChapter = QuizFileConfig.MaxChapter;
+
             ShowQuestion();
+        }
+
+        private void RefreshDisplay()
+        {
+            // 前回とクイズ設定が違っていたらチャレンジ回数を初期化する
+            if((preMinChapter != QuizFileConfig.MinChapter) ||
+                (preMaxChapter != QuizFileConfig.MaxChapter))
+            {
+                PruebaChallengeCount = 0;
+            }
+            else
+            {
+                // pruebaモードの時だけ
+                if (!chboxComplete.Checked)
+                {
+                    PruebaChallengeCount++;
+                }
+            }
+
+            lbl_PruebaChallengeCount.Text = PruebaChallengeCount.ToString();
+            lbl_PruebaChallengeCount.Visible = !chboxComplete.Checked;
+
+            Text = $"MBR [{QuizFileConfig.MinChapter * 10 - 9}~{QuizFileConfig.MaxChapter * 10}]";
+
+            // 完答モードでないとき
+            if (!chboxComplete.Checked)
+            {
+                Text += " prueba ";
+
+                // 練習が1章だけならPRUEBA回数を表示する
+                if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
+                {
+                    string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
+
+                    if (File.Exists(path))
+                    {
+                        string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
+
+                        // prueba回数
+                        Text += $"[{int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
+                        // 最近のprueba日
+                        Text += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0]}";
+                    }
+                }
+            }
         }
 
         // OKとかNGとかを表示させる
@@ -992,6 +1033,7 @@ namespace MiBocaRecuerda
 
             int endQuizNum = chboxExercise.Checked ? QuizFileConfig.MaxQuizNum - 1 : QuizFileConfig.QuizNum - 1;
 
+            // クイズ終了？
             if (curProgress == endQuizNum || curProgress == MaxRow - 1)
             {
                 //tokenSource.Cancel();
@@ -1003,6 +1045,8 @@ namespace MiBocaRecuerda
                 //if(true)
                 {
                     DisplayResult("PERFECTO!", 5000);
+
+                    PruebaChallengeCount = 0;
 
                     // 練習が1章だけならPRUEBA達成を記録する
                     if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
@@ -1051,6 +1095,8 @@ namespace MiBocaRecuerda
                             }
                         }
                     }
+
+                    RefreshDisplay();
                 }
                 else
                 {
