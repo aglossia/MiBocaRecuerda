@@ -92,5 +92,30 @@ namespace MiBocaRecuerda
                 IsKeyDown = false;
             };
         }
+
+        public void MessageUpdate(List<string> mensajes)
+        {
+            txtMensaje.Text = string.Join("\r\n", mensajes.Select(s => s.Replace("\n", "\r\n")));
+            txtMensaje.SelectionStart = 0;
+
+            // maxWidthは文字列のピッタリサイズのはずなので、余白分をたす
+            int maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 30;
+
+            int newLineCount = txtMensaje.Text.Where(c => c == '\n').Count() + 1;
+
+            // 41行までは伸ばして表示、それ以上はスクロルバ
+            if (newLineCount <= 41)
+            {
+                // barra de título:40 + 行数*16 + 余白:10
+                Size = new Size(maxWidth, 40 + newLineCount * 16 + 10);
+            }
+            else
+            {
+                // 50 + newLineCount * 32 - 2
+                // スクロルバ分maxWidthを伸ばす
+                Size = new Size(maxWidth + 20, 784);
+                txtMensaje.ScrollBars = ScrollBars.Vertical;
+            }
+        }
     }
 }

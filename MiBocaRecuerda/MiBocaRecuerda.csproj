@@ -124,6 +124,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassResize.cs" />
     <Compile Include="CommonFunction.cs" />
     <Compile Include="CoreProcess.cs" />
     <Compile Include="EndDialog.cs">
