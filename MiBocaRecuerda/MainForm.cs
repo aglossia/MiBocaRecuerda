@@ -20,14 +20,12 @@ namespace MiBocaRecuerda
         List<Label> labels_bar = new List<Label>();
         List<Tuple<List<string>, string>> label_info = new List<Tuple<List<string>, string>>();
 
-        Label lblQuizNum;
-        TextBox txtChapterTitle;
-        TextBox txtChapterExample;
         Label lblExercise;
 
         ResultForm resultForm = new ResultForm();
         MessageForm MessageForm_respuesta = new MessageForm();
         MessageForm MessageForm_traducir = new MessageForm();
+        MessageForm MessageForm_quizInfo = new MessageForm();
 
         // Resultadoに表示する為に蓄積するやつ
         List<QuizResult> QuizResult = new List<QuizResult>();
@@ -79,6 +77,8 @@ namespace MiBocaRecuerda
 
         bool IsKeyDown = false;
 
+        private ClassResize _form_resize;
+
         public MainForm()
         {
             InitializeComponent();
@@ -87,7 +87,125 @@ namespace MiBocaRecuerda
             Text += " [debug]";
 #endif
 
-            chboxComplete.Checked = true;
+
+
+
+
+
+
+
+
+
+
+
+            int labelSize = 18;
+
+            labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
+            labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
+
+            labels.ForEach(l1 => l1.ForEach(l2 => { _form_resize.RemoveControlTable(l2); }));
+            labels_bar.ForEach(l1 => _form_resize.RemoveControlTable(l1));
+
+            labels.Clear();
+            labels_bar.Clear();
+            label_info.Clear();
+
+            // グループ切り替え
+            for (int i = 0; i <= 10; i++)
+            {
+                labels.Add(new List<Label>());
+
+                Label l = new Label
+                {
+                    Location = new Point(txtAnswer.Location.X + (i % 10) * (labelSize + 1), txtAnswer.Location.Y + txtAnswer.Size.Height),
+                    //Text = "―",
+                    Size = new Size(labelSize, labelSize / 3),
+                    Font = new Font("メイリオ", 7F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                    Name = $"progress_group_label{i}"
+                };
+
+                //l.BorderStyle = BorderStyle.FixedSingle;
+                l.TextAlign = ContentAlignment.MiddleCenter;
+                l.BackColor = Color.LightBlue;
+
+                l.Click += Label_bar_Click;
+                l.MouseHover += Label_hover;
+                l.MouseLeave += Label_leave;
+
+                Controls.Add(l);
+                labels_bar.Add(l);
+            }
+
+            int group_num = 0;
+
+            // 問題別
+            for (int i = 0; i < 100; i++)
+            {
+                group_num = UtilityFunction.Suelo(i);
+
+                Label l = new Label
+                {
+                    Location = new Point(txtAnswer.Location.X + (i % 10) * (labelSize + 1), txtAnswer.Location.Y + txtAnswer.Size.Height + (labelSize / 3)),
+                    Text = "○",
+                    Size = new Size(labelSize, labelSize),
+                    Font = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                    Name = $"progress_label{i}"
+                };
+
+                l.BorderStyle = BorderStyle.FixedSingle;
+                l.TextAlign = ContentAlignment.MiddleCenter;
+
+                l.Click += LabelClick;
+                l.Visible = false;
+
+                Controls.Add(l);
+                labels[group_num].Add(l);
+            }
+
+            labels[0].ForEach(l => l.Visible = true);
+            labels_bar[0].ForeColor = Color.Red;
+
+            //_form_resize.GetControlTable(this);
+
+            lblExercise = new Label
+            {
+                Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
+                Text = "100/100",
+                //Size = new Size(labelSize, labelSize),
+                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
+            };
+
+            Controls.Add(lblExercise);
+
+            NumericUpDown nud = new NumericUpDown();
+
+            nud.Location = new Point(labels_bar[9].Location.X+50, labels_bar[9].Location.Y);
+            nud.Size = new Size(40,20);
+            nud.Name = "hyper_group";
+
+
+            Controls.Add(nud);
+
+
+
+
+
+
+
+
+
+
+
+
+            Load += (o, e) =>
+            {
+                //_form_resize._get_initial_size();
+            };
+
+            SizeChanged += (o, e) =>
+            {
+                _form_resize._resize();
+            };
 
             lblResult.Visible = false;
             label1.Visible = false;
@@ -233,67 +351,14 @@ namespace MiBocaRecuerda
                 IsKeyDown = false;
             };
 
-            lblQuizNum = new Label
-            {
-                Location = new Point(btnShowAnswer.Location.X, btnShowAnswer.Location.Y + btnShowAnswer.Size.Height),
-                //Text = "30",
-                //Size = new Size(20, 20),
-                AutoSize = true,
-                Visible = false,
-                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
-            };
-
-            txtChapterTitle = new TextBox
-            {
-                Location = new Point(btnShowAnswer.Location.X, btnShowAnswer.Location.Y + btnShowAnswer.Size.Height + 20),
-                //Text = "12345678910111213141516171819201234567891011121314151617181920",
-                Size = new Size(300, 20),
-                AutoSize = true,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                Visible = false,
-                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
-            };
-
-            txtChapterExample = new TextBox
-            {
-                Location = new Point(btnShowAnswer.Location.X, btnShowAnswer.Location.Y + btnShowAnswer.Size.Height + 50),
-                //Text = "12345678910111213141516171819201234567891011121314151617181920",
-                Size = new Size(300, 20),
-                AutoSize = true,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                Visible = false,
-                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
-            };
-
-            Controls.Add(lblQuizNum);
-            Controls.Add(txtChapterTitle);
-            Controls.Add(txtChapterExample);
-
-            chboxQuizNum.CheckedChanged += CheckedChanged;
-            chboxChapterTitle.CheckedChanged += CheckedChanged;
-            chboxChapterExample.CheckedChanged += CheckedChanged;
-
-            chboxQuizNum.CheckedChanged += (o, e) =>
-            {
-                lblQuizNum.Visible = (o as CheckBox).Checked;
-            };
-            chboxChapterTitle.CheckedChanged += (o, e) =>
-            {
-                txtChapterTitle.Visible = (o as CheckBox).Checked;
-            };
-            chboxChapterExample.CheckedChanged += (o, e) =>
-            {
-                txtChapterExample.Visible = (o as CheckBox).Checked;
-            };
-
-            chboxComplete.CheckedChanged += (o, e) =>
+            optionTSMI_prueba.CheckedChanged += (o, e) =>
             {
                 if (!IsLoaded) return;
                 PruebaChallengeCount = -1;
                 InitQuiz(true);
             };
 
-            chboxExercise.CheckedChanged += (o, e) =>
+            optionTSMI_progresoVisual.CheckedChanged += (o, e) =>
             {
                 if (!IsLoaded) return;
                 InitQuiz(true);
@@ -365,12 +430,10 @@ namespace MiBocaRecuerda
                 }
             };
 
-            chboxResult.MouseDown += (o, e) =>
+            optionTSMI_lista.MouseDown += (o, e) =>
             {
                 switch (e.Button)
                 {
-                    // Resultadoフォームの表示
-                    case MouseButtons.Middle:
                     case MouseButtons.Right:
 
                         if (resultForm.IsDisposed == false) resultForm.Dispose();
@@ -383,13 +446,9 @@ namespace MiBocaRecuerda
                             tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
                         }
 
-                        if(e.Button == MouseButtons.Right)
-                        {
-                            tmp = tmp.OrderBy(q => int.Parse(q.QuizNum)).ToList();
-                        }
-
                         resultForm = new ResultForm(tmp, this)
                         {
+                            Text = "Lista de Pruebas",
                             ShowIcon = false
                         };
 
@@ -421,37 +480,27 @@ namespace MiBocaRecuerda
                     ShowAlways = true
                 };
 
-                tt.SetToolTip(chboxComplete, "完答");
-                tt.SetToolTip(chboxExercise, "エクササイズの種類");
-                tt.SetToolTip(chboxResult, "Resultadoを表示するか");
-                tt.SetToolTip(chboxQuizNum, "クイズ番号");
-                tt.SetToolTip(chboxChapterTitle, "章タイトル");
-                tt.SetToolTip(chboxChapterExample, "章の例文");
                 tt.SetToolTip(btnTranslate, "traducción");
             };
 
             FormClosing += (o, e) =>
             {
-                SettingManager.InputCache.Complete = chboxComplete.Checked;
-                SettingManager.InputCache.Exercise = chboxExercise.Checked;
-                SettingManager.InputCache.Result = chboxResult.Checked;
-                SettingManager.InputCache.QuizNum = chboxQuizNum.Checked;
-                SettingManager.InputCache.ChapterTitle = chboxChapterTitle.Checked;
-                SettingManager.InputCache.ChapterExample = chboxChapterExample.Checked;
+                SettingManager.InputCache.Complete = optionTSMI_prueba.Checked;
+                SettingManager.InputCache.Exercise = optionTSMI_progresoVisual.Checked;
+                SettingManager.InputCache.Result = optionTSMI_resultados.Checked;
                 SettingManager.InputCache.QuizFilePathIndex = toolStripQuizFile.SelectedIndex;
 
                 CommonFunction.XmlWrite(SettingManager.InputCache, "cache.xml");
             };
 
-            Point loc = chboxComplete.Location;
-            int cw = 20;
+            //Point loc = chboxComplete.Location;
+            //int cw = 20;
 
-            chboxExercise.Location = new Point(loc.X + cw, loc.Y);
-            chboxResult.Location = new Point(loc.X + cw * 2, loc.Y);
-            chboxQuizNum.Location = new Point(loc.X + cw * 3, loc.Y);
-            chboxChapterTitle.Location = new Point(loc.X + cw * 4, loc.Y);
-            chboxChapterExample.Location = new Point(loc.X + cw * 5, loc.Y);
-            btnTranslate.Location = new Point(loc.X + cw * 6, loc.Y);
+            //chboxExercise.Location = new Point(loc.X + cw, loc.Y);
+            //chboxResult.Location = new Point(loc.X + cw * 2, loc.Y);
+            //btnTranslate.Location = new Point(loc.X + cw * 6, loc.Y);
+
+            _form_resize = new ClassResize(this);
 
             LoadConfig();
 
@@ -502,7 +551,7 @@ namespace MiBocaRecuerda
 
         // 非表示記憶用
         string tmp1 = "", tmp2 = "", tmp3 = "";
-        bool check1 = false, check2 = false, check3 = false, result = false;
+        bool result = false;
         bool ba = false;
 
         // 表示されてる文字を非表示にする
@@ -519,22 +568,12 @@ namespace MiBocaRecuerda
                 tmp3 = txtConsole.Text;
                 txtConsole.Text = "";
 
-                check1 = chboxChapterTitle.Checked;
-                check2 = chboxChapterExample.Checked;
-
-                chboxChapterTitle.Checked = false;
-                chboxChapterExample.Checked = false;
-                chboxQuizNum.Checked = false;
-
                 ba = btnAnswer.Enabled;
                 btnAnswer.Enabled = false;
                 btnShowAnswer.Enabled = false;
-                chboxComplete.Enabled = false;
-                chboxExercise.Enabled = false;
-                chboxResult.Enabled = false;
-                chboxQuizNum.Enabled = false;
-                chboxChapterTitle.Enabled = false;
-                chboxChapterExample.Enabled = false;
+                optionTSMI_prueba.Enabled = false;
+                optionTSMI_progresoVisual.Enabled = false;
+                optionTSMI_resultados.Enabled = false;
                 btnTranslate.Enabled = false;
 
                 if (resultForm.IsDisposed == false)
@@ -552,23 +591,15 @@ namespace MiBocaRecuerda
 
                 btnAnswer.Enabled = ba;
                 btnShowAnswer.Enabled = true;
-                chboxComplete.Enabled = true;
-                chboxExercise.Enabled = true;
-                chboxResult.Enabled = true;
-                chboxQuizNum.Enabled = true;
-                chboxChapterTitle.Enabled = true;
-                chboxChapterExample.Enabled = true;
+                optionTSMI_prueba.Enabled = true;
+                optionTSMI_progresoVisual.Enabled = true;
+                optionTSMI_resultados.Enabled = true;
                 btnTranslate.Enabled = true;
-
-                chboxChapterTitle.Checked = check1;
-                chboxChapterExample.Checked = check2;
-                chboxQuizNum.Checked = check3;
 
                 if (resultForm.IsDisposed == false) resultForm.Visible = result;
                 txtAnswer.Focus();
             }
 
-            txtQuiz.ReadOnly = !txtQuiz.ReadOnly;
             txtAnswer.ReadOnly = !txtAnswer.ReadOnly;
             txtConsole.ReadOnly = !txtConsole.ReadOnly;
 
@@ -596,12 +627,9 @@ namespace MiBocaRecuerda
                 SettingManager.InputCache = CommonFunction.XmlRead<InputCache>("cache.xml");
             }
 
-            chboxComplete.Checked = SettingManager.InputCache.Complete;
-            chboxExercise.Checked = SettingManager.InputCache.Exercise;
-            chboxResult.Checked = SettingManager.InputCache.Result;
-            chboxQuizNum.Checked = SettingManager.InputCache.QuizNum;
-            chboxChapterTitle.Checked = SettingManager.InputCache.ChapterTitle;
-            chboxChapterExample.Checked = SettingManager.InputCache.ChapterExample;
+            optionTSMI_prueba.Checked = SettingManager.InputCache.Complete;
+            optionTSMI_progresoVisual.Checked = SettingManager.InputCache.Exercise;
+            optionTSMI_resultados.Checked = SettingManager.InputCache.Result;
             if (toolStripQuizFile.Items.Count > SettingManager.InputCache.QuizFilePathIndex)
             {
                 toolStripQuizFile.SelectedIndex = SettingManager.InputCache.QuizFilePathIndex;
@@ -705,21 +733,21 @@ namespace MiBocaRecuerda
             else
             {
                 // pruebaモードの時だけ
-                if (!chboxComplete.Checked)
+                if (optionTSMI_prueba.Checked)
                 {
                     PruebaChallengeCount++;
                 }
             }
 
             lbl_PruebaChallengeCount.Text = PruebaChallengeCount.ToString();
-            lbl_PruebaChallengeCount.Visible = !chboxComplete.Checked;
+            lbl_PruebaChallengeCount.Visible = optionTSMI_prueba.Checked;
 
             Text = $"MBR [{QuizFileConfig.MinChapter * 10 - 9}~{QuizFileConfig.MaxChapter * 10}]";
 
-            // 完答モードでないとき
-            if (!chboxComplete.Checked)
+            // pruebaモードのとき
+            if (optionTSMI_prueba.Checked)
             {
-                Text += " prueba ";
+                //Text += " prueba ";
 
                 // 練習が1章だけならPRUEBA回数を表示する
                 if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
@@ -731,7 +759,7 @@ namespace MiBocaRecuerda
                         string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
 
                         // prueba回数
-                        Text += $"[{int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
+                        Text += $" [PRUEBA {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
                         // 最近のprueba日
                         Text += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0]}";
                     }
@@ -774,7 +802,7 @@ namespace MiBocaRecuerda
             // 現在の問題のインデックスから進捗ラベルのどこのグループに属するかを算出
             current_label_group = UtilityFunction.Suelo(curProgress);
 
-            if (chboxExercise.Checked)
+            if (!optionTSMI_progresoVisual.Checked)
             {
                 int totalNum = QuizFileConfig.MaxQuizNum > MaxRow ? MaxRow : QuizFileConfig.MaxQuizNum;
                 lblExercise.Text = $"{curProgress + 1}/{totalNum}";
@@ -788,94 +816,136 @@ namespace MiBocaRecuerda
             }
 
             txtQuiz.Text = QuizContents[curProgress].Quiz;
-            lblQuizNum.Text = QuizContents[curProgress].QuizNum;
-            txtChapterTitle.Text = QuizContents[curProgress].ChapterTitle;
-            txtChapterExample.Text = QuizContents[curProgress].ChapterExample;
+
+            if (MessageForm_quizInfo.Visible == true)
+            {
+                // 同じ処理がTSMI_quizInfoにあるので冗長
+                List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
+                List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum, QuizContents[curProgress].ChapterTitle };
+                List<string> quizInfo = new List<string>();
+
+                string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
+
+                quizInfo.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
+
+                MessageForm_quizInfo.MessageUpdate(quizInfo);
+            }
         }
 
         // 進捗表示を作る
         private void CreateQuizProgress()
         {
-            labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
-            labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
+            //Size labelSize = new Size(15, 15);
+            //Size labelSize_bar = new Size(15, 10);
+            //Font font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
+            //Font font_bar = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128);
 
-            labels.Clear();
-            labels_bar.Clear();
-            label_info.Clear();
+            //int adj = 0;
 
-            if (Controls.Contains(lblExercise))
-            {
-                Controls.Remove(lblExercise);
-            }
+            ////if (labels_bar.Count != 0)
+            ////{
+            ////    labelSize_bar = labels_bar[0].Size;
+            ////    font_bar = labels_bar[0].Font;
+            ////}
 
-            if (chboxExercise.Checked == false)
-            {
-                int labelSize = 15;
+            ////if (labels.Count != 0)
+            ////{
+            ////    Console.WriteLine(labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width);
 
-                for(int i = 0; i <= UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1); i++)
-                {
-                    labels.Add(new List<Label>());
+            ////    adj = labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width;
 
-                    Label l = new Label
-                    {
-                        Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize, txtAnswer.Location.Y + txtAnswer.Size.Height),
-                        Text = "―",
-                        Size = new Size(labelSize, labelSize - 5),
-                        Font = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128)
-                    };
+            ////    labelSize = labels[0][0].Size;
+            ////    font = labels[0][0].Font;
+            ////}
 
-                    l.Click += Label_bar_Click;
-                    l.MouseHover += Label_hover;
-                    l.MouseLeave += Label_leave;
+            //labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
+            //labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
 
-                    Controls.Add(l);
-                    labels_bar.Add(l);
-                }
+            //labels.ForEach(l1 => l1.ForEach(l2 => { _form_resize.RemoveControlTable(l2); }));
+            //labels_bar.ForEach(l1 => _form_resize.RemoveControlTable(l1));
 
-                int group_num = 0;
+            //labels.Clear();
+            //labels_bar.Clear();
+            //label_info.Clear();
 
-                for (int i = 0; i < QuizFileConfig.QuizNum; i++)
-                {
-                    group_num = UtilityFunction.Suelo(i);
+            //if (Controls.Contains(lblExercise))
+            //{
+            //    Controls.Remove(lblExercise);
+            //}
 
-                    Label l = new Label
-                    {
-                        Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
-                        Text = "○",
-                        Size = new Size(labelSize, labelSize),
-                        Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
-                    };
+            //if (optionTSMI_progresoVisual.Checked)
+            //{
+            //    for(int i = 0; i <= UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1); i++)
+            //    {
+            //        labels.Add(new List<Label>());
 
-                    l.Click += LabelClick;
-                    l.Visible = false;
+            //        Label l = new Label
+            //        {
+            //            Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width, txtAnswer.Location.Y + txtAnswer.Size.Height),
+            //            Text = "―",
+            //            //Size = new Size(labelSize, labelSize),
+            //            Size = labelSize_bar,
+            //            Font = font_bar,
+            //            Name = $"progress_group_label{i}"
+            //        };
 
-                    Controls.Add(l);
-                    labels[group_num].Add(l);
-                }
+            //        l.Click += Label_bar_Click;
+            //        l.MouseHover += Label_hover;
+            //        l.MouseLeave += Label_leave;
 
-                labels[0].ForEach(l => l.Visible = true);
-                labels_bar[0].ForeColor = Color.Red;
-            }
-            else
-            {
-                lblExercise = new Label
-                {
-                    Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
-                    Text = "100/100",
-                    //Size = new Size(labelSize, labelSize),
-                    Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
-                };
+            //        Controls.Add(l);
+            //        labels_bar.Add(l);
+            //        _form_resize.AddControlTable(l);
+            //    }
 
-                Controls.Add(lblExercise);
-            }
+            //    int group_num = 0;
+
+            //    for (int i = 0; i < QuizFileConfig.QuizNum; i++)
+            //    {
+            //        group_num = UtilityFunction.Suelo(i);
+
+            //        Label l = new Label
+            //        {
+            //            Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width + adj, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
+            //            Text = "○",
+            //            Size = labelSize,
+            //            Font = font,
+            //            Name = $"progress_label{i}"
+            //        };
+
+            //        l.Click += LabelClick;
+            //        l.Visible = false;
+
+            //        Controls.Add(l);
+            //        labels[group_num].Add(l);
+            //        _form_resize.AddControlTable(l);
+            //    }
+
+            //    labels[0].ForEach(l => l.Visible = true);
+            //    labels_bar[0].ForeColor = Color.Red;
+
+            //    //_form_resize.GetControlTable(this);
+            //}
+            //else
+            //{
+            //    lblExercise = new Label
+            //    {
+            //        Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
+            //        Text = "100/100",
+            //        //Size = new Size(labelSize, labelSize),
+            //        Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
+            //    };
+
+            //    Controls.Add(lblExercise);
+            //}
         }
 
         // 進捗表示を更新する
         private void ProgressRedrow()
         {
-            labels_bar.ForEach(l => l.ForeColor = Color.Black);
+            labels_bar.ForEach(l => l.BackColor = Color.LightBlue);
 
-            labels_bar[current_label_group].ForeColor = Color.Red;
+            labels_bar[current_label_group].BackColor = Color.Turquoise;
 
             labels.ForEach(l1 => l1.ForEach(l2 => l2.Visible = false));
             labels[current_label_group].ForEach(l => l.Visible = true);
@@ -921,27 +991,6 @@ namespace MiBocaRecuerda
             }
         }
 
-        // 補足情報を表示するときにウィンドウサイズを変える
-        private void CheckedChanged(object o, EventArgs e)
-        {
-            List<CheckBox> cs = new List<CheckBox> { chboxQuizNum, chboxChapterTitle, chboxChapterExample };
-            int cnt = cs.Count(c => c.Checked == true);
-
-            if ((o as CheckBox).Checked)
-            {
-                if (cnt == 1)
-                {
-                    Size = new Size(Size.Width, Size.Height + 70);
-                }
-                return;
-            }
-
-            if (cnt == 0)
-            {
-                Size = new Size(Size.Width, Size.Height - 70);
-            }
-        }
-
         int current_label_group = 0;
 
         private void LabelClick(object sender, EventArgs e)
@@ -976,7 +1025,8 @@ namespace MiBocaRecuerda
             Label l = o as Label;
 
             //l.Font = new Font("メイリオ", 10F, FontStyle.Bold, GraphicsUnit.Point, 128);
-            l.Text = "凸";
+            //l.Text = "Δ";
+            l.BackColor = Color.Turquoise;
         }
 
         private void Label_leave(object o, EventArgs e)
@@ -984,7 +1034,11 @@ namespace MiBocaRecuerda
             Label l = o as Label;
 
             //l.Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            l.Text = "―";
+            //l.Text = "―";
+            if (labels_bar[current_label_group] != l)
+            {
+                l.BackColor = Color.LightBlue;
+            }
         }
 
         #endregion
@@ -1013,13 +1067,13 @@ namespace MiBocaRecuerda
 
             if (res)
             {
-                if (!chboxExercise.Checked) labels[current_label_group][curProgress % 10].Text = "■";
+                if (optionTSMI_progresoVisual.Checked) labels[current_label_group][curProgress % 10].Text = "■";
                 correctAnswerNum++;
             }
             else
             {
-                if (chboxComplete.Checked) return;
-                if (!chboxExercise.Checked) labels[current_label_group][curProgress % 10].Text = "×";
+                if (!optionTSMI_prueba.Checked) return;
+                if (optionTSMI_progresoVisual.Checked) labels[current_label_group][curProgress % 10].Text = "×";
             }
 
             // 進捗ラベルに紐づく解答を追加
@@ -1029,9 +1083,9 @@ namespace MiBocaRecuerda
 
             QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, res));
 
-            if (!chboxExercise.Checked) labels[current_label_group][curProgress % 10].ForeColor = Color.Black;
+            if (optionTSMI_progresoVisual.Checked) labels[current_label_group][curProgress % 10].ForeColor = Color.Black;
 
-            int endQuizNum = chboxExercise.Checked ? QuizFileConfig.MaxQuizNum - 1 : QuizFileConfig.QuizNum - 1;
+            int endQuizNum = optionTSMI_progresoVisual.Checked ? QuizFileConfig.QuizNum - 1 : QuizFileConfig.MaxQuizNum - 1;
 
             // クイズ終了？
             if (curProgress == endQuizNum || curProgress == MaxRow - 1)
@@ -1040,8 +1094,8 @@ namespace MiBocaRecuerda
 
                 btnAnswer.Enabled = false;
 
-                // 問題数と正解問題数が同じで完答モードでないとき
-                if ((endQuizNum + 1 == correctAnswerNum) && !chboxComplete.Checked)
+                // 問題数と正解問題数が同じでpruebaモードのとき
+                if ((endQuizNum + 1 == correctAnswerNum) && optionTSMI_prueba.Checked)
                 //if(true)
                 {
                     DisplayResult("PERFECTO!", 5000);
@@ -1103,7 +1157,7 @@ namespace MiBocaRecuerda
                     DisplayResult("¡Buen trabajo!", 5000);
                 }
 
-                if (chboxResult.Checked)
+                if (optionTSMI_resultados.Checked)
                 {
                     if (resultForm.IsDisposed == false) resultForm.Dispose();
 
@@ -1121,6 +1175,42 @@ namespace MiBocaRecuerda
             ShowQuestion();
         }
 
+        private void optionTSMI_setting_Click(object sender, EventArgs e)
+        {
+            SettingForm s = new SettingForm(ArchivosDeLengua, toolStripQuizFile.Text)
+            {
+                ShowInTaskbar = false,
+                ShowIcon = false
+            };
+
+            if (s.ShowDialog() == DialogResult.OK)
+            {
+                ParseFile();
+                InitQuiz(true);
+            }
+        }
+
+        private void optionTSMI_quizInfo_Click(object sender, EventArgs e)
+        {
+            if (MessageForm_quizInfo.IsDisposed == false) MessageForm_quizInfo.Dispose();
+            if (ws == null) return;
+
+            List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
+            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum, QuizContents[curProgress].ChapterTitle };
+            List<string> quizInfo = new List<string>();
+
+            string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
+
+            quizInfo.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
+
+            MessageForm_quizInfo = new MessageForm(quizInfo, "QuizInfo", MessageForm.TipoDeUbicacion.DERECHA, this)
+            {
+                ShowIcon = false
+            };
+
+            MessageForm_quizInfo.Show();
+        }
+
         // 正解を表示(respuesta)
         private void btnShowAnswer_Click(object sender, EventArgs e)
         {
@@ -1135,21 +1225,6 @@ namespace MiBocaRecuerda
             };
 
             MessageForm_respuesta.Show();
-        }
-
-        private void settingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SettingForm s = new SettingForm(ArchivosDeLengua, toolStripQuizFile.Text)
-            {
-                ShowInTaskbar = false,
-                ShowIcon = false
-            };
-
-            if (s.ShowDialog() == DialogResult.OK)
-            {
-                ParseFile();
-                InitQuiz(true);
-            }
         }
 
         // Traducir
@@ -1171,6 +1246,47 @@ namespace MiBocaRecuerda
             };
 
             MessageForm_traducir.Show();
+        }
+
+        private void optionTSMI_lista_Click(object sender, EventArgs e)
+        {
+            if (resultForm.IsDisposed == false) resultForm.Dispose();
+            if (QuizContents.Count == 0) return;
+
+            List<QuizResult> tmp = new List<QuizResult>();
+
+            foreach (QuizContents qc in QuizContents)
+            {
+                tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
+            }
+
+            tmp = tmp.OrderBy(q => int.Parse(q.QuizNum)).ToList();
+
+            resultForm = new ResultForm(tmp, this)
+            {
+                Text = "Lista de Pruebas",
+                ShowIcon = false
+            };
+
+            resultForm.Show();
+        }
+
+        private void optionTSMI_prueba_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
+        }
+
+        private void optionTSMI_resultados_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
+        }
+
+        private void optionTSMI_progresoVisual_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)

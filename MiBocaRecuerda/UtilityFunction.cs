@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace MiBocaRecuerda
 {
@@ -46,6 +47,31 @@ namespace MiBocaRecuerda
             }
 
             return shuffledList;
+        }
+
+        public static string GenerateXmlTable(List<string> headers, List<string> data)
+        {
+            if (headers == null || data == null || headers.Count != data.Count)
+            {
+                throw new ArgumentException("Headers and data must be non-null and have the same number of elements.");
+            }
+
+            StringBuilder xmlBuilder = new StringBuilder();
+            xmlBuilder.AppendLine("<table>");
+            xmlBuilder.AppendLine("    <tbody>");
+
+            for (int i = 0; i < headers.Count; i++)
+            {
+                xmlBuilder.AppendLine("        <tr>");
+                xmlBuilder.AppendLine($"          <th>{System.Security.SecurityElement.Escape(headers[i])}</th>");
+                xmlBuilder.AppendLine($"          <td>{System.Security.SecurityElement.Escape(data[i])}</td>");
+                xmlBuilder.AppendLine("        </tr>");
+            }
+
+            xmlBuilder.AppendLine("    </tbody>");
+            xmlBuilder.AppendLine("</table>");
+
+            return xmlBuilder.ToString();
         }
     }
 }
