@@ -87,6 +87,116 @@ namespace MiBocaRecuerda
             Text += " [debug]";
 #endif
 
+
+
+
+
+
+
+
+
+
+
+
+            int labelSize = 18;
+
+            labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
+            labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
+
+            labels.ForEach(l1 => l1.ForEach(l2 => { _form_resize.RemoveControlTable(l2); }));
+            labels_bar.ForEach(l1 => _form_resize.RemoveControlTable(l1));
+
+            labels.Clear();
+            labels_bar.Clear();
+            label_info.Clear();
+
+            // グループ切り替え
+            for (int i = 0; i <= 10; i++)
+            {
+                labels.Add(new List<Label>());
+
+                Label l = new Label
+                {
+                    Location = new Point(txtAnswer.Location.X + (i % 10) * (labelSize + 1), txtAnswer.Location.Y + txtAnswer.Size.Height),
+                    //Text = "―",
+                    Size = new Size(labelSize, labelSize / 3),
+                    Font = new Font("メイリオ", 7F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                    Name = $"progress_group_label{i}"
+                };
+
+                //l.BorderStyle = BorderStyle.FixedSingle;
+                l.TextAlign = ContentAlignment.MiddleCenter;
+                l.BackColor = Color.LightBlue;
+
+                l.Click += Label_bar_Click;
+                l.MouseHover += Label_hover;
+                l.MouseLeave += Label_leave;
+
+                Controls.Add(l);
+                labels_bar.Add(l);
+            }
+
+            int group_num = 0;
+
+            // 問題別
+            for (int i = 0; i < 100; i++)
+            {
+                group_num = UtilityFunction.Suelo(i);
+
+                Label l = new Label
+                {
+                    Location = new Point(txtAnswer.Location.X + (i % 10) * (labelSize + 1), txtAnswer.Location.Y + txtAnswer.Size.Height + (labelSize / 3)),
+                    Text = "○",
+                    Size = new Size(labelSize, labelSize),
+                    Font = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                    Name = $"progress_label{i}"
+                };
+
+                l.BorderStyle = BorderStyle.FixedSingle;
+                l.TextAlign = ContentAlignment.MiddleCenter;
+
+                l.Click += LabelClick;
+                l.Visible = false;
+
+                Controls.Add(l);
+                labels[group_num].Add(l);
+            }
+
+            labels[0].ForEach(l => l.Visible = true);
+            labels_bar[0].ForeColor = Color.Red;
+
+            //_form_resize.GetControlTable(this);
+
+            lblExercise = new Label
+            {
+                Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
+                Text = "100/100",
+                //Size = new Size(labelSize, labelSize),
+                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
+            };
+
+            Controls.Add(lblExercise);
+
+            NumericUpDown nud = new NumericUpDown();
+
+            nud.Location = new Point(labels_bar[9].Location.X+50, labels_bar[9].Location.Y);
+            nud.Size = new Size(40,20);
+            nud.Name = "hyper_group";
+
+
+            Controls.Add(nud);
+
+
+
+
+
+
+
+
+
+
+
+
             Load += (o, e) =>
             {
                 //_form_resize._get_initial_size();
@@ -725,117 +835,117 @@ namespace MiBocaRecuerda
         // 進捗表示を作る
         private void CreateQuizProgress()
         {
-            Size labelSize = new Size(15, 15);
-            Size labelSize_bar = new Size(15, 10);
-            Font font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            Font font_bar = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128);
+            //Size labelSize = new Size(15, 15);
+            //Size labelSize_bar = new Size(15, 10);
+            //Font font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
+            //Font font_bar = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128);
 
-            int adj = 0;
+            //int adj = 0;
 
-            //if (labels_bar.Count != 0)
+            ////if (labels_bar.Count != 0)
+            ////{
+            ////    labelSize_bar = labels_bar[0].Size;
+            ////    font_bar = labels_bar[0].Font;
+            ////}
+
+            ////if (labels.Count != 0)
+            ////{
+            ////    Console.WriteLine(labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width);
+
+            ////    adj = labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width;
+
+            ////    labelSize = labels[0][0].Size;
+            ////    font = labels[0][0].Font;
+            ////}
+
+            //labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
+            //labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
+
+            //labels.ForEach(l1 => l1.ForEach(l2 => { _form_resize.RemoveControlTable(l2); }));
+            //labels_bar.ForEach(l1 => _form_resize.RemoveControlTable(l1));
+
+            //labels.Clear();
+            //labels_bar.Clear();
+            //label_info.Clear();
+
+            //if (Controls.Contains(lblExercise))
             //{
-            //    labelSize_bar = labels_bar[0].Size;
-            //    font_bar = labels_bar[0].Font;
+            //    Controls.Remove(lblExercise);
             //}
 
-            //if (labels.Count != 0)
+            //if (optionTSMI_progresoVisual.Checked)
             //{
-            //    Console.WriteLine(labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width);
+            //    for(int i = 0; i <= UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1); i++)
+            //    {
+            //        labels.Add(new List<Label>());
 
-            //    adj = labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width;
+            //        Label l = new Label
+            //        {
+            //            Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width, txtAnswer.Location.Y + txtAnswer.Size.Height),
+            //            Text = "―",
+            //            //Size = new Size(labelSize, labelSize),
+            //            Size = labelSize_bar,
+            //            Font = font_bar,
+            //            Name = $"progress_group_label{i}"
+            //        };
 
-            //    labelSize = labels[0][0].Size;
-            //    font = labels[0][0].Font;
+            //        l.Click += Label_bar_Click;
+            //        l.MouseHover += Label_hover;
+            //        l.MouseLeave += Label_leave;
+
+            //        Controls.Add(l);
+            //        labels_bar.Add(l);
+            //        _form_resize.AddControlTable(l);
+            //    }
+
+            //    int group_num = 0;
+
+            //    for (int i = 0; i < QuizFileConfig.QuizNum; i++)
+            //    {
+            //        group_num = UtilityFunction.Suelo(i);
+
+            //        Label l = new Label
+            //        {
+            //            Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width + adj, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
+            //            Text = "○",
+            //            Size = labelSize,
+            //            Font = font,
+            //            Name = $"progress_label{i}"
+            //        };
+
+            //        l.Click += LabelClick;
+            //        l.Visible = false;
+
+            //        Controls.Add(l);
+            //        labels[group_num].Add(l);
+            //        _form_resize.AddControlTable(l);
+            //    }
+
+            //    labels[0].ForEach(l => l.Visible = true);
+            //    labels_bar[0].ForeColor = Color.Red;
+
+            //    //_form_resize.GetControlTable(this);
             //}
+            //else
+            //{
+            //    lblExercise = new Label
+            //    {
+            //        Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
+            //        Text = "100/100",
+            //        //Size = new Size(labelSize, labelSize),
+            //        Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
+            //    };
 
-            labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
-            labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
-
-            labels.ForEach(l1 => l1.ForEach(l2 => { _form_resize.RemoveControlTable(l2); }));
-            labels_bar.ForEach(l1 => _form_resize.RemoveControlTable(l1));
-
-            labels.Clear();
-            labels_bar.Clear();
-            label_info.Clear();
-
-            if (Controls.Contains(lblExercise))
-            {
-                Controls.Remove(lblExercise);
-            }
-
-            if (optionTSMI_progresoVisual.Checked)
-            {
-                for(int i = 0; i <= UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1); i++)
-                {
-                    labels.Add(new List<Label>());
-
-                    Label l = new Label
-                    {
-                        Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width, txtAnswer.Location.Y + txtAnswer.Size.Height),
-                        Text = "―",
-                        //Size = new Size(labelSize, labelSize),
-                        Size = labelSize_bar,
-                        Font = font_bar,
-                        Name = $"progress_group_label{i}"
-                    };
-
-                    l.Click += Label_bar_Click;
-                    l.MouseHover += Label_hover;
-                    l.MouseLeave += Label_leave;
-
-                    Controls.Add(l);
-                    labels_bar.Add(l);
-                    _form_resize.AddControlTable(l);
-                }
-
-                int group_num = 0;
-
-                for (int i = 0; i < QuizFileConfig.QuizNum; i++)
-                {
-                    group_num = UtilityFunction.Suelo(i);
-
-                    Label l = new Label
-                    {
-                        Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width + adj, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
-                        Text = "○",
-                        Size = labelSize,
-                        Font = font,
-                        Name = $"progress_label{i}"
-                    };
-
-                    l.Click += LabelClick;
-                    l.Visible = false;
-
-                    Controls.Add(l);
-                    labels[group_num].Add(l);
-                    _form_resize.AddControlTable(l);
-                }
-
-                labels[0].ForEach(l => l.Visible = true);
-                labels_bar[0].ForeColor = Color.Red;
-
-                //_form_resize.GetControlTable(this);
-            }
-            else
-            {
-                lblExercise = new Label
-                {
-                    Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
-                    Text = "100/100",
-                    //Size = new Size(labelSize, labelSize),
-                    Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
-                };
-
-                Controls.Add(lblExercise);
-            }
+            //    Controls.Add(lblExercise);
+            //}
         }
 
         // 進捗表示を更新する
         private void ProgressRedrow()
         {
-            labels_bar.ForEach(l => l.ForeColor = Color.Black);
+            labels_bar.ForEach(l => l.BackColor = Color.LightBlue);
 
-            labels_bar[current_label_group].ForeColor = Color.Red;
+            labels_bar[current_label_group].BackColor = Color.Turquoise;
 
             labels.ForEach(l1 => l1.ForEach(l2 => l2.Visible = false));
             labels[current_label_group].ForEach(l => l.Visible = true);
@@ -915,7 +1025,8 @@ namespace MiBocaRecuerda
             Label l = o as Label;
 
             //l.Font = new Font("メイリオ", 10F, FontStyle.Bold, GraphicsUnit.Point, 128);
-            l.Text = "凸";
+            //l.Text = "Δ";
+            l.BackColor = Color.Turquoise;
         }
 
         private void Label_leave(object o, EventArgs e)
@@ -923,7 +1034,11 @@ namespace MiBocaRecuerda
             Label l = o as Label;
 
             //l.Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            l.Text = "―";
+            //l.Text = "―";
+            if (labels_bar[current_label_group] != l)
+            {
+                l.BackColor = Color.LightBlue;
+            }
         }
 
         #endregion
