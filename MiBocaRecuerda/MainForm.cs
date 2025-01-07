@@ -87,7 +87,7 @@ namespace MiBocaRecuerda
             Text += " [debug]";
 #endif
 
-
+            RegisterEvent();
 
 
 
@@ -197,15 +197,6 @@ namespace MiBocaRecuerda
 
 
 
-            Load += (o, e) =>
-            {
-                //_form_resize._get_initial_size();
-            };
-
-            SizeChanged += (o, e) =>
-            {
-                _form_resize._resize();
-            };
 
             lblResult.Visible = false;
             label1.Visible = false;
@@ -219,279 +210,6 @@ namespace MiBocaRecuerda
             txtAnswer.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtQuiz.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtConsole.KeyDown += TextBoxKeyDown_AvoidBeep;
-
-            txtAnswer.KeyPress += (o, e) =>
-            {
-                // シフトキー（Shift）が押されているかを確認
-                bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
-
-                bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
-
-                bool escPressed = e.KeyChar == (char)Keys.Escape;
-
-                // エンターキー（Enter）が押されているかを確認
-                bool enterPressed = e.KeyChar == (char)Keys.Enter;
-
-                // シフトキーとエンターキーが同時に押されたかを確認
-                if (shiftPressed && enterPressed)
-                {
-                    e.Handled = true;
-                    btnAnswer.PerformClick();
-                }
-
-                // CTRLキーとエンターキーが同時に押されたかを確認
-                if (ctrlPressed && enterPressed)
-                {
-                    e.Handled = true;
-                    btnTranslate.PerformClick();
-                }
-
-                if (escPressed)
-                {
-                    HideText();
-
-                    e.Handled = true;
-                }
-
-                switch (e.KeyChar)
-                {
-                    case '\'':
-                        isAcento = true;
-                        e.Handled = true;
-                        break;
-                    case '"':
-                        isDieresis = true;
-                        e.Handled = true;
-                        break;
-                    case 'a':
-                    case 'e':
-                    case 'i':
-                    case 'o':
-                    case 'u':
-                    case 'A':
-                    case 'E':
-                    case 'I':
-                    case 'O':
-                    case 'U':
-                        if (isAcento)
-                        {
-                            e.KeyChar = letra_acento[e.KeyChar];
-                        }
-                        else if (isDieresis)
-                        {
-                            e.KeyChar = letra_dieresis[e.KeyChar];
-                        }
-                        break;
-                    case ';':
-                        e.KeyChar = 'ñ';
-                        break;
-                    case ':':
-                        e.KeyChar = 'Ñ';
-                        break;
-                    case '<':
-                        e.KeyChar = ';';
-                        break;
-                    case '>':
-                        e.KeyChar = ':';
-                        break;
-                }
-
-                switch (e.KeyChar)
-                {
-                    case '\'':
-                    case '"':
-                        break;
-                    default:
-                        isAcento = false;
-                        isDieresis = false;
-                        break;
-                }
-            };
-
-            KeyDown += (o, e) =>
-            {
-                if (IsKeyDown) return;
-
-                bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
-                bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
-
-                if (ctrlPressed)
-                {
-                    switch (e.KeyCode)
-                    {
-                        case Keys.R:
-                            // Respuesta
-                            IsKeyDown = true;
-                            btnShowAnswer.PerformClick();
-                            break;
-                        case Keys.Q:
-                            // Empezar
-                            IsKeyDown = true;
-                            InitQuiz(true);
-                            break;
-                        case Keys.N:
-                            if (shiftPressed) MoveQuiz(true);
-                            break;
-                        case Keys.B:
-                            if (shiftPressed)  MoveQuiz(false);
-                            break;
-                    }
-                }
-                else
-                {
-                    if(e.KeyCode == Keys.F1)
-                    {
-                        btnTranslate.PerformClick();
-                    }
-                }
-            };
-
-            KeyUp += (o, e) =>
-            {
-                IsKeyDown = false;
-            };
-
-            optionTSMI_prueba.CheckedChanged += (o, e) =>
-            {
-                if (!IsLoaded) return;
-                PruebaChallengeCount = -1;
-                InitQuiz(true);
-            };
-
-            optionTSMI_progresoVisual.CheckedChanged += (o, e) =>
-            {
-                if (!IsLoaded) return;
-                InitQuiz(true);
-            };
-
-            btnShowAnswer.MouseDown += (o, e) =>
-            {
-                if (e.Button == MouseButtons.Right)
-                {
-                    InitQuiz(true);
-                }
-            };
-
-            startToolStripMenuItem.MouseDown += (o, e) =>
-            {
-                if (e.Button == MouseButtons.Right)
-                {
-                    HideText();
-                }
-            };
-
-            toolStripQuizFile.MouseDown += (o, e) =>
-            {
-                string file = (o as ToolStripComboBox).SelectedItem.ToString();
-                string path = "";
-
-                switch (e.Button)
-                {
-                    case MouseButtons.Right:
-                        // 進捗
-                        path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{file}_p.csv";
-
-                        break;
-                    case MouseButtons.Middle:
-                        // DB
-                        path = $"{SettingManager.RomConfig.QuizFilePath}\\{file}.xlsx";
-
-                        break;
-                }
-
-                if (File.Exists(path))
-                {
-                    System.Diagnostics.Process.Start(path);
-                }
-            };
-
-            siguienteToolStripMenuItem.MouseDown += (o, e) =>
-            {
-                if (ws == null) return;
-
-                switch (e.Button)
-                {
-                    case MouseButtons.Middle:
-                        int chapter = ws.LastRowUsed().RowNumber() / 10;
-
-                        string str = "";
-
-                        for (int i = 0; i < chapter; i++)
-                        {
-                            str += $"{i + 1}:{ws.Cell(i * 10 + 1, 4).Value.ToString()}\r\n";
-                        }
-
-                        MessageBox.Show(str);
-
-                        break;
-                    case MouseButtons.Right:
-                        MoveQuiz(false);
-                        break;
-                }
-            };
-
-            optionTSMI_lista.MouseDown += (o, e) =>
-            {
-                switch (e.Button)
-                {
-                    case MouseButtons.Right:
-
-                        if (resultForm.IsDisposed == false) resultForm.Dispose();
-                        if (QuizContents.Count == 0) return;
-
-                        List<QuizResult> tmp = new List<QuizResult>();
-
-                        foreach (QuizContents qc in QuizContents)
-                        {
-                            tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
-                        }
-
-                        resultForm = new ResultForm(tmp, this)
-                        {
-                            Text = "Lista de Pruebas",
-                            ShowIcon = false
-                        };
-
-                        resultForm.Show();
-
-                        break;
-                }
-            };
-
-            Shown += (o, e) =>
-            {
-                IsLoaded = true;
-            };
-
-            Load += (o, e) =>
-            {
-                KeyPreview = true;
-
-                //ToolTipを作成する
-                ToolTip tt = new ToolTip
-                {
-                    //ToolTipが表示されるまでの時間
-                    InitialDelay = 10,
-                    //ToolTipが表示されている時に、別のToolTipを表示するまでの時間
-                    ReshowDelay = 10,
-                    //ToolTipを表示する時間
-                    AutoPopDelay = 10000,
-                    //フォームがアクティブでない時でもToolTipを表示する
-                    ShowAlways = true
-                };
-
-                tt.SetToolTip(btnTranslate, "traducción");
-            };
-
-            FormClosing += (o, e) =>
-            {
-                SettingManager.InputCache.Complete = optionTSMI_prueba.Checked;
-                SettingManager.InputCache.Exercise = optionTSMI_progresoVisual.Checked;
-                SettingManager.InputCache.Result = optionTSMI_resultados.Checked;
-                SettingManager.InputCache.QuizFilePathIndex = toolStripQuizFile.SelectedIndex;
-
-                CommonFunction.XmlWrite(SettingManager.InputCache, "cache.xml");
-            };
 
             //Point loc = chboxComplete.Location;
             //int cw = 20;
@@ -1041,6 +759,304 @@ namespace MiBocaRecuerda
             }
         }
 
+        private void RegisterEvent()
+        {
+            #region Form
+
+            Load += (o, e) =>
+            {
+                //_form_resize._get_initial_size();
+            };
+
+            SizeChanged += (o, e) =>
+            {
+                _form_resize._resize();
+            };
+
+            KeyDown += (o, e) =>
+            {
+                if (IsKeyDown) return;
+
+                bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
+                bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
+
+                if (ctrlPressed)
+                {
+                    switch (e.KeyCode)
+                    {
+                        case Keys.R:
+                            // Respuesta
+                            IsKeyDown = true;
+                            btnShowAnswer.PerformClick();
+                            break;
+                        case Keys.Q:
+                            // Empezar
+                            IsKeyDown = true;
+                            InitQuiz(true);
+                            break;
+                        case Keys.N:
+                            if (shiftPressed) MoveQuiz(true);
+                            break;
+                        case Keys.B:
+                            if (shiftPressed) MoveQuiz(false);
+                            break;
+                    }
+                }
+                else
+                {
+                    if (e.KeyCode == Keys.F1)
+                    {
+                        btnTranslate.PerformClick();
+                    }
+                }
+            };
+
+            KeyUp += (o, e) =>
+            {
+                IsKeyDown = false;
+            };
+
+            Shown += (o, e) =>
+            {
+                IsLoaded = true;
+            };
+
+            Load += (o, e) =>
+            {
+                KeyPreview = true;
+
+                //ToolTipを作成する
+                ToolTip tt = new ToolTip
+                {
+                    //ToolTipが表示されるまでの時間
+                    InitialDelay = 10,
+                    //ToolTipが表示されている時に、別のToolTipを表示するまでの時間
+                    ReshowDelay = 10,
+                    //ToolTipを表示する時間
+                    AutoPopDelay = 10000,
+                    //フォームがアクティブでない時でもToolTipを表示する
+                    ShowAlways = true
+                };
+
+                tt.SetToolTip(btnTranslate, "traducción");
+            };
+
+            FormClosing += (o, e) =>
+            {
+                SettingManager.InputCache.Complete = optionTSMI_prueba.Checked;
+                SettingManager.InputCache.Exercise = optionTSMI_progresoVisual.Checked;
+                SettingManager.InputCache.Result = optionTSMI_resultados.Checked;
+                SettingManager.InputCache.QuizFilePathIndex = toolStripQuizFile.SelectedIndex;
+
+                CommonFunction.XmlWrite(SettingManager.InputCache, "cache.xml");
+            };
+
+            #endregion
+
+            #region OtherControl
+
+            txtAnswer.KeyPress += (o, e) =>
+            {
+                // シフトキー（Shift）が押されているかを確認
+                bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
+
+                bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
+
+                bool escPressed = e.KeyChar == (char)Keys.Escape;
+
+                // エンターキー（Enter）が押されているかを確認
+                bool enterPressed = e.KeyChar == (char)Keys.Enter;
+
+                // シフトキーとエンターキーが同時に押されたかを確認
+                if (shiftPressed && enterPressed)
+                {
+                    e.Handled = true;
+                    btnAnswer.PerformClick();
+                }
+
+                // CTRLキーとエンターキーが同時に押されたかを確認
+                if (ctrlPressed && enterPressed)
+                {
+                    e.Handled = true;
+                    btnTranslate.PerformClick();
+                }
+
+                if (escPressed)
+                {
+                    HideText();
+
+                    e.Handled = true;
+                }
+
+                switch (e.KeyChar)
+                {
+                    case '\'':
+                        isAcento = true;
+                        e.Handled = true;
+                        break;
+                    case '"':
+                        isDieresis = true;
+                        e.Handled = true;
+                        break;
+                    case 'a':
+                    case 'e':
+                    case 'i':
+                    case 'o':
+                    case 'u':
+                    case 'A':
+                    case 'E':
+                    case 'I':
+                    case 'O':
+                    case 'U':
+                        if (isAcento)
+                        {
+                            e.KeyChar = letra_acento[e.KeyChar];
+                        }
+                        else if (isDieresis)
+                        {
+                            e.KeyChar = letra_dieresis[e.KeyChar];
+                        }
+                        break;
+                    case ';':
+                        e.KeyChar = 'ñ';
+                        break;
+                    case ':':
+                        e.KeyChar = 'Ñ';
+                        break;
+                    case '<':
+                        e.KeyChar = ';';
+                        break;
+                    case '>':
+                        e.KeyChar = ':';
+                        break;
+                }
+
+                switch (e.KeyChar)
+                {
+                    case '\'':
+                    case '"':
+                        break;
+                    default:
+                        isAcento = false;
+                        isDieresis = false;
+                        break;
+                }
+            };
+
+            btnShowAnswer.MouseDown += (o, e) =>
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    InitQuiz(true);
+                }
+            };
+
+            #endregion
+
+            #region TSMI
+
+            optionTSMI_prueba.CheckedChanged += (o, e) =>
+            {
+                if (!IsLoaded) return;
+                PruebaChallengeCount = -1;
+                InitQuiz(true);
+            };
+
+            optionTSMI_progresoVisual.CheckedChanged += (o, e) =>
+            {
+                if (!IsLoaded) return;
+                InitQuiz(true);
+            };
+
+            startToolStripMenuItem.MouseDown += (o, e) =>
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    HideText();
+                }
+            };
+
+            toolStripQuizFile.MouseDown += (o, e) =>
+            {
+                string file = (o as ToolStripComboBox).SelectedItem.ToString();
+                string path = "";
+
+                switch (e.Button)
+                {
+                    case MouseButtons.Right:
+                        // 進捗
+                        path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{file}_p.csv";
+
+                        break;
+                    case MouseButtons.Middle:
+                        // DB
+                        path = $"{SettingManager.RomConfig.QuizFilePath}\\{file}.xlsx";
+
+                        break;
+                }
+
+                if (File.Exists(path))
+                {
+                    System.Diagnostics.Process.Start(path);
+                }
+            };
+
+            siguienteToolStripMenuItem.MouseDown += (o, e) =>
+            {
+                if (ws == null) return;
+
+                switch (e.Button)
+                {
+                    case MouseButtons.Middle:
+                        int chapter = ws.LastRowUsed().RowNumber() / 10;
+
+                        string str = "";
+
+                        for (int i = 0; i < chapter; i++)
+                        {
+                            str += $"{i + 1}:{ws.Cell(i * 10 + 1, 4).Value.ToString()}\r\n";
+                        }
+
+                        MessageBox.Show(str);
+
+                        break;
+                    case MouseButtons.Right:
+                        MoveQuiz(false);
+                        break;
+                }
+            };
+
+            optionTSMI_lista.MouseDown += (o, e) =>
+            {
+                switch (e.Button)
+                {
+                    case MouseButtons.Right:
+
+                        if (resultForm.IsDisposed == false) resultForm.Dispose();
+                        if (QuizContents.Count == 0) return;
+
+                        List<QuizResult> tmp = new List<QuizResult>();
+
+                        foreach (QuizContents qc in QuizContents)
+                        {
+                            tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
+                        }
+
+                        resultForm = new ResultForm(tmp, this)
+                        {
+                            Text = "Lista de Pruebas",
+                            ShowIcon = false
+                        };
+
+                        resultForm.Show();
+
+                        break;
+                }
+            };
+
+            #endregion
+        }
+
         #endregion
 
         #region イベント
@@ -1175,42 +1191,6 @@ namespace MiBocaRecuerda
             ShowQuestion();
         }
 
-        private void optionTSMI_setting_Click(object sender, EventArgs e)
-        {
-            SettingForm s = new SettingForm(ArchivosDeLengua, toolStripQuizFile.Text)
-            {
-                ShowInTaskbar = false,
-                ShowIcon = false
-            };
-
-            if (s.ShowDialog() == DialogResult.OK)
-            {
-                ParseFile();
-                InitQuiz(true);
-            }
-        }
-
-        private void optionTSMI_quizInfo_Click(object sender, EventArgs e)
-        {
-            if (MessageForm_quizInfo.IsDisposed == false) MessageForm_quizInfo.Dispose();
-            if (ws == null) return;
-
-            List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
-            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum, QuizContents[curProgress].ChapterTitle };
-            List<string> quizInfo = new List<string>();
-
-            string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
-
-            quizInfo.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
-
-            MessageForm_quizInfo = new MessageForm(quizInfo, "QuizInfo", MessageForm.TipoDeUbicacion.DERECHA, this)
-            {
-                ShowIcon = false
-            };
-
-            MessageForm_quizInfo.Show();
-        }
-
         // 正解を表示(respuesta)
         private void btnShowAnswer_Click(object sender, EventArgs e)
         {
@@ -1247,6 +1227,8 @@ namespace MiBocaRecuerda
 
             MessageForm_traducir.Show();
         }
+
+        #region TSMI
 
         private void optionTSMI_lista_Click(object sender, EventArgs e)
         {
@@ -1298,6 +1280,44 @@ namespace MiBocaRecuerda
         {
             MoveQuiz(true);
         }
+
+        private void optionTSMI_setting_Click(object sender, EventArgs e)
+        {
+            SettingForm s = new SettingForm(ArchivosDeLengua, toolStripQuizFile.Text)
+            {
+                ShowInTaskbar = false,
+                ShowIcon = false
+            };
+
+            if (s.ShowDialog() == DialogResult.OK)
+            {
+                ParseFile();
+                InitQuiz(true);
+            }
+        }
+
+        private void optionTSMI_quizInfo_Click(object sender, EventArgs e)
+        {
+            if (MessageForm_quizInfo.IsDisposed == false) MessageForm_quizInfo.Dispose();
+            if (ws == null) return;
+
+            List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
+            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum, QuizContents[curProgress].ChapterTitle };
+            List<string> quizInfo = new List<string>();
+
+            string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
+
+            quizInfo.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
+
+            MessageForm_quizInfo = new MessageForm(quizInfo, "QuizInfo", MessageForm.TipoDeUbicacion.DERECHA, this)
+            {
+                ShowIcon = false
+            };
+
+            MessageForm_quizInfo.Show();
+        }
+
+        #endregion
 
         #endregion
     }
