@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <QuizFileConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <MinChapter>16</MinChapter>
-  <MaxChapter>16</MaxChapter>
+  <MinChapter>19</MinChapter>
+  <MaxChapter>19</MaxChapter>
   <QuizNum>10</QuizNum>
   <Capital>true</Capital>
   <ComaPunto>true</ComaPunto>

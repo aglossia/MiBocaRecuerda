@@ -16,11 +16,24 @@ namespace MiBocaRecuerda
     {
         private IXLWorksheet ws;
         private CoreProcess CoreProcess = new CoreProcess();
-        List<List<Label>> labels = new List<List<Label>>();
-        List<Label> labels_bar = new List<Label>();
-        List<Tuple<List<string>, string>> label_info = new List<Tuple<List<string>, string>>();
+        List<Label> label_progress = new List<Label>();
+        List<Label> label_bar = new List<Label>();
+        NumericUpDown nudProgress;
+        List<List<int>> progress_state = new List<List<int>>();
+        List<string> respuestas = new List<string>();
 
-        Label lblExercise;
+        Color colorNeutral = Color.LightBlue;
+        Color colorHover = Color.OrangeRed;
+        Color colorCurrentGroup = Color.Turquoise;
+        Color colorOnProgress = Color.Red;
+        Color colorOffProgress = Color.Black;
+
+        string progressStateCharacter_Neutral = "○";
+        string progressStateCharacter_Correct = "■";
+        string progressStateCharacter_Incorrect = "×";
+        string progressStateCharacter_CurrentQuiz = "★";
+
+        Label lblNumericProgress;
 
         ResultForm resultForm = new ResultForm();
         MessageForm MessageForm_respuesta = new MessageForm();
@@ -48,7 +61,7 @@ namespace MiBocaRecuerda
         // 現在の問題のインデックス
         int curProgress = -1;
 
-        int PruebaChallengeCount = 0;
+        int PruebaChallengeCount = -1;
 
         bool isAcento = false;
         bool isDieresis = false;
@@ -89,32 +102,13 @@ namespace MiBocaRecuerda
 
             RegisterEvent();
 
-
-
-
-
-
-
-
-
+            #region デザイナを使わないイベント登録
 
             int labelSize = 18;
-
-            labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
-            labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
-
-            labels.ForEach(l1 => l1.ForEach(l2 => { _form_resize.RemoveControlTable(l2); }));
-            labels_bar.ForEach(l1 => _form_resize.RemoveControlTable(l1));
-
-            labels.Clear();
-            labels_bar.Clear();
-            label_info.Clear();
 
             // グループ切り替え
             for (int i = 0; i <= 10; i++)
             {
-                labels.Add(new List<Label>());
-
                 Label l = new Label
                 {
                     Location = new Point(txtAnswer.Location.X + (i % 10) * (labelSize + 1), txtAnswer.Location.Y + txtAnswer.Size.Height),
@@ -126,82 +120,71 @@ namespace MiBocaRecuerda
 
                 //l.BorderStyle = BorderStyle.FixedSingle;
                 l.TextAlign = ContentAlignment.MiddleCenter;
-                l.BackColor = Color.LightBlue;
+                l.BackColor = colorNeutral;
+                l.Visible = false;
 
                 l.Click += Label_bar_Click;
                 l.MouseHover += Label_hover;
                 l.MouseLeave += Label_leave;
 
                 Controls.Add(l);
-                labels_bar.Add(l);
+                label_bar.Add(l);
             }
 
-            int group_num = 0;
-
             // 問題別
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
-                group_num = UtilityFunction.Suelo(i);
-
                 Label l = new Label
                 {
                     Location = new Point(txtAnswer.Location.X + (i % 10) * (labelSize + 1), txtAnswer.Location.Y + txtAnswer.Size.Height + (labelSize / 3)),
-                    Text = "○",
+                    //Text = progressStateCharacter_Neutral,
                     Size = new Size(labelSize, labelSize),
-                    Font = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                    Font = new Font("MeiryoKe_Console", 9F, FontStyle.Regular, GraphicsUnit.Point, 128),
                     Name = $"progress_label{i}"
                 };
 
-                l.BorderStyle = BorderStyle.FixedSingle;
+                //l.BorderStyle = BorderStyle.FixedSingle;
                 l.TextAlign = ContentAlignment.MiddleCenter;
 
                 l.Click += LabelClick;
                 l.Visible = false;
 
                 Controls.Add(l);
-                labels[group_num].Add(l);
+                label_progress.Add(l);
             }
 
-            labels[0].ForEach(l => l.Visible = true);
-            labels_bar[0].ForeColor = Color.Red;
-
-            //_form_resize.GetControlTable(this);
-
-            lblExercise = new Label
+            lblNumericProgress = new Label
             {
                 Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
-                Text = "100/100",
+                Text = "1000/1000",
                 //Size = new Size(labelSize, labelSize),
-                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
+                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                Visible = false,
+                Name = "NumericProgress"
             };
 
-            Controls.Add(lblExercise);
+            Controls.Add(lblNumericProgress);
 
-            NumericUpDown nud = new NumericUpDown();
+            nudProgress = new NumericUpDown();
 
-            nud.Location = new Point(labels_bar[9].Location.X+50, labels_bar[9].Location.Y);
-            nud.Size = new Size(40,20);
-            nud.Name = "hyper_group";
+            nudProgress.Location = new Point(label_bar[9].Location.X + 50, label_bar[9].Location.Y);
+            nudProgress.Size = new Size(40, 20);
+            nudProgress.Name = "hyper_group";
+            nudProgress.Minimum = 0;
+            nudProgress.Visible = false;
 
+            nudProgress.ValueChanged += nud_ValueChanged;
 
-            Controls.Add(nud);
+            Controls.Add(nudProgress);
 
-
-
-
-
-
-
-
-
-
-
-
+            #endregion
 
             lblResult.Visible = false;
             label1.Visible = false;
             btnAnswer.Enabled = false;
             lbl_PruebaChallengeCount.Visible = false;
+            txtQuiz.ReadOnly = true;
+            txtQuiz.BackColor = txtAnswer.BackColor;
 
             resultForm.Dispose();
             MessageForm_respuesta.Dispose();
@@ -210,13 +193,6 @@ namespace MiBocaRecuerda
             txtAnswer.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtQuiz.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtConsole.KeyDown += TextBoxKeyDown_AvoidBeep;
-
-            //Point loc = chboxComplete.Location;
-            //int cw = 20;
-
-            //chboxExercise.Location = new Point(loc.X + cw, loc.Y);
-            //chboxResult.Location = new Point(loc.X + cw * 2, loc.Y);
-            //btnTranslate.Location = new Point(loc.X + cw * 6, loc.Y);
 
             _form_resize = new ClassResize(this);
 
@@ -393,14 +369,12 @@ namespace MiBocaRecuerda
             if (manual) txtConsole.Text = "";
             curProgress = -1;
             correctAnswerNum = 0;
-            current_label_group = 0;
             QuizResult.Clear();
             QuizContents.Clear();
+            respuestas.Clear();
 
             // 進捗表示作成
             CreateQuizProgress();
-
-            labels.ForEach(l1 => l1.ForEach(l2 => l2.Text = "○"));
 
             RefreshDisplay();
 
@@ -465,8 +439,6 @@ namespace MiBocaRecuerda
             // pruebaモードのとき
             if (optionTSMI_prueba.Checked)
             {
-                //Text += " prueba ";
-
                 // 練習が1章だけならPRUEBA回数を表示する
                 if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
                 {
@@ -517,20 +489,17 @@ namespace MiBocaRecuerda
             // 現在の問題のインデックスを進める
             curProgress++;
 
-            // 現在の問題のインデックスから進捗ラベルのどこのグループに属するかを算出
-            current_label_group = UtilityFunction.Suelo(curProgress);
-
-            if (!optionTSMI_progresoVisual.Checked)
+            // 進捗ビジュアルモード
+            if (optionTSMI_progresoVisual.Checked)
             {
-                int totalNum = QuizFileConfig.MaxQuizNum > MaxRow ? MaxRow : QuizFileConfig.MaxQuizNum;
-                lblExercise.Text = $"{curProgress + 1}/{totalNum}";
+                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = 3;
+
+                ProgressRedrow(UtilityFunction.GetNDigit(curProgress, 2));
             }
             else
             {
-                labels[current_label_group][curProgress % 10].ForeColor = Color.Red;
-                labels[current_label_group][curProgress % 10].Text = "★";
-
-                ProgressRedrow();
+                int totalNum = QuizFileConfig.MaxQuizNum > MaxRow ? MaxRow : QuizFileConfig.MaxQuizNum;
+                lblNumericProgress.Text = $"{curProgress + 1}/{QuizFileConfig.QuizNum}";
             }
 
             txtQuiz.Text = QuizContents[curProgress].Quiz;
@@ -553,120 +522,84 @@ namespace MiBocaRecuerda
         // 進捗表示を作る
         private void CreateQuizProgress()
         {
-            //Size labelSize = new Size(15, 15);
-            //Size labelSize_bar = new Size(15, 10);
-            //Font font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            //Font font_bar = new Font("メイリオ", 8F, FontStyle.Regular, GraphicsUnit.Point, 128);
+            // 進捗ビジュアルモード
+            if (optionTSMI_progresoVisual.Checked)
+            {
+                lblNumericProgress.Visible = false;
 
-            //int adj = 0;
+                current_bar_index = 0;
+                label_bar[0].BackColor = colorCurrentGroup;
 
-            ////if (labels_bar.Count != 0)
-            ////{
-            ////    labelSize_bar = labels_bar[0].Size;
-            ////    font_bar = labels_bar[0].Font;
-            ////}
+                int nudSize = UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1, 100);
 
-            ////if (labels.Count != 0)
-            ////{
-            ////    Console.WriteLine(labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width);
+                nudProgress.Maximum = nudSize;
+                nudProgress.Visible = nudSize == 0 ? false : true;
 
-            ////    adj = labels[0][1].Location.X - labels[0][0].Location.X - labels[0][0].Width;
+                progress_state = new List<List<int>>(
+                        new List<int>[UtilityFunction.Techo(QuizFileConfig.QuizNum, 10)]
+                            .Select(_ => new List<int>(new int[10]))
+                    );
 
-            ////    labelSize = labels[0][0].Size;
-            ////    font = labels[0][0].Font;
-            ////}
-
-            //labels.ForEach(l1 => l1.ForEach(l2 => { if (Controls.Contains(l2)) Controls.Remove(l2); }));
-            //labels_bar.ForEach(l1 => { if (Controls.Contains(l1)) Controls.Remove(l1); });
-
-            //labels.ForEach(l1 => l1.ForEach(l2 => { _form_resize.RemoveControlTable(l2); }));
-            //labels_bar.ForEach(l1 => _form_resize.RemoveControlTable(l1));
-
-            //labels.Clear();
-            //labels_bar.Clear();
-            //label_info.Clear();
-
-            //if (Controls.Contains(lblExercise))
-            //{
-            //    Controls.Remove(lblExercise);
-            //}
-
-            //if (optionTSMI_progresoVisual.Checked)
-            //{
-            //    for(int i = 0; i <= UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1); i++)
-            //    {
-            //        labels.Add(new List<Label>());
-
-            //        Label l = new Label
-            //        {
-            //            Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width, txtAnswer.Location.Y + txtAnswer.Size.Height),
-            //            Text = "―",
-            //            //Size = new Size(labelSize, labelSize),
-            //            Size = labelSize_bar,
-            //            Font = font_bar,
-            //            Name = $"progress_group_label{i}"
-            //        };
-
-            //        l.Click += Label_bar_Click;
-            //        l.MouseHover += Label_hover;
-            //        l.MouseLeave += Label_leave;
-
-            //        Controls.Add(l);
-            //        labels_bar.Add(l);
-            //        _form_resize.AddControlTable(l);
-            //    }
-
-            //    int group_num = 0;
-
-            //    for (int i = 0; i < QuizFileConfig.QuizNum; i++)
-            //    {
-            //        group_num = UtilityFunction.Suelo(i);
-
-            //        Label l = new Label
-            //        {
-            //            Location = new Point(txtAnswer.Location.X + (i % 10) * labelSize.Width + adj, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
-            //            Text = "○",
-            //            Size = labelSize,
-            //            Font = font,
-            //            Name = $"progress_label{i}"
-            //        };
-
-            //        l.Click += LabelClick;
-            //        l.Visible = false;
-
-            //        Controls.Add(l);
-            //        labels[group_num].Add(l);
-            //        _form_resize.AddControlTable(l);
-            //    }
-
-            //    labels[0].ForEach(l => l.Visible = true);
-            //    labels_bar[0].ForeColor = Color.Red;
-
-            //    //_form_resize.GetControlTable(this);
-            //}
-            //else
-            //{
-            //    lblExercise = new Label
-            //    {
-            //        Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
-            //        Text = "100/100",
-            //        //Size = new Size(labelSize, labelSize),
-            //        Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128)
-            //    };
-
-            //    Controls.Add(lblExercise);
-            //}
+                ProgressRedrow(0);
+            }
+            else
+            {
+                label_progress.ForEach(l1 => l1.Visible = false);
+                label_bar.ForEach(l1 => l1.Visible = false);
+                nudProgress.Visible = false;
+                lblNumericProgress.Visible = true;
+            }
         }
 
         // 進捗表示を更新する
-        private void ProgressRedrow()
+        private void ProgressRedrow(int bar_index)
         {
-            labels_bar.ForEach(l => l.BackColor = Color.LightBlue);
+            current_bar_index = bar_index;
 
-            labels_bar[current_label_group].BackColor = Color.Turquoise;
+            // hyper group(100~)とbar index(10の位)の差をとって進捗ラベルをどこまで表示するか
+            int progSize = QuizFileConfig.QuizNum - ((int)nudProgress.Value * 100 + bar_index * 10);
 
-            labels.ForEach(l1 => l1.ForEach(l2 => l2.Visible = false));
-            labels[current_label_group].ForEach(l => l.Visible = true);
+            // hyper groupが最上位にいっているかを調べる
+            int barSize = UtilityFunction.Techo(QuizFileConfig.QuizNum - ((int)nudProgress.Value * 100), 10);
+
+            // 進捗ラベルを指定箇所まで表示する
+            label_progress.Select((label, index) => new { label, index })
+                        .ToList()
+                        .ForEach(item => item.label.Visible = item.index < progSize);
+
+            // バーラベルを指定箇所まで表示する
+            label_bar.Select((label, index) => new { label, index })
+                        .ToList()
+                        .ForEach(item => item.label.Visible = item.index < barSize);
+
+            // バーラベルを選択したやつは選択色に変えてそれ以外は未選択色
+            label_bar.Select((label, index) => new { label, index })
+                      .ToList()
+                      .ForEach(item => item.label.BackColor = (current_bar_index != item.index) ? Color.LightBlue : Color.Turquoise);
+
+            string chara = "";
+
+            for (int cnt = 0; cnt < 10; cnt++)
+            {
+                switch (progress_state[(int)nudProgress.Value * 10 + current_bar_index][cnt])
+                {
+                    case 0:
+                        chara = progressStateCharacter_Neutral;
+                        break;
+                    case 1:
+                        chara = progressStateCharacter_Correct;
+                        break;
+                    case 2:
+                        chara = progressStateCharacter_Incorrect;
+                        break;
+                    case 3:
+                        chara = progressStateCharacter_CurrentQuiz;
+                        break;
+                }
+
+                label_progress[cnt].Text = chara;
+                label_progress[cnt].ForeColor = chara == progressStateCharacter_CurrentQuiz ? colorOnProgress : colorOffProgress;
+            }
         }
 
         // Siguiente制御
@@ -709,17 +642,19 @@ namespace MiBocaRecuerda
             }
         }
 
-        int current_label_group = 0;
-
         private void LabelClick(object sender, EventArgs e)
         {
-            int index = labels[current_label_group].IndexOf(sender as Label) + (10 * current_label_group);
+            int bar_index = label_bar.FindIndex(label => label.BackColor == colorCurrentGroup);
+            int progress_index = label_progress.IndexOf(sender as Label);
+            int quizNum = (int)nudProgress.Value * 100 + bar_index * 10 + progress_index;
 
-            if (label_info.Count <= index) return;
+            if (respuestas.Count <= quizNum) return;
 
             List<string> tmp = new List<string>();
 
-            tmp = tmp.Concat(label_info[index].Item1).Concat(new List<string> { "───────", label_info[index].Item2 }).ToList();
+            tmp.Add(QuizContents[quizNum].CorrectAnswer);
+            tmp.Add("───────");
+            tmp.Add(respuestas[quizNum]);
 
             MessageForm s = new MessageForm(tmp, "FE DE ERRATAS", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
@@ -729,34 +664,41 @@ namespace MiBocaRecuerda
             s.Show();
         }
 
+        private int current_bar_index = 0;
+
         private void Label_bar_Click(object sender, EventArgs e)
         {
-            int index = labels_bar.IndexOf(sender as Label);
+            int idx = label_bar.IndexOf(sender as Label);
 
-            current_label_group = index;
+            current_bar_index = idx;
 
-            ProgressRedrow();
+            // バーラベルを選択したやつは選択色に変えてそれ以外は未選択色
+            label_bar.Select((label, index) => new { label, index })
+                      .ToList()
+                      .ForEach(item => item.label.BackColor = (idx != item.index) ? Color.LightBlue : Color.Turquoise);
+
+            ProgressRedrow(idx);
         }
 
         private void Label_hover(object o, EventArgs e)
         {
             Label l = o as Label;
 
-            //l.Font = new Font("メイリオ", 10F, FontStyle.Bold, GraphicsUnit.Point, 128);
-            //l.Text = "Δ";
-            l.BackColor = Color.Turquoise;
+            l.BackColor = colorHover;
         }
 
         private void Label_leave(object o, EventArgs e)
         {
             Label l = o as Label;
 
-            //l.Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            //l.Text = "―";
-            if (labels_bar[current_label_group] != l)
-            {
-                l.BackColor = Color.LightBlue;
-            }
+            l.BackColor = label_bar[current_bar_index] == l ? colorCurrentGroup : colorNeutral;
+        }
+
+        private void nud_ValueChanged(object sender, EventArgs e)
+        {
+            label_bar.ForEach(l => l.BackColor = Color.LightBlue);
+
+            ProgressRedrow(0);
         }
 
         private void RegisterEvent()
@@ -1076,30 +1018,34 @@ namespace MiBocaRecuerda
 
             txtConsole.Text = "";
 
-            bool res = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].CorrectAnswer);
-            DisplayResult(res ? "¡Sí!" : "¡No!", 1000);
+            bool isCorrect = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].CorrectAnswer);
+            DisplayResult(isCorrect ? "¡Sí!" : "¡No!", 1000);
 
             txtConsole.Text = CoreProcess.adopt_str;
 
-            if (res)
+            if (isCorrect)
             {
-                if (optionTSMI_progresoVisual.Checked) labels[current_label_group][curProgress % 10].Text = "■";
                 correctAnswerNum++;
             }
             else
             {
-                if (!optionTSMI_prueba.Checked) return;
-                if (optionTSMI_progresoVisual.Checked) labels[current_label_group][curProgress % 10].Text = "×";
+                // 完答モードの時はやり直し
+                if (optionTSMI_prueba.Checked == false) return;
             }
 
-            // 進捗ラベルに紐づく解答を追加
-            // ShowAnswerで複数の表現があるやつを分離する
-            label_info.Add(Tuple.Create(CoreProcess.ParseAnswer(QuizContents[curProgress].CorrectAnswer), txtAnswer.Text == "" ? "NONE" : txtAnswer.Text));
+            if (optionTSMI_progresoVisual.Checked)
+            {
+                label_progress[curProgress % 10].Text = isCorrect ? progressStateCharacter_Correct : progressStateCharacter_Incorrect;
+                label_progress[curProgress % 10].ForeColor = colorOffProgress;
+                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = isCorrect ? 1 : 2;
+            }
+
+            // 解答を保存
+            respuestas.Add(txtAnswer.Text == "" ? "NONE" : txtAnswer.Text);
             txtAnswer.Text = "";
 
-            QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, res));
+            QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, isCorrect));
 
-            if (optionTSMI_progresoVisual.Checked) labels[current_label_group][curProgress % 10].ForeColor = Color.Black;
 
             int endQuizNum = optionTSMI_progresoVisual.Checked ? QuizFileConfig.QuizNum - 1 : QuizFileConfig.MaxQuizNum - 1;
 

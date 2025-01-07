@@ -50,20 +50,18 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnTranslate = new System.Windows.Forms.Button();
             this.lbl_PruebaChallengeCount = new System.Windows.Forms.Label();
+            this.panel2 = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtQuiz
             // 
-            this.txtQuiz.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtQuiz.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.txtQuiz.Location = new System.Drawing.Point(25, 37);
+            this.txtQuiz.Location = new System.Drawing.Point(12, 3);
             this.txtQuiz.Multiline = true;
             this.txtQuiz.Name = "txtQuiz";
-            this.txtQuiz.ReadOnly = true;
-            this.txtQuiz.Size = new System.Drawing.Size(371, 44);
+            this.txtQuiz.Size = new System.Drawing.Size(382, 58);
             this.txtQuiz.TabIndex = 0;
             // 
             // txtAnswer
@@ -71,10 +69,10 @@
             this.txtAnswer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtAnswer.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.txtAnswer.Location = new System.Drawing.Point(25, 93);
+            this.txtAnswer.Location = new System.Drawing.Point(12, 94);
             this.txtAnswer.Multiline = true;
             this.txtAnswer.Name = "txtAnswer";
-            this.txtAnswer.Size = new System.Drawing.Size(371, 65);
+            this.txtAnswer.Size = new System.Drawing.Size(382, 58);
             this.txtAnswer.TabIndex = 0;
             // 
             // btnAnswer
@@ -116,10 +114,10 @@
             this.txtConsole.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtConsole.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.txtConsole.Location = new System.Drawing.Point(23, 190);
+            this.txtConsole.Location = new System.Drawing.Point(14, 189);
             this.txtConsole.Multiline = true;
             this.txtConsole.Name = "txtConsole";
-            this.txtConsole.Size = new System.Drawing.Size(370, 47);
+            this.txtConsole.Size = new System.Drawing.Size(382, 48);
             this.txtConsole.TabIndex = 5;
             // 
             // menuStrip1
@@ -221,7 +219,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.ForeColor = System.Drawing.Color.Red;
-            this.label1.Location = new System.Drawing.Point(4, 25);
+            this.label1.Location = new System.Drawing.Point(3, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(11, 12);
             this.label1.TabIndex = 10;
@@ -246,20 +244,29 @@
             this.lbl_PruebaChallengeCount.TabIndex = 12;
             this.lbl_PruebaChallengeCount.Text = "0";
             // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.label1);
+            this.panel2.Controls.Add(this.txtQuiz);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel2.Location = new System.Drawing.Point(0, 27);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(408, 67);
+            this.panel2.TabIndex = 14;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(408, 279);
+            this.Controls.Add(this.txtAnswer);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.lbl_PruebaChallengeCount);
             this.Controls.Add(this.btnTranslate);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.txtConsole);
             this.Controls.Add(this.lblResult);
             this.Controls.Add(this.btnShowAnswer);
             this.Controls.Add(this.btnAnswer);
-            this.Controls.Add(this.txtAnswer);
-            this.Controls.Add(this.txtQuiz);
             this.Controls.Add(this.menuStrip1);
             this.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -268,6 +275,8 @@
             this.Text = "MBR";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -296,6 +305,7 @@
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_resultados;
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_progresoVisual;
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_lista;
+        private System.Windows.Forms.Panel panel2;
     }
 }
 

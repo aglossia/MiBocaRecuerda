@@ -13,7 +13,6 @@ namespace MiBocaRecuerda
         private Dictionary<string, float> FontTable = new Dictionary<string, float>();
         private Dictionary<string, Rectangle> ControlTable = new Dictionary<string, Rectangle>();
 
-        //private float _fontsize;
         private SizeF _formSize;
         private Form form;
 
@@ -21,19 +20,8 @@ namespace MiBocaRecuerda
         {
             form = _form_;
             _formSize = _form_.ClientSize;
-            //_fontsize = _form_.Font.Size;
 
             GetControlTable(_form_);
-
-            //var _controls = _get_all_controls(form);
-            //FontTable = new Dictionary<string, float>();
-            //ControlTable = new Dictionary<string, Rectangle>();
-
-            //foreach (Control control in _controls)
-            //{
-            //    FontTable.Add(control.Name, control.Font.Size);
-            //    ControlTable.Add(control.Name, control.Bounds);
-            //}
         }
 
         public void GetControlTable(Form _form_)
@@ -42,7 +30,6 @@ namespace MiBocaRecuerda
 
             //_get_initial_size();
             _formSize = _form_.ClientSize;
-            //_fontsize = _form_.Font.Size;
 
             FontTable.Clear();
             ControlTable.Clear();
@@ -54,20 +41,6 @@ namespace MiBocaRecuerda
             }
         }
 
-        public void AddControlTable(Control control)
-        {
-            ControlTable.Add(control.Name, control.Bounds);
-            FontTable.Add(control.Name, control.Font.Size);
-        }
-
-        public void RemoveControlTable(Control control)
-        {
-            if (ControlTable.ContainsKey(control.Name))
-            {
-                ControlTable.Remove(control.Name);
-                FontTable.Remove(control.Name);
-            }
-        }
         //public void _get_initial_size()
         //{
         //    var _controls = _get_all_controls(form);

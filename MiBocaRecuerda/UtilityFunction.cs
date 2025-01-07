@@ -25,11 +25,28 @@ namespace MiBocaRecuerda
             return 0; // 見つからない場合は0を返す
         }
 
-        public static int Suelo(int n)
+        public static int Suelo(int n, int _base)
         {
-            int t = (int)Math.Floor((decimal)n / 10);
+            int t = (int)Math.Floor((decimal)n / _base);
 
             return t;
+        }
+
+        public static int Techo(int n, int _base)
+        {
+            int t = (int)Math.Ceiling((decimal)n / _base);
+
+            return t;
+        }
+
+        public static int GetNDigit(int num, int digit)
+        {
+            double denominator = (int)Math.Pow(10, (double)digit - 1);
+
+            // 指定桁にはなにもない
+            if (num < denominator) return 0;
+
+            return (int)Math.Floor(num / denominator) % 10;
         }
 
         // リストをシャッフルするメソッド
