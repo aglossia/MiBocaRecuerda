@@ -21,7 +21,7 @@ namespace MiBocaRecuerda
                 Supplement.Add(r.QuizNum, r.Supplement);
             }
 
-            dgv.Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
+            dgv.Font = new Font("MeiryoKe_Console", 10F, FontStyle.Regular, GraphicsUnit.Point, 128);
 
             dgv.RowHeadersVisible = false;
             dgv.AllowUserToAddRows = false;
@@ -53,7 +53,7 @@ namespace MiBocaRecuerda
 
             col_correct.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
             col_quiz.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             col_correct.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
@@ -90,14 +90,16 @@ namespace MiBocaRecuerda
 
             Shown += (o, e) =>
             {
+                int width_num = AutoSizeColumnWidth(dgv, 0);
                 int width_quiz = AutoSizeColumnWidth(dgv, 1);
                 int width_correct = AutoSizeColumnWidth(dgv, 2);
 
                 Console.WriteLine(width_quiz);
                 Console.WriteLine(width_correct);
 
-                Size = new Size(width_quiz + width_correct + 20, Size.Height);
+                Size = new Size(width_num + width_quiz + width_correct + 20, Size.Height);
 
+                col_num.Width = width_num;
                 col_quiz.Width = width_quiz;
                 col_correct.Width = width_correct;
 

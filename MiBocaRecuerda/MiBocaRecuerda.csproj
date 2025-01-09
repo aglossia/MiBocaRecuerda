@@ -130,31 +130,31 @@
     <Compile Include="ClassResize.cs" />
     <Compile Include="CommonFunction.cs" />
     <Compile Include="CoreProcess.cs" />
-    <Compile Include="EndDialog.cs">
+    <Compile Include="Form\EndDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EndDialog.Designer.cs">
+    <Compile Include="Form\EndDialog.Designer.cs">
       <DependentUpon>EndDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainForm.cs">
+    <Compile Include="Form\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="Form\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MessageForm.cs">
+    <Compile Include="Form\MessageForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MessageForm.Designer.cs">
+    <Compile Include="Form\MessageForm.Designer.cs">
       <DependentUpon>MessageForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ParseXML.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResultForm.cs">
+    <Compile Include="Form\ResultForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ResultForm.Designer.cs">
+    <Compile Include="Form\ResultForm.Designer.cs">
       <DependentUpon>ResultForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ScriptCommon.cs" />
@@ -177,21 +177,21 @@
     <Compile Include="SettingElement\SettingSpanish.Designer.cs">
       <DependentUpon>SettingSpanish.cs</DependentUpon>
     </Compile>
-    <Compile Include="SettingForm.cs">
+    <Compile Include="Form\SettingForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SettingForm.Designer.cs">
+    <Compile Include="Form\SettingForm.Designer.cs">
       <DependentUpon>SettingForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Translate.cs" />
     <Compile Include="UtilityFunction.cs" />
-    <EmbeddedResource Include="EndDialog.resx">
+    <EmbeddedResource Include="Form\EndDialog.resx">
       <DependentUpon>EndDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="Form\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MessageForm.resx">
+    <EmbeddedResource Include="Form\MessageForm.resx">
       <DependentUpon>MessageForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -203,13 +203,13 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="ResultForm.resx">
+    <EmbeddedResource Include="Form\ResultForm.resx">
       <DependentUpon>ResultForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SettingElement\SettingBase.resx">
       <DependentUpon>SettingBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SettingForm.resx">
+    <EmbeddedResource Include="Form\SettingForm.resx">
       <DependentUpon>SettingForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.manifest" />
