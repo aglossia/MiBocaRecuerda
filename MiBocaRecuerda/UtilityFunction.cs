@@ -1,7 +1,9 @@
 ﻿using ClosedXML.Excel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace MiBocaRecuerda
 {
@@ -89,6 +91,19 @@ namespace MiBocaRecuerda
             xmlBuilder.AppendLine("</table>");
 
             return xmlBuilder.ToString();
+        }
+
+        /// <summary>
+        /// ディスプレイ全体を含む最小の領域を取得する
+        /// </summary>
+        /// <returns></returns>
+        public static BaseAreaInfo GetBaseArea()
+        {
+            List<DisplayInfo> displayInfoList = Screen.AllScreens
+                    // スクリーン情報からDisplayInfoリストを作成
+                    .Select(sc => new DisplayInfo(sc.Bounds)).ToList();
+
+            return new BaseAreaInfo(displayInfoList);
         }
     }
 }

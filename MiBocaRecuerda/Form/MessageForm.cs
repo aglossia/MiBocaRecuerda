@@ -8,6 +8,7 @@ namespace MiBocaRecuerda
     public partial class MessageForm : Form
     {
         bool IsKeyDown = false;
+        private ClassResize _form_resize;
 
         public enum TipoDeUbicacion
         {
@@ -69,6 +70,13 @@ namespace MiBocaRecuerda
             Shown += (o, e) =>
             {
                 button1.Focus();
+
+                _form_resize = new ClassResize(this);
+            };
+
+            SizeChanged += (o, e) =>
+            {
+                if (_form_resize != null) _form_resize._resize();
             };
 
             KeyDown += (o, e) =>

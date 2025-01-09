@@ -130,6 +130,7 @@
     <Compile Include="ClassResize.cs" />
     <Compile Include="CommonFunction.cs" />
     <Compile Include="CoreProcess.cs" />
+    <Compile Include="DisplayRayout.cs" />
     <Compile Include="Form\EndDialog.cs">
       <SubType>Form</SubType>
     </Compile>

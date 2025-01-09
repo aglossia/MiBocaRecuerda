@@ -12,6 +12,7 @@ namespace MiBocaRecuerda
         private bool showRowHeader = false;
         private Dictionary<string, float> FontTable = new Dictionary<string, float>();
         private Dictionary<string, Rectangle> ControlTable = new Dictionary<string, Rectangle>();
+        private Dictionary<string, List<int>> ControlTable_dgv = new Dictionary<string, List<int>>();
 
         private SizeF _formSize;
         private Form form;
@@ -38,6 +39,17 @@ namespace MiBocaRecuerda
             {
                 FontTable.Add(control.Name, control.Font.Size);
                 ControlTable.Add(control.Name, control.Bounds);
+
+                if (control.GetType() == typeof(DataGridView))
+                {
+                    //List<int> col_widths = new List<int>();
+
+                    //DataGridView dgv = control as DataGridView;
+
+                    List<int> col_widths = (control as DataGridView).Columns.Cast<DataGridViewColumn>().Select(col => col.Width).ToList();
+
+                    ControlTable_dgv.Add(control.Name, col_widths);
+                }
             }
         }
 
@@ -72,7 +84,17 @@ namespace MiBocaRecuerda
                 Point _controlposition = new Point((int)(ControlTable[control.Name].X * _form_ratio_width), (int)(ControlTable[control.Name].Y * _form_ratio_height));
                 control.Bounds = new Rectangle(_controlposition, _controlSize);
                 if (control.GetType() == typeof(DataGridView))
-                    _dgv_Column_Adjust((DataGridView)control, showRowHeader);
+                {
+                    DataGridView dgv = control as DataGridView;
+
+                    //dgv.Columns.Cast<DataGridViewColumn>().ToList().ForEach(col => col.Width =(int)( * _form_ratio_width));
+
+                    foreach (var (item1, item2) in dgv.Columns.Cast<DataGridViewColumn>().Zip((ControlTable_dgv[control.Name] as List<int>), (x, y) => (x, y)))
+                    {
+                        item1.Width = (int)(item2 * _form_ratio_width);
+                    }
+                }
+                    //_dgv_Column_Adjust((DataGridView)control, showRowHeader);
                 control.Font = new Font(form.Font.FontFamily, (float)(((FontTable[control.Name] * _form_ratio_width) / 2) + ((FontTable[control.Name] * _form_ratio_height) / 2)));
             }
         }

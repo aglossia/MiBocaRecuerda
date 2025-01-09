@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MiBocaRecuerda
 {
@@ -11,6 +12,8 @@ namespace MiBocaRecuerda
     {
         public ResultForm() { }
         private Dictionary<string, string> Supplement = new Dictionary<string, string>();
+
+        private ClassResize _form_resize;
 
         public ResultForm(List<QuizResult> qc, MainForm mf)
         {
@@ -25,6 +28,7 @@ namespace MiBocaRecuerda
 
             dgv.RowHeadersVisible = false;
             dgv.AllowUserToAddRows = false;
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
 
             DataGridViewTextBoxColumn col_num = new DataGridViewTextBoxColumn
             {
@@ -53,7 +57,6 @@ namespace MiBocaRecuerda
 
             col_correct.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
             col_quiz.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             col_correct.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
@@ -85,17 +88,9 @@ namespace MiBocaRecuerda
 
             Load += (o, e) =>
             {
-                Location = new Point(mf.Location.X + mf.Width, mf.Location.Y);
-            };
-
-            Shown += (o, e) =>
-            {
                 int width_num = AutoSizeColumnWidth(dgv, 0);
                 int width_quiz = AutoSizeColumnWidth(dgv, 1);
                 int width_correct = AutoSizeColumnWidth(dgv, 2);
-
-                Console.WriteLine(width_quiz);
-                Console.WriteLine(width_correct);
 
                 Size = new Size(width_num + width_quiz + width_correct + 20, Size.Height);
 
@@ -103,12 +98,51 @@ namespace MiBocaRecuerda
                 col_quiz.Width = width_quiz;
                 col_correct.Width = width_correct;
 
-                foreach (DataGridViewRow row in dgv.Rows)
+                BaseAreaInfo baseArea = UtilityFunction.GetBaseArea();
+
+                int move_right = mf.Location.X + mf.Width + Width;
+                int move_left = mf.Location.X - Width;
+
+                Console.WriteLine($"{baseArea.MaxX}, {mf.Location.X + mf.Width + Width}");
+
+                if(move_right < baseArea.MaxX)
                 {
-                    //row.DefaultCellStyle.BackColor = Color.AliceBlue;
+                    // 右に表示する余地があるとき
+                    Location = new Point(move_right - Width, mf.Location.Y);
                 }
+                else if(move_left > baseArea.MinX)
+                {
+                    // 左に表示する余地があるとき
+                    Location = new Point(move_left, mf.Location.Y);
+                }
+                // 右にも左にも表示できないときはデフォルト位置
             };
 
+            Shown += (o, e) =>
+            {
+                AdjustRowHeight();
+
+                _form_resize = new ClassResize(this);
+            };
+
+            SizeChanged += (o, e) =>
+            {
+                dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
+
+                if (_form_resize != null) _form_resize._resize();
+            };
+
+            dgv.FontChanged += (o, e) =>
+            {
+                 if (WindowState == FormWindowState.Maximized)
+                 {
+                     // 最大化のときはDataGridViewAutoSizeRowsMode.DisplayedCellsに任せるしかないか…
+                     return;
+                 }
+
+                 AdjustRowHeight();
+            };
+            
             dgv.CellMouseClick += (o, e) =>
             {
                 string cellValue = "";
@@ -165,6 +199,25 @@ namespace MiBocaRecuerda
                         break;
                 }
             };
+        }
+
+        private void AdjustRowHeight()
+        {
+            // dgv.AutoSizeRowsModeの設定によって最適高さにされた高さを取得する
+            List<int> row_heights = new List<int>();
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                row_heights.Add(row.Height);
+            }
+
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+
+            // AutoSizeモードを無効にして最適高さに固定マージンを入れた高さにする
+            foreach (var (item1, item2) in dgv.Rows.Cast<DataGridViewRow>().Zip(row_heights, (x, y) => (x, y)))
+            {
+                item1.Height = item2 + 10;
+            }
         }
 
         private int AutoSizeColumnWidth(DataGridView grid, int column)

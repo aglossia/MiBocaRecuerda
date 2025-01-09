@@ -39,6 +39,7 @@ namespace MiBocaRecuerda
         MessageForm MessageForm_respuesta = new MessageForm();
         MessageForm MessageForm_traducir = new MessageForm();
         MessageForm MessageForm_quizInfo = new MessageForm();
+        MessageForm MessageForm_chapterList = new MessageForm();
 
         // Resultadoに表示する為に蓄積するやつ
         List<QuizResult> QuizResult = new List<QuizResult>();
@@ -186,6 +187,18 @@ namespace MiBocaRecuerda
             txtQuiz.ReadOnly = true;
             txtQuiz.BackColor = txtAnswer.BackColor;
 
+            optionTSMI_quizInfo.ShortcutKeys = Keys.Control | Keys.I;
+            optionTSMI_prueba.ShortcutKeys = Keys.Control | Keys.P;
+            optionTSMI_resultados.ShortcutKeys = Keys.Control | Keys.T;
+            optionTSMI_progresoVisual.ShortcutKeys = Keys.Control | Keys.O;
+
+            operationTSMI_start.ShortcutKeys = Keys.Control | Keys.Q;
+            operationTSMI_siguiente.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
+            operationTSMI_anterior.ShortcutKeys = Keys.Control | Keys.Shift | Keys.B;
+
+            toolTSMI_pruebaLista.ShortcutKeys = Keys.Control | Keys.L;
+            toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
+
             resultForm.Dispose();
             MessageForm_respuesta.Dispose();
             MessageForm_traducir.Dispose();
@@ -268,7 +281,6 @@ namespace MiBocaRecuerda
                 optionTSMI_prueba.Enabled = false;
                 optionTSMI_progresoVisual.Enabled = false;
                 optionTSMI_resultados.Enabled = false;
-                btnTranslate.Enabled = false;
 
                 if (resultForm.IsDisposed == false)
                 {
@@ -288,7 +300,6 @@ namespace MiBocaRecuerda
                 optionTSMI_prueba.Enabled = true;
                 optionTSMI_progresoVisual.Enabled = true;
                 optionTSMI_resultados.Enabled = true;
-                btnTranslate.Enabled = true;
 
                 if (resultForm.IsDisposed == false) resultForm.Visible = result;
                 txtAnswer.Focus();
@@ -731,25 +742,23 @@ namespace MiBocaRecuerda
                             IsKeyDown = true;
                             btnShowAnswer.PerformClick();
                             break;
-                        case Keys.Q:
-                            // Empezar
-                            IsKeyDown = true;
-                            InitQuiz(true);
-                            break;
                         case Keys.N:
-                            if (shiftPressed) MoveQuiz(true);
+                            //if (shiftPressed) MoveQuiz(true);
                             break;
                         case Keys.B:
-                            if (shiftPressed) MoveQuiz(false);
+                            //if (shiftPressed) MoveQuiz(false);
+                            break;
+                        case Keys.L:
+                            //ShowLista();
                             break;
                     }
                 }
                 else
                 {
-                    if (e.KeyCode == Keys.F1)
-                    {
-                        btnTranslate.PerformClick();
-                    }
+                    //if (e.KeyCode == Keys.F1)
+                    //{
+                    //    btnTranslate.PerformClick();
+                    //}
                 }
             };
 
@@ -780,7 +789,7 @@ namespace MiBocaRecuerda
                     ShowAlways = true
                 };
 
-                tt.SetToolTip(btnTranslate, "traducción");
+                //tt.SetToolTip(btnTranslate, "traducción");
             };
 
             FormClosing += (o, e) =>
@@ -814,13 +823,6 @@ namespace MiBocaRecuerda
                 {
                     e.Handled = true;
                     btnAnswer.PerformClick();
-                }
-
-                // CTRLキーとエンターキーが同時に押されたかを確認
-                if (ctrlPressed && enterPressed)
-                {
-                    e.Handled = true;
-                    btnTranslate.PerformClick();
                 }
 
                 if (escPressed)
@@ -910,7 +912,7 @@ namespace MiBocaRecuerda
                 InitQuiz(true);
             };
 
-            startToolStripMenuItem.MouseDown += (o, e) =>
+            operationTSMI.MouseDown += (o, e) =>
             {
                 if (e.Button == MouseButtons.Right)
                 {
@@ -943,32 +945,7 @@ namespace MiBocaRecuerda
                 }
             };
 
-            siguienteToolStripMenuItem.MouseDown += (o, e) =>
-            {
-                if (ws == null) return;
-
-                switch (e.Button)
-                {
-                    case MouseButtons.Middle:
-                        int chapter = ws.LastRowUsed().RowNumber() / 10;
-
-                        string str = "";
-
-                        for (int i = 0; i < chapter; i++)
-                        {
-                            str += $"{i + 1}:{ws.Cell(i * 10 + 1, 4).Value.ToString()}\r\n";
-                        }
-
-                        MessageBox.Show(str);
-
-                        break;
-                    case MouseButtons.Right:
-                        MoveQuiz(false);
-                        break;
-                }
-            };
-
-            optionTSMI_lista.MouseDown += (o, e) =>
+            toolTSMI_pruebaLista.MouseDown += (o, e) =>
             {
                 switch (e.Button)
                 {
@@ -1153,79 +1130,7 @@ namespace MiBocaRecuerda
             MessageForm_respuesta.Show();
         }
 
-        // Traducir
-        private void btnTranslate_Click(object sender, EventArgs e)
-        {
-            if (MessageForm_traducir.IsDisposed == false) MessageForm_traducir.Dispose();
-            if (langType == "") return;
-            if (txtAnswer.Text == "") return;
-
-            string traduccion = Translate.DoTransrate(txtAnswer.Text, langType);
-
-            List<string> mostrar = new List<string>();
-
-            mostrar.Add(traduccion);
-
-            MessageForm_traducir = new MessageForm(mostrar, "TRADUCCIÓN", MessageForm.TipoDeUbicacion.CENTRO, this)
-            {
-                ShowIcon = false
-            };
-
-            MessageForm_traducir.Show();
-        }
-
         #region TSMI
-
-        private void optionTSMI_lista_Click(object sender, EventArgs e)
-        {
-            if (resultForm.IsDisposed == false) resultForm.Dispose();
-            if (QuizContents.Count == 0) return;
-
-            List<QuizResult> tmp = new List<QuizResult>();
-
-            foreach (QuizContents qc in QuizContents)
-            {
-                tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
-            }
-
-            tmp = tmp.OrderBy(q => int.Parse(q.QuizNum)).ToList();
-
-            resultForm = new ResultForm(tmp, this)
-            {
-                Text = "Lista de Pruebas",
-                ShowIcon = false
-            };
-
-            resultForm.Show();
-        }
-
-        private void optionTSMI_prueba_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = (ToolStripMenuItem)sender;
-            item.Checked = !item.Checked;
-        }
-
-        private void optionTSMI_resultados_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = (ToolStripMenuItem)sender;
-            item.Checked = !item.Checked;
-        }
-
-        private void optionTSMI_progresoVisual_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = (ToolStripMenuItem)sender;
-            item.Checked = !item.Checked;
-        }
-
-        private void startToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            InitQuiz(true);
-        }
-
-        private void siguienteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            MoveQuiz(true);
-        }
 
         private void optionTSMI_setting_Click(object sender, EventArgs e)
         {
@@ -1261,6 +1166,104 @@ namespace MiBocaRecuerda
             };
 
             MessageForm_quizInfo.Show();
+        }
+
+        private void optionTSMI_prueba_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
+        }
+
+        private void optionTSMI_resultados_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
+        }
+
+        private void optionTSMI_progresoVisual_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
+        }
+
+        private void operationTSMI_start_Click(object sender, EventArgs e)
+        {
+            InitQuiz(true);
+        }
+
+        private void operationTSMI_siguiente_Click(object sender, EventArgs e)
+        {
+            MoveQuiz(true);
+        }
+
+        private void operationTSMI_anterior_Click(object sender, EventArgs e)
+        {
+            MoveQuiz(false);
+        }
+
+        private void toolTSMI_pruebaLista_Click(object sender, EventArgs e)
+        {
+            if (resultForm.IsDisposed == false) resultForm.Dispose();
+            if (QuizContents.Count == 0) return;
+
+            List<QuizResult> tmp = new List<QuizResult>();
+
+            foreach (QuizContents qc in QuizContents)
+            {
+                tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
+            }
+
+            tmp = tmp.OrderBy(q => int.Parse(q.QuizNum)).ToList();
+
+            resultForm = new ResultForm(tmp, this)
+            {
+                Text = "Lista de Pruebas",
+                ShowIcon = false
+            };
+
+            resultForm.Show();
+        }
+
+        private void toolTSMI_chapterList_Click(object sender, EventArgs e)
+        {
+            if (MessageForm_chapterList.IsDisposed == false) MessageForm_chapterList.Dispose();
+            if (ws == null) return;
+
+            int chapter = ws.LastRowUsed().RowNumber() / 10;
+
+            List<string> chapter_list = new List<string>();
+
+            for (int i = 0; i < chapter; i++)
+            {
+                chapter_list.Add($"{i + 1}:{ws.Cell(i * 10 + 1, 4).Value.ToString()}");
+            }
+
+            MessageForm_chapterList = new MessageForm(chapter_list, "Lista de capítulos", MessageForm.TipoDeUbicacion.CENTRO, this)
+            {
+                ShowIcon = false
+            };
+
+            MessageForm_chapterList.Show();
+        }
+
+        private void toolTSMI_translate_Click(object sender, EventArgs e)
+        {
+            if (MessageForm_traducir.IsDisposed == false) MessageForm_traducir.Dispose();
+            if (langType == "") return;
+            if (txtAnswer.Text == "") return;
+
+            string traduccion = Translate.DoTransrate(txtAnswer.Text, langType);
+
+            List<string> mostrar = new List<string>();
+
+            mostrar.Add(traduccion);
+
+            MessageForm_traducir = new MessageForm(mostrar, "TRADUCCIÓN", MessageForm.TipoDeUbicacion.CENTRO, this)
+            {
+                ShowIcon = false
+            };
+
+            MessageForm_traducir.Show();
         }
 
         #endregion

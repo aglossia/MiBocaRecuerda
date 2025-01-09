@@ -59,6 +59,7 @@
             this.ClientSize = new System.Drawing.Size(508, 87);
             this.Controls.Add(this.txtMensaje);
             this.Controls.Add(this.button1);
+            this.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.Name = "MessageForm";
             this.Text = "Respuesta";
             this.ResumeLayout(false);
