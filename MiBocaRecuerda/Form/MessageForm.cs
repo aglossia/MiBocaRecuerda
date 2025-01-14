@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -53,13 +54,28 @@ namespace MiBocaRecuerda
 
                 Text = titulo;
 
+                BaseAreaInfo baseArea = UtilityFunction.GetBaseArea();
+
+                int move_right = mf.Location.X + mf.Width + Width;
+                int move_left = mf.Location.X - Width;
+
                 switch (locationType)
                 {
                     case TipoDeUbicacion.CENTRO:
                         Location = new Point(mf.Location.X + (mf.Width - Width) / 2, mf.Location.Y + (mf.Height - Height) / 2);
                         break;
                     case TipoDeUbicacion.DERECHA:
-                        Location = new Point(mf.Location.X + mf.Width, mf.Location.Y);
+                        //Location = new Point(mf.Location.X + mf.Width, mf.Location.Y);
+                        if (move_right < baseArea.MaxX)
+                        {
+                            // 右に表示する余地があるとき
+                            Location = new Point(move_right - Width, mf.Location.Y);
+                        }
+                        else if (move_left > baseArea.MinX)
+                        {
+                            // 左に表示する余地があるとき
+                            Location = new Point(move_left, mf.Location.Y);
+                        }
                         break;
                     case TipoDeUbicacion.PARENT_LINE:
                         Location = new Point(mf.Location.X, mf.Location.Y);

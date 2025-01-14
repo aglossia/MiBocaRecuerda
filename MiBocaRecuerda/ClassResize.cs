@@ -74,6 +74,9 @@ namespace MiBocaRecuerda
         {
             double _form_ratio_width = (double)form.ClientSize.Width / (double)_formSize.Width;
             double _form_ratio_height = (double)form.ClientSize.Height / (double)_formSize.Height;
+
+            if ((_form_ratio_width == 0) || (_form_ratio_height == 0)) return;
+
             var _controls = _get_all_controls(form);
 
             foreach (Control control in _controls)
