@@ -186,7 +186,6 @@
     </Compile>
     <Compile Include="Translate.cs" />
     <Compile Include="UtilityFunction.cs" />
-    <Compile Include="VSColorTable.cs" />
     <EmbeddedResource Include="Form\EndDialog.resx">
       <DependentUpon>EndDialog.cs</DependentUpon>
     </EmbeddedResource>

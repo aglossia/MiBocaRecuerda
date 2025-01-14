@@ -90,10 +90,7 @@ namespace MiBocaRecuerda
                 _form_resize = new ClassResize(this);
             };
 
-            SizeChanged += (o, e) =>
-            {
-                if (_form_resize != null) _form_resize._resize();
-            };
+            SizeChanged += _Resize;
 
             KeyDown += (o, e) =>
             {
@@ -117,10 +114,18 @@ namespace MiBocaRecuerda
             };
         }
 
+        private void _Resize(object o, EventArgs e)
+        {
+            if (_form_resize != null) _form_resize._resize();
+        }
+
         public void MessageUpdate(List<string> mensajes)
         {
             txtMensaje.Text = string.Join("\r\n", mensajes.Select(s => s.Replace("\n", "\r\n")));
             txtMensaje.SelectionStart = 0;
+
+            // これからフォームサイズを変えるのでフォントがリサイズされないようにする
+            SizeChanged -= _Resize;
 
             // maxWidthは文字列のピッタリサイズのはずなので、余白分をたす
             int maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 30;
@@ -140,6 +145,11 @@ namespace MiBocaRecuerda
                 Size = new Size(maxWidth + 20, 784);
                 txtMensaje.ScrollBars = ScrollBars.Vertical;
             }
+
+            // これを新しい基準フォームサイズとする
+            _form_resize = new ClassResize(this);
+
+            SizeChanged += _Resize;
         }
     }
 }

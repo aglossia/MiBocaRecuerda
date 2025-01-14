@@ -9,7 +9,6 @@ namespace MiBocaRecuerda
     public class ClassResize
     {
         //private List<Rectangle> _arr_control_storage = new List<Rectangle>();
-        private bool showRowHeader = false;
         private Dictionary<string, float> FontTable = new Dictionary<string, float>();
         private Dictionary<string, Rectangle> ControlTable = new Dictionary<string, Rectangle>();
         private Dictionary<string, List<int>> ControlTable_dgv = new Dictionary<string, List<int>>();

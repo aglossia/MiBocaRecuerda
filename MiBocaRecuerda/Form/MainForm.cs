@@ -110,10 +110,6 @@ namespace MiBocaRecuerda
         {
             InitializeComponent();
 
-#if DEBUG
-            Text += " [debug]";
-#endif
-
             RegisterEvent();
 
             #region デザイナを使わないイベント登録
@@ -128,7 +124,7 @@ namespace MiBocaRecuerda
                     Location = new Point(txtAnswer.Location.X + (i % 10) * (labelSize + 1), txtAnswer.Location.Y + txtAnswer.Size.Height),
                     //Text = "―",
                     Size = new Size(labelSize, labelSize / 3),
-                    Font = new Font("メイリオ", 7F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                    Font = new Font("MeiryoKe_Console", 7F, FontStyle.Regular, GraphicsUnit.Point, 128),
                     Name = $"progress_group_label{i}"
                 };
 
@@ -172,7 +168,7 @@ namespace MiBocaRecuerda
                 Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
                 Text = "1000/1000",
                 //Size = new Size(labelSize, labelSize),
-                Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128),
+                Font = new Font("MeiryoKe_Console", 9F, FontStyle.Regular, GraphicsUnit.Point, 128),
                 Visible = false,
                 Name = "NumericProgress"
             };
@@ -192,6 +188,12 @@ namespace MiBocaRecuerda
             Controls.Add(nudProgress);
 
             #endregion
+
+            #region デザイナを使わないコントロールプロパティ設定
+
+#if DEBUG
+            Text += " [debug]";
+#endif
 
             lblResult.Visible = false;
             label1.Visible = false;
@@ -220,14 +222,17 @@ namespace MiBocaRecuerda
             txtQuiz.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtConsole.KeyDown += TextBoxKeyDown_AvoidBeep;
 
+            #endregion
+
             _form_resize = new ClassResize(this);
 
-            foreach ( Control ctrl in Controls)
+            // 各コントロールの現在の色を保持
+            foreach (Control ctrl in Controls)
             {
                 preControlBackColor[ctrl.Name] = ctrl.BackColor;
                 preControlForeColor[ctrl.Name] = ctrl.ForeColor;
 
-                if(ctrl.GetType() == typeof(Panel))
+                if (ctrl.GetType() == typeof(Panel))
                 {
                     foreach (Control ctrl2 in (ctrl as Panel).Controls)
                     {
@@ -246,141 +251,6 @@ namespace MiBocaRecuerda
                 }
             }
 
-
-            //toolStripQuizFile.BackColor = Color.Gray;
-            //toolStripQuizFile.ForeColor = Color.White;
-
-            checkBox1.CheckedChanged += (o, e) =>
-            {
-                bool ch = checkBox1.Checked;
-
-                //preference = Convert.ToInt32(ch);
-
-                //int results = DwmSetWindowAttribute(new HandleRef(this, Handle), DWMWA_USE_IMMERSIVE_DARK_MODE, ref preference, sizeof(uint));
-
-                Color baseColor = Color.FromArgb(80, 80, 80);
-                Color textBackColor = Color.FromArgb(60, 60, 60);
-
-                if (ch)
-                {
-                    BackColor = baseColor;
-                    //ForeColor = Color.Gray;
-                    //ToolStripManager.Renderer = renderer;
-
-                    foreach (Control ctrl in Controls)
-                    {
-                        if(ctrl.GetType() == typeof(Button))
-                        {
-                            ctrl.BackColor = Color.Gray;
-                            ctrl.ForeColor = Color.White;
-                        }
-                        else if (ctrl.GetType() == typeof(TextBox))
-                        {
-                            ctrl.BackColor = textBackColor;
-                            ctrl.ForeColor = Color.White;
-                        }
-                        else if (ctrl.GetType() == typeof(Label))
-                        {
-                            ctrl.BackColor = baseColor;
-                            ctrl.ForeColor = Color.White;
-                        }
-                        else if (ctrl.GetType() == typeof(ToolStrip))
-                        {
-                            ctrl.BackColor = Color.Black;
-                            ctrl.ForeColor = Color.White;
-                        }
-                        else if (ctrl.GetType() == typeof(MenuStrip))
-                        {
-                            ctrl.BackColor = baseColor;
-                            ctrl.ForeColor = Color.White;
-
-                            foreach(Control ctrl2 in (ctrl as MenuStrip).Controls)
-                            {
-                                ctrl2.BackColor = Color.Gray;
-                                ctrl2.ForeColor = Color.White;
-                            }
-                        }
-                        else if (ctrl.GetType() == typeof(ToolStripComboBox))
-                        {
-                            ctrl.BackColor = Color.Gray;
-                            ctrl.ForeColor = Color.White;
-                        }
-                        else if (ctrl.GetType() == typeof(Panel))
-                        {
-                            ctrl.BackColor = baseColor;
-
-                            foreach (Control ctrl2 in (ctrl as Panel).Controls)
-                            {
-                                ctrl2.BackColor = textBackColor;
-                                ctrl2.ForeColor = Color.White;
-                            }
-                        }
-                        else
-                        {
-                            ctrl.BackColor = baseColor;
-                        }
-                    }
-                }
-                else
-                {
-                    BackColor = SystemColors.Control;
-
-                    foreach (Control ctrl in Controls)
-                    {
-                        if (ctrl.GetType() == typeof(ToolStrip))
-                        {
-
-                        }
-                        ctrl.BackColor = preControlBackColor[ctrl.Name];
-                        ctrl.ForeColor = preControlForeColor[ctrl.Name];
-
-                        if (ctrl.GetType() == typeof(Panel))
-                        {
-                            foreach (Control ctrl2 in (ctrl as Panel).Controls)
-                            {
-                                ctrl2.BackColor = preControlBackColor[ctrl2.Name];
-                                ctrl2.ForeColor = preControlForeColor[ctrl2.Name];
-                            }
-                        }
-
-                        if (ctrl.GetType() == typeof(MenuStrip))
-                        {
-                            foreach (Control ctrl2 in (ctrl as MenuStrip).Controls)
-                            {
-                                ctrl2.BackColor = preControlBackColor[ctrl2.Name];
-                                ctrl2.ForeColor = preControlForeColor[ctrl2.Name];
-                            }
-                        }
-                    }
-                }
-
-            };
-
-            //txtQuiz.GotFocus += _GotFocus;
-            //txtAnswer.GotFocus += _GotFocus;
-            //txtConsole.GotFocus += _GotFocus;
-            //txtQuiz.LostFocus += _LostFocus;
-
-            txtAnswer.GotFocus += (o, e) =>
-            {
-                TextBox t = o as TextBox;
-
-                // キャレットの幅と高さを指定
-                int caretWidth = 5; // キャレットの幅を太く設定
-                int caretHeight = t.Font.Height;
-
-                // キャレットを作成
-                CreateCaret(t.Handle, IntPtr.Zero, caretWidth, caretHeight);
-
-                // キャレットを表示
-                ShowCaret(t.Handle);
-            };
-
-            txtAnswer.LostFocus += (o, e) =>
-            {
-                DestroyCaret();
-            };
-
             LoadConfig();
 
             ParseFile();
@@ -390,15 +260,6 @@ namespace MiBocaRecuerda
             // 最初のクイズ設定を保持
             preMinChapter = QuizFileConfig.MinChapter;
             preMaxChapter = QuizFileConfig.MaxChapter;
-        }
-
-        private static Color CreateCaretColor(Color color)
-        {
-            int A = color.A;
-            int R = color.R ^ 0xff;
-            int G = color.G ^ 0xff;
-            int B = color.B ^ 0xff;
-            return Color.FromArgb(A, R, G, B);
         }
 
         #region 内部処理
@@ -520,6 +381,7 @@ namespace MiBocaRecuerda
             {
                 toolStripQuizFile.SelectedIndex = SettingManager.InputCache.QuizFilePathIndex;
             }
+            optionTSMI_DarkMode.Checked = SettingManager.InputCache.DarkMode;
 
             if (File.Exists("MBR.config"))
             {
@@ -586,6 +448,7 @@ namespace MiBocaRecuerda
 
             do
             {
+                // 最後に表示していた問題が、次の最初の問題になるとシャッフルをやり直す
                 randomSequence = UtilityFunction.ShuffleList(numberList);
             }
             while (randomSequence[0] == preLastQuiz);
@@ -831,6 +694,21 @@ namespace MiBocaRecuerda
 
         #region 登録用イベント
 
+        private void _CaretWidthChange(object o, EventArgs e)
+        {
+            TextBox t = o as TextBox;
+
+            // キャレットの幅と高さを指定
+            int caretWidth = 5; // キャレットの幅を太く設定
+            int caretHeight = t.Font.Height;
+
+            // キャレットを作成
+            CreateCaret(t.Handle, IntPtr.Zero, caretWidth, caretHeight);
+
+            // キャレットを表示
+            ShowCaret(t.Handle);
+        }
+
         // テキストボックスフォーカス中のグローバルショートカットでビープ音が出るのを防ぐ
         private void TextBoxKeyDown_AvoidBeep(object o, KeyEventArgs e)
         {
@@ -911,7 +789,6 @@ namespace MiBocaRecuerda
 
             Load += (o, e) =>
             {
-                //_form_resize._get_initial_size();
             };
 
             SizeChanged += (o, e) =>
@@ -991,6 +868,7 @@ namespace MiBocaRecuerda
                 SettingManager.InputCache.Exercise = optionTSMI_progresoVisual.Checked;
                 SettingManager.InputCache.Result = optionTSMI_resultados.Checked;
                 SettingManager.InputCache.QuizFilePathIndex = toolStripQuizFile.SelectedIndex;
+                SettingManager.InputCache.DarkMode = optionTSMI_DarkMode.Checked;
 
                 CommonFunction.XmlWrite(SettingManager.InputCache, "cache.xml");
             };
@@ -1080,6 +958,11 @@ namespace MiBocaRecuerda
                 }
             };
 
+            txtAnswer.LostFocus += (o, e) =>
+            {
+                DestroyCaret();
+            };
+
             btnShowAnswer.MouseDown += (o, e) =>
             {
                 if (e.Button == MouseButtons.Right)
@@ -1103,6 +986,111 @@ namespace MiBocaRecuerda
             {
                 if (!IsLoaded) return;
                 InitQuiz(true);
+            };
+
+            optionTSMI_DarkMode.CheckedChanged += (o, e) =>
+            {
+                bool ch = (o as ToolStripMenuItem).Checked;
+
+                Color baseColor = Color.FromArgb(80, 80, 80);
+                Color textBackColor = Color.FromArgb(60, 60, 60);
+
+                if (ch)
+                {
+                    txtAnswer.GotFocus += _CaretWidthChange;
+                    txtAnswer.FontChanged += _CaretWidthChange;
+
+                    BackColor = baseColor;
+
+                    foreach (Control ctrl in Controls)
+                    {
+                        if (ctrl.GetType() == typeof(Button))
+                        {
+                            ctrl.BackColor = Color.Gray;
+                            ctrl.ForeColor = Color.White;
+                        }
+                        else if (ctrl.GetType() == typeof(TextBox))
+                        {
+                            ctrl.BackColor = textBackColor;
+                            ctrl.ForeColor = Color.White;
+                        }
+                        else if (ctrl.GetType() == typeof(Label))
+                        {
+                            ctrl.BackColor = baseColor;
+                            ctrl.ForeColor = Color.White;
+                        }
+                        else if (ctrl.GetType() == typeof(ToolStrip))
+                        {
+                            ctrl.BackColor = Color.Black;
+                            ctrl.ForeColor = Color.White;
+                        }
+                        else if (ctrl.GetType() == typeof(MenuStrip))
+                        {
+                            ctrl.BackColor = baseColor;
+                            ctrl.ForeColor = Color.White;
+
+                            foreach (Control ctrl2 in (ctrl as MenuStrip).Controls)
+                            {
+                                ctrl2.BackColor = Color.Gray;
+                                ctrl2.ForeColor = Color.White;
+                            }
+                        }
+                        else if (ctrl.GetType() == typeof(ToolStripComboBox))
+                        {
+                            ctrl.BackColor = Color.Gray;
+                            ctrl.ForeColor = Color.White;
+                        }
+                        else if (ctrl.GetType() == typeof(Panel))
+                        {
+                            ctrl.BackColor = baseColor;
+
+                            foreach (Control ctrl2 in (ctrl as Panel).Controls)
+                            {
+                                ctrl2.BackColor = textBackColor;
+                                ctrl2.ForeColor = Color.White;
+                            }
+                        }
+                        else
+                        {
+                            ctrl.BackColor = baseColor;
+                        }
+                    }
+                }
+                else
+                {
+                    txtAnswer.GotFocus -= _CaretWidthChange;
+                    txtAnswer.FontChanged -= _CaretWidthChange;
+
+                    BackColor = SystemColors.Control;
+
+                    foreach (Control ctrl in Controls)
+                    {
+                        if (ctrl.GetType() == typeof(ToolStrip))
+                        {
+
+                        }
+                        ctrl.BackColor = preControlBackColor[ctrl.Name];
+                        ctrl.ForeColor = preControlForeColor[ctrl.Name];
+
+                        if (ctrl.GetType() == typeof(Panel))
+                        {
+                            foreach (Control ctrl2 in (ctrl as Panel).Controls)
+                            {
+                                ctrl2.BackColor = preControlBackColor[ctrl2.Name];
+                                ctrl2.ForeColor = preControlForeColor[ctrl2.Name];
+                            }
+                        }
+
+                        if (ctrl.GetType() == typeof(MenuStrip))
+                        {
+                            foreach (Control ctrl2 in (ctrl as MenuStrip).Controls)
+                            {
+                                ctrl2.BackColor = preControlBackColor[ctrl2.Name];
+                                ctrl2.ForeColor = preControlForeColor[ctrl2.Name];
+                            }
+                        }
+                    }
+                }
             };
 
             operationTSMI.MouseDown += (o, e) =>
@@ -1327,6 +1315,9 @@ namespace MiBocaRecuerda
 
         #region TSMI
 
+        #region Option
+
+        // Setting
         private void optionTSMI_setting_Click(object sender, EventArgs e)
         {
             SettingForm s = new SettingForm(ArchivosDeLengua, toolStripQuizFile.Text)
@@ -1342,6 +1333,7 @@ namespace MiBocaRecuerda
             }
         }
 
+        // QuizInfo
         private void optionTSMI_quizInfo_Click(object sender, EventArgs e)
         {
             if (MessageForm_quizInfo.IsDisposed == false) MessageForm_quizInfo.Dispose();
@@ -1363,23 +1355,37 @@ namespace MiBocaRecuerda
             MessageForm_quizInfo.Show();
         }
 
+        // Prueba
         private void optionTSMI_prueba_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
             item.Checked = !item.Checked;
         }
 
+        // Resultado
         private void optionTSMI_resultados_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
             item.Checked = !item.Checked;
         }
 
+        // Visual Progress
         private void optionTSMI_progresoVisual_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
             item.Checked = !item.Checked;
         }
+
+        // Dark Mode
+        private void optionTSMI_DarkMode_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
+        }
+
+        #endregion
+
+        #region Operation
 
         private void operationTSMI_start_Click(object sender, EventArgs e)
         {
@@ -1395,6 +1401,10 @@ namespace MiBocaRecuerda
         {
             MoveQuiz(false);
         }
+
+        #endregion
+
+        #region Herramientas
 
         private void toolTSMI_pruebaLista_Click(object sender, EventArgs e)
         {
@@ -1460,6 +1470,8 @@ namespace MiBocaRecuerda
 
             MessageForm_traducir.Show();
         }
+
+        #endregion
 
         #endregion
 

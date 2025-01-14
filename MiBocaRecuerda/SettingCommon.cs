@@ -45,6 +45,7 @@
         public bool ChapterTitle { get; set; }
         public bool ChapterExample { get; set; }
         public int QuizFilePathIndex { get; set; } = 0;
+        public bool DarkMode { get; set; }
 
         public InputCache() { }
     }
