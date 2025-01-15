@@ -90,6 +90,8 @@ namespace MiBocaRecuerda
 
         Dictionary<string, Dictionary<string, QuizFileConfig>> ArchivosDeLengua = new Dictionary<string, Dictionary<string, QuizFileConfig>>();
 
+        Dictionary<string, KeyPressEventHandler> LanguageKeyControl_Dic = new Dictionary<string, KeyPressEventHandler>();
+
         bool IsKeyDown = false;
 
         private ClassResize _form_resize;
@@ -224,6 +226,8 @@ namespace MiBocaRecuerda
 
             #endregion
 
+            LanguageKeyControl_Dic["es"] = txtAnswer_KeyPress_Spanish;
+
             _form_resize = new ClassResize(this);
 
             // 各コントロールの現在の色を保持
@@ -324,6 +328,13 @@ namespace MiBocaRecuerda
                 optionTSMI_progresoVisual.Enabled = false;
                 optionTSMI_resultados.Enabled = false;
 
+                if(optionTSMI_DarkMode.Checked == false)
+                {
+                    txtQuiz.BackColor = SystemColors.Control;
+                    txtAnswer.BackColor = SystemColors.Control;
+                    txtConsole.BackColor = SystemColors.Control;
+                }
+
                 if (resultForm.IsDisposed == false)
                 {
                     resultForm.Visible = false;
@@ -342,6 +353,13 @@ namespace MiBocaRecuerda
                 optionTSMI_prueba.Enabled = true;
                 optionTSMI_progresoVisual.Enabled = true;
                 optionTSMI_resultados.Enabled = true;
+
+                if (optionTSMI_DarkMode.Checked == false)
+                {
+                    txtQuiz.BackColor = Color.White;
+                    txtAnswer.BackColor = Color.White;
+                    txtConsole.BackColor = Color.White;
+                }
 
                 if (resultForm.IsDisposed == false) resultForm.Visible = result;
                 txtAnswer.Focus();
@@ -416,14 +434,26 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            txtAnswer.Focus();
+            // 前回の言語の補助入力を解除
+            if (LanguageKeyControl_Dic.ContainsKey(langType))
+            {
+                txtAnswer.KeyPress -= LanguageKeyControl_Dic[langType];
+            }
 
+            txtAnswer.Focus();
             btnAnswer.Enabled = true;
 
             currentQuizFile = toolStripQuizFile.SelectedItem.ToString();
             string filePath = $"{SettingManager.RomConfig.QuizFilePath}\\{toolStripQuizFile.SelectedItem.ToString()}.xlsx";
 
             OpenExcel(filePath);
+
+            // 新しい言語の補助入力を登録
+            if (LanguageKeyControl_Dic.ContainsKey(langType))
+            {
+                txtAnswer.KeyPress += LanguageKeyControl_Dic[langType];
+            }
+
             if (manual) txtConsole.Text = "";
             curProgress = -1;
             correctAnswerNum = 0;
@@ -783,6 +813,91 @@ namespace MiBocaRecuerda
             ProgressRedrow(0);
         }
 
+        // txtAnswer KeyPressの全言語共通イベント
+        private void txtAnswer_KeyPress_All(object o, KeyPressEventArgs e)
+        {
+            // シフトキー（Shift）が押されているかを確認
+            bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
+
+            bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
+
+            bool escPressed = e.KeyChar == (char)Keys.Escape;
+
+            // エンターキー（Enter）が押されているかを確認
+            bool enterPressed = e.KeyChar == (char)Keys.Enter;
+
+            // シフトキーとエンターキーが同時に押されたかを確認
+            if (shiftPressed && enterPressed)
+            {
+                e.Handled = true;
+                btnAnswer.PerformClick();
+            }
+
+            if (escPressed)
+            {
+                HideText();
+
+                e.Handled = true;
+            }
+        }
+
+        private void txtAnswer_KeyPress_Spanish(object o, KeyPressEventArgs e)
+        {
+            switch (e.KeyChar)
+            {
+                case '\'':
+                    isAcento = true;
+                    e.Handled = true;
+                    break;
+                case '"':
+                    isDieresis = true;
+                    e.Handled = true;
+                    break;
+                case 'a':
+                case 'e':
+                case 'i':
+                case 'o':
+                case 'u':
+                case 'A':
+                case 'E':
+                case 'I':
+                case 'O':
+                case 'U':
+                    if (isAcento)
+                    {
+                        e.KeyChar = letra_acento[e.KeyChar];
+                    }
+                    else if (isDieresis)
+                    {
+                        e.KeyChar = letra_dieresis[e.KeyChar];
+                    }
+                    break;
+                case ';':
+                    e.KeyChar = 'ñ';
+                    break;
+                case ':':
+                    e.KeyChar = 'Ñ';
+                    break;
+                case '<':
+                    e.KeyChar = ';';
+                    break;
+                case '>':
+                    e.KeyChar = ':';
+                    break;
+            }
+
+            switch (e.KeyChar)
+            {
+                case '\'':
+                case '"':
+                    break;
+                default:
+                    isAcento = false;
+                    isDieresis = false;
+                    break;
+            }
+        }
+
         private void RegisterEvent()
         {
             #region Form
@@ -877,86 +992,7 @@ namespace MiBocaRecuerda
 
             #region OtherControl
 
-            txtAnswer.KeyPress += (o, e) =>
-            {
-                // シフトキー（Shift）が押されているかを確認
-                bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
-
-                bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
-
-                bool escPressed = e.KeyChar == (char)Keys.Escape;
-
-                // エンターキー（Enter）が押されているかを確認
-                bool enterPressed = e.KeyChar == (char)Keys.Enter;
-
-                // シフトキーとエンターキーが同時に押されたかを確認
-                if (shiftPressed && enterPressed)
-                {
-                    e.Handled = true;
-                    btnAnswer.PerformClick();
-                }
-
-                if (escPressed)
-                {
-                    HideText();
-
-                    e.Handled = true;
-                }
-
-                switch (e.KeyChar)
-                {
-                    case '\'':
-                        isAcento = true;
-                        e.Handled = true;
-                        break;
-                    case '"':
-                        isDieresis = true;
-                        e.Handled = true;
-                        break;
-                    case 'a':
-                    case 'e':
-                    case 'i':
-                    case 'o':
-                    case 'u':
-                    case 'A':
-                    case 'E':
-                    case 'I':
-                    case 'O':
-                    case 'U':
-                        if (isAcento)
-                        {
-                            e.KeyChar = letra_acento[e.KeyChar];
-                        }
-                        else if (isDieresis)
-                        {
-                            e.KeyChar = letra_dieresis[e.KeyChar];
-                        }
-                        break;
-                    case ';':
-                        e.KeyChar = 'ñ';
-                        break;
-                    case ':':
-                        e.KeyChar = 'Ñ';
-                        break;
-                    case '<':
-                        e.KeyChar = ';';
-                        break;
-                    case '>':
-                        e.KeyChar = ':';
-                        break;
-                }
-
-                switch (e.KeyChar)
-                {
-                    case '\'':
-                    case '"':
-                        break;
-                    default:
-                        isAcento = false;
-                        isDieresis = false;
-                        break;
-                }
-            };
+            txtAnswer.KeyPress += txtAnswer_KeyPress_All;
 
             txtAnswer.LostFocus += (o, e) =>
             {
