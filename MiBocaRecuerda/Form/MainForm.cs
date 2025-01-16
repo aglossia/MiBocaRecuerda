@@ -464,8 +464,6 @@ namespace MiBocaRecuerda
             // 進捗表示作成
             CreateQuizProgress();
 
-            RefreshDisplay();
-
             // nからmまでの整数のリストを作成
             List<int> numberList = new List<int>();
             for (int i = QuizFileConfig.MinChapter * 10 - 9; i <= QuizFileConfig.MaxChapter * 10; i++)
@@ -502,11 +500,13 @@ namespace MiBocaRecuerda
                 QuizContents.Add(new QuizContents(quizTxt, correctAnswer, quizNum, chapterTitle, chapterExample, supplement));
             }
 
+            ShowQuestion();
+
+            RefreshDisplay();
+
             // 今回のクイズ設定を保持
             preMinChapter = QuizFileConfig.MinChapter;
             preMaxChapter = QuizFileConfig.MaxChapter;
-
-            ShowQuestion();
         }
 
         private void RefreshDisplay()
@@ -544,12 +544,14 @@ namespace MiBocaRecuerda
                         string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
 
                         // prueba回数
-                        Text += $" [PRUEBA {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
+                        Text += $" [PR {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
                         // 最近のprueba日
-                        Text += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0]}";
+                        Text += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0].Substring(2)}";
                     }
                 }
             }
+
+            Text += $" {QuizContents[curProgress].ChapterTitle}";
         }
 
         // OKとかNGとかを表示させる
