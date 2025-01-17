@@ -198,7 +198,6 @@ namespace MiBocaRecuerda
 #endif
 
             lblResult.Visible = false;
-            label1.Visible = false;
             btnAnswer.Enabled = false;
             lbl_PruebaChallengeCount.Visible = false;
             txtQuiz.ReadOnly = true;
@@ -303,14 +302,15 @@ namespace MiBocaRecuerda
         }
 
         // 非表示記憶用
-        string tmp1 = "", tmp2 = "", tmp3 = "";
+        string tmp1 = "", tmp2 = "", tmp3 = "", tmp4 = "";
         bool result = false;
         bool ba = false;
+        bool isHide = false;
 
         // 表示されてる文字を非表示にする
         private void HideText()
         {
-            if (!label1.Visible)
+            if (!isHide)
             {
                 tmp1 = txtQuiz.Text;
                 txtQuiz.Text = "";
@@ -320,6 +320,9 @@ namespace MiBocaRecuerda
 
                 tmp3 = txtConsole.Text;
                 txtConsole.Text = "";
+
+                tmp4 = Text;
+                Text = "oculto";
 
                 ba = btnAnswer.Enabled;
                 btnAnswer.Enabled = false;
@@ -347,6 +350,7 @@ namespace MiBocaRecuerda
                 txtAnswer.Text = tmp2;
                 txtAnswer.Select(txtAnswer.Text.Length, 0);
                 txtConsole.Text = tmp3;
+                Text = tmp4;
 
                 btnAnswer.Enabled = ba;
                 btnShowAnswer.Enabled = true;
@@ -368,7 +372,7 @@ namespace MiBocaRecuerda
             txtAnswer.ReadOnly = !txtAnswer.ReadOnly;
             txtConsole.ReadOnly = !txtConsole.ReadOnly;
 
-            label1.Visible = !label1.Visible;
+            isHide = !isHide;
         }
 
         // MBRの初期設定
@@ -423,12 +427,13 @@ namespace MiBocaRecuerda
         }
 
         int preLastQuiz = -1;
+        public string currentFilePath = "";
 
         // クイズ開始
         private void InitQuiz(bool manual)
         {
             // 非表示中はクイズを始めない
-            if (label1.Visible)
+            if (isHide)
             {
                 MessageBox.Show("No se puede continuar con la prueba mientras está oculto");
                 return;
@@ -444,9 +449,9 @@ namespace MiBocaRecuerda
             btnAnswer.Enabled = true;
 
             currentQuizFile = toolStripQuizFile.SelectedItem.ToString();
-            string filePath = $"{SettingManager.RomConfig.QuizFilePath}\\{toolStripQuizFile.SelectedItem.ToString()}.xlsx";
+            currentFilePath = $"{SettingManager.RomConfig.QuizFilePath}\\{toolStripQuizFile.SelectedItem.ToString()}.xlsx";
 
-            OpenExcel(filePath);
+            OpenExcel(currentFilePath);
 
             // 新しい言語の補助入力を登録
             if (LanguageKeyControl_Dic.ContainsKey(langType))

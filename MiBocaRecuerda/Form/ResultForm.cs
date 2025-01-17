@@ -5,6 +5,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using ClosedXML.Excel;
 
 namespace MiBocaRecuerda
 {
@@ -142,7 +144,32 @@ namespace MiBocaRecuerda
 
                  AdjustRowHeight();
             };
-            
+
+            bool isShiftPressed = false;
+
+            KeyPreview = !KeyPreview;
+
+            KeyDown += (o, e) =>
+            {
+                if (e.KeyCode == Keys.ShiftKey)
+                {
+                    isShiftPressed = true;
+                }
+            };
+
+            KeyUp += (o, e) =>
+            {
+                if (e.KeyCode == Keys.ShiftKey)
+                {
+                    isShiftPressed = false;
+                }
+            };
+
+            Deactivate += (o, e) =>
+            {
+                isShiftPressed = false;
+            };
+
             dgv.CellMouseClick += (o, e) =>
             {
                 string cellValue = "";
@@ -168,10 +195,70 @@ namespace MiBocaRecuerda
                 {
                     case MouseButtons.Middle:
 
-                        // セルの値をクリップボードにコピー
-                        if (!string.IsNullOrEmpty(cellValue))
+                        if (isShiftPressed)
                         {
-                            Clipboard.SetText(cellValue);
+                            try
+                            {
+                                string clip_str = Clipboard.GetText();
+
+                                if(clip_str == "")
+                                {
+                                    MessageBox.Show("クリップボードに文字列がない");
+
+                                    return;
+                                }
+
+                                using (FileStream fs = new FileStream(mf.currentFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                                {
+                                    XLWorkbook workBook = new XLWorkbook(fs);
+                                    IXLWorksheet ws = workBook.Worksheet(1);
+
+                                    string existir = ws.Cell(int.Parse(quizNum), 6).Value.ToString();
+
+                                    if (existir != "")
+                                    {
+                                        DialogResult result = MessageBox.Show("すでにSupplementがあるよ。上書きしますか？",
+                                                                                "おっと",
+                                                                                MessageBoxButtons.YesNo,
+                                                                                MessageBoxIcon.Exclamation,
+                                                                                MessageBoxDefaultButton.Button2);
+
+                                        if (result == DialogResult.No)
+                                        {
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            DialogResult result2 = MessageBox.Show("本当に上書きする？",
+                                                                                "おっとっと",
+                                                                                MessageBoxButtons.YesNo,
+                                                                                MessageBoxIcon.Exclamation,
+                                                                                MessageBoxDefaultButton.Button2);
+
+                                            if (result == DialogResult.No)
+                                            {
+                                                return;
+                                            }
+                                        }
+                                    }
+
+                                    ws.Cell(int.Parse(quizNum), 6).Value = clip_str;
+                                    workBook.Save();
+                                    MessageBox.Show("Supplement書込完了");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                        }
+                        else
+                        {
+                            // セルの値をクリップボードにコピー
+                            if (!string.IsNullOrEmpty(cellValue))
+                            {
+                                Clipboard.SetText(cellValue);
+                            }
                         }
 
                         break;
