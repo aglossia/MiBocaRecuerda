@@ -727,6 +727,18 @@ namespace MiBocaRecuerda
             }
         }
 
+        // QuizのSupplementを更新する
+        public void UpdateQuizSupplement(string QuizNum, string supplement)
+        {
+            foreach (QuizContents qc in QuizContents)
+            {
+                if(qc.QuizNum == QuizNum)
+                {
+                    qc.Supplement = supplement;
+                }
+            }
+        }
+
         #endregion
 
         #region 登録用イベント

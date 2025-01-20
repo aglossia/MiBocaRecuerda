@@ -4,7 +4,6 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
-using System.Threading.Tasks;
 using System.IO;
 using ClosedXML.Excel;
 
@@ -31,6 +30,7 @@ namespace MiBocaRecuerda
             dgv.RowHeadersVisible = false;
             dgv.AllowUserToAddRows = false;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
+            dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
             DataGridViewTextBoxColumn col_num = new DataGridViewTextBoxColumn
             {
@@ -225,18 +225,41 @@ namespace MiBocaRecuerda
 
                                         if (result == DialogResult.No)
                                         {
+                                            // 上書きしない
                                             return;
                                         }
                                         else
                                         {
-                                            DialogResult result2 = MessageBox.Show("本当に上書きする？",
+
+                                            DialogResult result2 = MessageBox.Show("追記？",
                                                                                 "おっとっと",
+                                                                                MessageBoxButtons.YesNo,
+                                                                                MessageBoxIcon.Exclamation,
+                                                                                MessageBoxDefaultButton.Button2);
+
+                                            string mes = "";
+
+                                            if(result2 == DialogResult.No)
+                                            {
+                                                mes = "上書き";
+                                            }
+                                            else
+                                            {
+                                                mes = "追記";
+
+                                                clip_str = existir + "\r\n\r\n======\r\n\r\n" + clip_str;
+                                            }
+
+
+                                            DialogResult result3 = MessageBox.Show($"本当に{mes}する？",
+                                                                                "おっとっとっと",
                                                                                 MessageBoxButtons.YesNo,
                                                                                 MessageBoxIcon.Exclamation,
                                                                                 MessageBoxDefaultButton.Button2);
 
                                             if (result == DialogResult.No)
                                             {
+                                                // 上書きも追記もしない
                                                 return;
                                             }
                                         }
@@ -245,6 +268,22 @@ namespace MiBocaRecuerda
                                     ws.Cell(int.Parse(quizNum), 6).Value = clip_str;
                                     workBook.Save();
                                     MessageBox.Show("Supplement書込完了");
+
+                                    // lista de pruebasを更新する
+                                    foreach (DataGridViewRow row in dgv.Rows)
+                                    {
+                                        if(row.Cells[0].Value.ToString() == quizNum)
+                                        {
+                                            Supplement[quizNum] = clip_str;
+                                            // 追記の時はすでに*が付いてるからそのための確認
+                                            if(row.Cells[1].Value.ToString().EndsWith("*") == false)
+                                            {
+                                                row.Cells[1].Value += " *";
+                                            }
+                                        }
+                                    }
+
+                                    mf.UpdateQuizSupplement(quizNum, clip_str);
                                 }
                             }
                             catch (Exception ex)
