@@ -20,19 +20,8 @@ namespace MiBocaRecuerda
         List<Label> label_progress = new List<Label>();
         List<Label> label_bar = new List<Label>();
         NumericUpDown nudProgress;
-        List<List<int>> progress_state = new List<List<int>>();
+        List<List<AppRom.ProgressState>> progress_state = new List<List<AppRom.ProgressState>>();
         List<string> respuestas = new List<string>();
-
-        Color colorNeutral = Color.LightBlue;
-        Color colorHover = Color.OrangeRed;
-        Color colorCurrentGroup = Color.Turquoise;
-        Color colorOnProgress = Color.Red;
-        Color colorOffProgress = Color.Black;
-
-        string progressStateCharacter_Neutral = "○";
-        string progressStateCharacter_Correct = "■";
-        string progressStateCharacter_Incorrect = "×";
-        string progressStateCharacter_CurrentQuiz = "★";
 
         Label lblNumericProgress;
 
@@ -132,7 +121,7 @@ namespace MiBocaRecuerda
 
                 //l.BorderStyle = BorderStyle.FixedSingle;
                 l.TextAlign = ContentAlignment.MiddleCenter;
-                l.BackColor = colorNeutral;
+                l.BackColor = AppRom.ColorNeutral;
                 l.Visible = false;
 
                 l.Click += Label_bar_Click;
@@ -596,9 +585,9 @@ namespace MiBocaRecuerda
             // 進捗ビジュアルモード
             if (optionTSMI_progresoVisual.Checked)
             {
-                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = 3;
+                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = AppRom.ProgressState.CurrentQuiz;
 
-                ProgressRedrow(UtilityFunction.GetNDigit(curProgress, 2));
+                RedrawProgress(curProgress);
             }
             else
             {
@@ -632,19 +621,19 @@ namespace MiBocaRecuerda
                 lblNumericProgress.Visible = false;
 
                 current_bar_index = 0;
-                label_bar[0].BackColor = colorCurrentGroup;
+                label_bar[0].BackColor = AppRom.ColorCurrentGroup;
 
                 int nudSize = UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1, 100);
 
                 nudProgress.Maximum = nudSize;
                 nudProgress.Visible = nudSize == 0 ? false : true;
 
-                progress_state = new List<List<int>>(
+                progress_state = new List<List<AppRom.ProgressState>>(
                         new List<int>[UtilityFunction.Techo(QuizFileConfig.QuizNum, 10)]
-                            .Select(_ => new List<int>(new int[10]))
+                            .Select(_ => new List<AppRom.ProgressState>(new AppRom.ProgressState[10]))
                     );
 
-                ProgressRedrow(0);
+                RedrawProgress(0);
             }
             else
             {
@@ -656,12 +645,16 @@ namespace MiBocaRecuerda
         }
 
         // 進捗表示を更新する
-        private void ProgressRedrow(int bar_index)
+        private void RedrawProgress(int progress_num)
         {
-            current_bar_index = bar_index;
+            int hyper_index = UtilityFunction.Suelo(progress_num, 100);
+
+            nudProgress.Value = hyper_index;
+
+            current_bar_index = UtilityFunction.GetNDigit(progress_num, 2);
 
             // hyper group(100~)とbar index(10の位)の差をとって進捗ラベルをどこまで表示するか
-            int progSize = QuizFileConfig.QuizNum - ((int)nudProgress.Value * 100 + bar_index * 10);
+            int progSize = QuizFileConfig.QuizNum - ((int)nudProgress.Value * 100 + current_bar_index * 10);
 
             // hyper groupが最上位にいっているかを調べる
             int barSize = UtilityFunction.Techo(QuizFileConfig.QuizNum - ((int)nudProgress.Value * 100), 10);
@@ -687,17 +680,17 @@ namespace MiBocaRecuerda
             {
                 switch (progress_state[(int)nudProgress.Value * 10 + current_bar_index][cnt])
                 {
-                    case 0:
-                        chara = progressStateCharacter_Neutral;
+                    case AppRom.ProgressState.Neutral:
+                        chara = AppRom.ProgressStateCharacter_Neutral;
                         break;
-                    case 1:
-                        chara = progressStateCharacter_Correct;
+                    case AppRom.ProgressState.Correct:
+                        chara = AppRom.ProgressStateCharacter_Correct;
                         break;
-                    case 2:
-                        chara = progressStateCharacter_Incorrect;
+                    case AppRom.ProgressState.Incorrect:
+                        chara = AppRom.ProgressStateCharacter_Incorrect;
                         break;
-                    case 3:
-                        chara = progressStateCharacter_CurrentQuiz;
+                    case AppRom.ProgressState.CurrentQuiz:
+                        chara = AppRom.ProgressStateCharacter_CurrentQuiz;
                         break;
                 }
 
@@ -775,7 +768,7 @@ namespace MiBocaRecuerda
 
         private void LabelClick(object sender, EventArgs e)
         {
-            int bar_index = label_bar.FindIndex(label => label.BackColor == colorCurrentGroup);
+            int bar_index = label_bar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
             int progress_index = label_progress.IndexOf(sender as Label);
             int quizNum = (int)nudProgress.Value * 100 + bar_index * 10 + progress_index;
 
@@ -799,37 +792,37 @@ namespace MiBocaRecuerda
 
         private void Label_bar_Click(object sender, EventArgs e)
         {
-            int idx = label_bar.IndexOf(sender as Label);
-
-            current_bar_index = idx;
+            int bar_idx = label_bar.IndexOf(sender as Label);
 
             // バーラベルを選択したやつは選択色に変えてそれ以外は未選択色
             label_bar.Select((label, index) => new { label, index })
                       .ToList()
-                      .ForEach(item => item.label.BackColor = (idx != item.index) ? Color.LightBlue : Color.Turquoise);
+                      .ForEach(item => item.label.BackColor = (bar_idx != item.index) ? Color.LightBlue : Color.Turquoise);
 
-            ProgressRedrow(idx);
+            RedrawProgress((int)nudProgress.Value * 100 + bar_idx * 10);
         }
 
         private void Label_hover(object o, EventArgs e)
         {
             Label l = o as Label;
 
-            l.BackColor = colorHover;
+            l.BackColor = AppRom.ColorHover;
         }
 
         private void Label_leave(object o, EventArgs e)
         {
             Label l = o as Label;
 
-            l.BackColor = label_bar[current_bar_index] == l ? colorCurrentGroup : colorNeutral;
+            l.BackColor = label_bar[current_bar_index] == l ? AppRom.ColorCurrentGroup : AppRom.ColorNeutral;
         }
 
         private void nud_ValueChanged(object sender, EventArgs e)
         {
             label_bar.ForEach(l => l.BackColor = Color.LightBlue);
 
-            ProgressRedrow(0);
+            int hyper_group = (int)nudProgress.Value * 100;
+
+            RedrawProgress(hyper_group);
         }
 
         // txtAnswer KeyPressの全言語共通イベント
@@ -1248,9 +1241,9 @@ namespace MiBocaRecuerda
 
             if (optionTSMI_progresoVisual.Checked)
             {
-                label_progress[curProgress % 10].Text = isCorrect ? progressStateCharacter_Correct : progressStateCharacter_Incorrect;
+                label_progress[curProgress % 10].Text = isCorrect ? AppRom.ProgressStateCharacter_Correct : AppRom.ProgressStateCharacter_Incorrect;
                 //label_progress[curProgress % 10].ForeColor = colorOffProgress;
-                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = isCorrect ? 1 : 2;
+                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
             }
 
             // 解答を保存

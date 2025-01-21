@@ -41,6 +41,8 @@ namespace MiBocaRecuerda
             return t;
         }
 
+        // FLOOR(n/10^(d-1)) mod 10
+        // numのdigit桁目を取得する
         public static int GetNDigit(int num, int digit)
         {
             double denominator = (int)Math.Pow(10, (double)digit - 1);
