@@ -17,22 +17,22 @@ namespace MiBocaRecuerda
     {
         private IXLWorksheet ws;
         private CoreProcess CoreProcess = new CoreProcess();
-        List<Label> label_progress = new List<Label>();
-        List<Label> label_bar = new List<Label>();
-        NumericUpDown nudProgress;
-        List<List<AppRom.ProgressState>> progress_state = new List<List<AppRom.ProgressState>>();
-        List<string> respuestas = new List<string>();
+        private List<Label> label_progress = new List<Label>();
+        private List<Label> label_bar = new List<Label>();
+        private NumericUpDown nudProgress;
+        private List<List<AppRom.ProgressState>> progress_state = new List<List<AppRom.ProgressState>>();
+        private List<string> respuestas = new List<string>();
 
-        Label lblNumericProgress;
+        private Label lblNumericProgress;
 
-        ResultForm resultForm = new ResultForm();
-        MessageForm MessageForm_respuesta = new MessageForm();
-        MessageForm MessageForm_traducir = new MessageForm();
-        MessageForm MessageForm_quizInfo = new MessageForm();
-        MessageForm MessageForm_chapterList = new MessageForm();
+        private ResultForm resultForm = new ResultForm();
+        private MessageForm MessageForm_respuesta = new MessageForm();
+        private MessageForm MessageForm_traducir = new MessageForm();
+        private MessageForm MessageForm_quizInfo = new MessageForm();
+        private MessageForm MessageForm_chapterList = new MessageForm();
 
         // Resultadoに表示する為に蓄積するやつ
-        List<QuizResult> QuizResult = new List<QuizResult>();
+        private List<QuizResult> QuizResult = new List<QuizResult>();
         // 現在の読込ファイルの設定
         public static QuizFileConfig QuizFileConfig;
         // 前回のクイズ設定
@@ -44,49 +44,30 @@ namespace MiBocaRecuerda
         private bool IsLoaded = false;
 
         // 現在のクイズファイル
-        string currentQuizFile;
+        private string currentQuizFile;
         // クイズファイルの最大行(設定オーバーを対応するため)
-        int MaxRow = 0;
+        private int MaxRow = 0;
         // 現在のクイズ言語
-        string langType = "";
+        private string langType = "";
         // 現在の問題のインデックス
-        int curProgress = -1;
+        private int curProgress = -1;
 
-        int PruebaChallengeCount = -1;
+        private int PruebaChallengeCount = -1;
 
-        bool isAcento = false;
-        bool isDieresis = false;
+        private Dictionary<string, Dictionary<string, QuizFileConfig>> ArchivosDeLengua = new Dictionary<string, Dictionary<string, QuizFileConfig>>();
 
-        private static readonly Dictionary<char, char> letra_acento = new Dictionary<char, char>()
-        {
-            ['a'] = 'á',
-            ['e'] = 'é',
-            ['i'] = 'í',
-            ['o'] = 'ó',
-            ['u'] = 'ú',
-            ['A'] = 'Á',
-            ['E'] = 'É',
-            ['I'] = 'Í',
-            ['O'] = 'Ó',
-            ['U'] = 'Ú',
-        };
+        // 言語ごとの入力補助を切り替える用
+        private Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
 
-        private static readonly Dictionary<char, char> letra_dieresis = new Dictionary<char, char>()
-        {
-            ['u'] = 'ü',
-            ['U'] = 'Ü',
-        };
-
-        Dictionary<string, Dictionary<string, QuizFileConfig>> ArchivosDeLengua = new Dictionary<string, Dictionary<string, QuizFileConfig>>();
-
-        Dictionary<string, KeyPressEventHandler> LanguageKeyControl_Dic = new Dictionary<string, KeyPressEventHandler>();
-
-        bool IsKeyDown = false;
+        private bool IsKeyDown = false;
 
         private ClassResize _form_resize;
 
-        Dictionary<string, Color> preControlBackColor = new Dictionary<string, Color>();
-        Dictionary<string, Color> preControlForeColor = new Dictionary<string, Color>();
+        // ダークモード制御用
+        private Dictionary<string, Color> preControlBackColor = new Dictionary<string, Color>();
+        private Dictionary<string, Color> preControlForeColor = new Dictionary<string, Color>();
+
+        #region DLL Import
 
         [DllImport("user32.dll")]
         private static extern bool CreateCaret(IntPtr hWnd, IntPtr hBitmap, int nWidth, int nHeight);
@@ -96,6 +77,8 @@ namespace MiBocaRecuerda
 
         [DllImport("user32.dll")]
         private static extern bool DestroyCaret();
+
+        #endregion
 
         public MainForm()
         {
@@ -214,7 +197,7 @@ namespace MiBocaRecuerda
 
             #endregion
 
-            LanguageKeyControl_Dic["es"] = txtAnswer_KeyPress_Spanish;
+            ManageLanguage_Dic["es"] = new Spanish();
 
             _form_resize = new ClassResize(this);
 
@@ -291,10 +274,10 @@ namespace MiBocaRecuerda
         }
 
         // 非表示記憶用
-        string tmp1 = "", tmp2 = "", tmp3 = "", tmp4 = "";
-        bool result = false;
-        bool ba = false;
-        bool isHide = false;
+        private string tmp1 = "", tmp2 = "", tmp3 = "", tmp4 = "";
+        private bool result = false;
+        private bool ba = false;
+        private bool isHide = false;
 
         // 表示されてる文字を非表示にする
         private void HideText()
@@ -415,7 +398,7 @@ namespace MiBocaRecuerda
             QuizFileConfig = ArchivosDeLengua[langType][filePath];
         }
 
-        int preLastQuiz = -1;
+        private int preLastQuiz = -1;
         public string currentFilePath = "";
 
         // クイズ開始
@@ -429,9 +412,9 @@ namespace MiBocaRecuerda
             }
 
             // 前回の言語の補助入力を解除
-            if (LanguageKeyControl_Dic.ContainsKey(langType))
+            if (ManageLanguage_Dic.ContainsKey(langType))
             {
-                txtAnswer.KeyPress -= LanguageKeyControl_Dic[langType];
+                txtAnswer.KeyPress -= ManageLanguage_Dic[langType].KeyPress;
             }
 
             txtAnswer.Focus();
@@ -443,9 +426,9 @@ namespace MiBocaRecuerda
             OpenExcel(currentFilePath);
 
             // 新しい言語の補助入力を登録
-            if (LanguageKeyControl_Dic.ContainsKey(langType))
+            if (ManageLanguage_Dic.ContainsKey(langType))
             {
-                txtAnswer.KeyPress += LanguageKeyControl_Dic[langType];
+                txtAnswer.KeyPress += ManageLanguage_Dic[langType].KeyPress;
             }
 
             if (manual) txtConsole.Text = "";
@@ -853,63 +836,6 @@ namespace MiBocaRecuerda
             }
         }
 
-        private void txtAnswer_KeyPress_Spanish(object o, KeyPressEventArgs e)
-        {
-            switch (e.KeyChar)
-            {
-                case '\'':
-                    isAcento = true;
-                    e.Handled = true;
-                    break;
-                case '"':
-                    isDieresis = true;
-                    e.Handled = true;
-                    break;
-                case 'a':
-                case 'e':
-                case 'i':
-                case 'o':
-                case 'u':
-                case 'A':
-                case 'E':
-                case 'I':
-                case 'O':
-                case 'U':
-                    if (isAcento)
-                    {
-                        e.KeyChar = letra_acento[e.KeyChar];
-                    }
-                    else if (isDieresis)
-                    {
-                        e.KeyChar = letra_dieresis[e.KeyChar];
-                    }
-                    break;
-                case ';':
-                    e.KeyChar = 'ñ';
-                    break;
-                case ':':
-                    e.KeyChar = 'Ñ';
-                    break;
-                case '<':
-                    e.KeyChar = ';';
-                    break;
-                case '>':
-                    e.KeyChar = ':';
-                    break;
-            }
-
-            switch (e.KeyChar)
-            {
-                case '\'':
-                case '"':
-                    break;
-                default:
-                    isAcento = false;
-                    isDieresis = false;
-                    break;
-            }
-        }
-
         private void RegisterEvent()
         {
             #region Form
@@ -1210,7 +1136,7 @@ namespace MiBocaRecuerda
         #region イベント
 
         // 正解数
-        int correctAnswerNum = 0;
+        private int correctAnswerNum = 0;
 
         CancellationTokenSource cts = new CancellationTokenSource();
         static object lockObject = new object();

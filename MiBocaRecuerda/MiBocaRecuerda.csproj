@@ -127,6 +127,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppRom.cs" />
     <Compile Include="ClassResize.cs" />
     <Compile Include="CommonFunction.cs" />
     <Compile Include="CoreProcess.cs" />
@@ -149,6 +150,8 @@
     <Compile Include="Form\MessageForm.Designer.cs">
       <DependentUpon>MessageForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Language\IManageInput.cs" />
+    <Compile Include="Language\Spanish.cs" />
     <Compile Include="ParseXML.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
