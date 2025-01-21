@@ -92,6 +92,8 @@ namespace MiBocaRecuerda
 
             SizeChanged += _Resize;
 
+            KeyPreview = !KeyPreview;
+
             KeyDown += (o, e) =>
             {
                 if (IsKeyDown) return;

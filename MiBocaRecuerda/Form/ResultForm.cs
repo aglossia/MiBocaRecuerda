@@ -155,6 +155,36 @@ namespace MiBocaRecuerda
                 {
                     isShiftPressed = true;
                 }
+
+                bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
+
+                if (ctrlPressed)
+                {
+                    switch (e.KeyCode)
+                    {
+                        case Keys.D0:
+                        case Keys.D1:
+                        case Keys.D2:
+                        case Keys.D3:
+                        case Keys.D4:
+                        case Keys.D5:
+                        case Keys.D6:
+                        case Keys.D7:
+                        case Keys.D8:
+                        case Keys.D9:
+
+                            // KeyCodeをToStringすると"Dn"がでてくるから2文字目を取ってcharからstringにして
+                            // 9+してmod10したら1+9 mod 10 =0だし0+9 mod 10 = 9になる
+                            int num = (int.Parse(e.KeyCode.ToString()[1].ToString()) + 9) % 10;
+
+                            ShowSupplement(num);
+
+                            break;
+                        case Keys.Q:
+                            Close();
+                            break;
+                    }
+                }
             };
 
             KeyUp += (o, e) =>
@@ -174,8 +204,6 @@ namespace MiBocaRecuerda
             {
                 string cellValue = "";
                 string quizNum = "";
-                string japones = "";
-                string correcto = "";
 
                 // クリックされたセルが有効なセルかを確認
                 if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
@@ -183,8 +211,6 @@ namespace MiBocaRecuerda
                     // セルの値を取得
                     cellValue = dgv[e.ColumnIndex, e.RowIndex].Value?.ToString().Replace("*", "");
                     quizNum = dgv[0, e.RowIndex].Value?.ToString();
-                    japones = dgv[1, e.RowIndex].Value?.ToString().Replace("*", "");
-                    correcto = dgv[2, e.RowIndex].Value?.ToString();
                 }
                 else
                 {
@@ -303,28 +329,37 @@ namespace MiBocaRecuerda
                         break;
                     case MouseButtons.Right:
 
-                        // 補足がある場合
-                        if(Supplement[quizNum] != "")
-                        {
-                            List<string> tmp = new List<string>
+                        ShowSupplement(e.RowIndex);
+
+                        break;
+                }
+            };
+        }
+
+        private void ShowSupplement(int RowIndex)
+        {
+            string quizNum = dgv[0, RowIndex].Value?.ToString();
+            string japones = dgv[1, RowIndex].Value?.ToString().Replace("*", "");
+            string correcto = dgv[2, RowIndex].Value?.ToString();
+
+            // 補足がある場合
+            if (Supplement[quizNum] != "")
+            {
+                List<string> tmp = new List<string>
                             {
                                 japones,
                                 correcto,
                                 "───────"
                             };
-                            tmp.AddRange(ParseXML.ConvertTextWithTable(Supplement[quizNum]).Split('\n'));
+                tmp.AddRange(ParseXML.ConvertTextWithTable(Supplement[quizNum]).Split('\n'));
 
-                            MessageForm s = new MessageForm(tmp, $"Suplemento - {quizNum}", MessageForm.TipoDeUbicacion.PARENT_LINE, this)
-                            {
-                                ShowIcon = false
-                            };
+                MessageForm s = new MessageForm(tmp, $"Suplemento - {quizNum}", MessageForm.TipoDeUbicacion.PARENT_LINE, this)
+                {
+                    ShowIcon = false
+                };
 
-                            s.Show();
-                        }
-
-                        break;
-                }
-            };
+                s.Show();
+            }
         }
 
         private void AdjustRowHeight()

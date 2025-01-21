@@ -59,8 +59,6 @@ namespace MiBocaRecuerda
         // 言語ごとの入力補助を切り替える用
         private Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
 
-        private bool IsKeyDown = false;
-
         private ClassResize _form_resize;
 
         // ダークモード制御用
@@ -303,7 +301,7 @@ namespace MiBocaRecuerda
                 optionTSMI_progresoVisual.Enabled = false;
                 optionTSMI_resultados.Enabled = false;
 
-                if(optionTSMI_DarkMode.Checked == false)
+                if (optionTSMI_DarkMode.Checked == false)
                 {
                     txtQuiz.BackColor = SystemColors.Control;
                     txtAnswer.BackColor = SystemColors.Control;
@@ -489,7 +487,7 @@ namespace MiBocaRecuerda
         private void RefreshDisplay()
         {
             // 前回とクイズ設定が違っていたらチャレンジ回数を初期化する
-            if((preMinChapter != QuizFileConfig.MinChapter) ||
+            if ((preMinChapter != QuizFileConfig.MinChapter) ||
                 (preMaxChapter != QuizFileConfig.MaxChapter))
             {
                 PruebaChallengeCount = 0;
@@ -708,11 +706,35 @@ namespace MiBocaRecuerda
         {
             foreach (QuizContents qc in QuizContents)
             {
-                if(qc.QuizNum == QuizNum)
+                if (qc.QuizNum == QuizNum)
                 {
                     qc.Supplement = supplement;
                 }
             }
+        }
+
+        // 正誤表表示
+        private void ShowFeDeErratas(int progNum)
+        {
+            if (progNum > 10) return;
+
+            int bar_index = label_bar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
+            int quizNum = (int)nudProgress.Value * 100 + bar_index * 10 + progNum;
+
+            if (respuestas.Count <= quizNum || quizNum < 0) return;
+
+            List<string> tmp = new List<string>();
+
+            tmp.Add(QuizContents[quizNum].CorrectAnswer);
+            tmp.Add("───────");
+            tmp.Add(respuestas[quizNum]);
+
+            MessageForm s = new MessageForm(tmp, "FE DE ERRATAS", MessageForm.TipoDeUbicacion.DERECHA, this)
+            {
+                ShowIcon = false
+            };
+
+            s.Show();
         }
 
         #endregion
@@ -851,8 +873,6 @@ namespace MiBocaRecuerda
 
             KeyDown += (o, e) =>
             {
-                if (IsKeyDown) return;
-
                 bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
                 bool shiftPressed = (ModifierKeys & Keys.Shift) == Keys.Shift;
 
@@ -860,34 +880,34 @@ namespace MiBocaRecuerda
                 {
                     switch (e.KeyCode)
                     {
+                        case Keys.D0:
+                        case Keys.D1:
+                        case Keys.D2:
+                        case Keys.D3:
+                        case Keys.D4:
+                        case Keys.D5:
+                        case Keys.D6:
+                        case Keys.D7:
+                        case Keys.D8:
+                        case Keys.D9:
+
+                            // KeyCodeをToStringすると"Dn"がでてくるから2文字目を取ってcharからstringにして
+                            // 9+してmod10したら1+9 mod 10 =0だし0+9 mod 10 = 9になる
+                            int num = (int.Parse(e.KeyCode.ToString()[1].ToString()) + 9) % 10;
+
+                            ShowFeDeErratas(num);
+
+                            break;
                         case Keys.R:
                             // Respuesta
-                            IsKeyDown = true;
                             btnShowAnswer.PerformClick();
                             break;
-                        case Keys.N:
-                            //if (shiftPressed) MoveQuiz(true);
-                            break;
-                        case Keys.B:
-                            //if (shiftPressed) MoveQuiz(false);
-                            break;
-                        case Keys.L:
-                            //ShowLista();
-                            break;
                     }
-                }
-                else
-                {
-                    //if (e.KeyCode == Keys.F1)
-                    //{
-                    //    btnTranslate.PerformClick();
-                    //}
                 }
             };
 
             KeyUp += (o, e) =>
             {
-                IsKeyDown = false;
             };
 
             Shown += (o, e) =>
