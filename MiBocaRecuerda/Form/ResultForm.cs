@@ -291,7 +291,14 @@ namespace MiBocaRecuerda
                                         }
                                     }
 
+                                    // supplement
                                     ws.Cell(int.Parse(quizNum), 6).Value = clip_str;
+
+                                    string date = ws.Cell(int.Parse(quizNum), 7).Value.ToString();
+
+                                    if (date != "") date += "\r\n";
+                                    // supplementの横に日付をいれる
+                                    ws.Cell(int.Parse(quizNum), 7).Value = date + DateTime.Today.ToShortDateString();
                                     workBook.Save();
                                     MessageBox.Show("Supplement書込完了");
 
