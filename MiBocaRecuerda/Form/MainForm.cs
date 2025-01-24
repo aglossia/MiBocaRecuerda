@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace MiBocaRecuerda
 {
-    public partial class MainForm : Form
+    public partial class MainForm : ResizableForm
     {
         private IXLWorksheet ws;
         private CoreProcess CoreProcess = new CoreProcess();
@@ -59,7 +59,7 @@ namespace MiBocaRecuerda
         // 言語ごとの入力補助を切り替える用
         private Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
 
-        private ClassResize _form_resize;
+        //public ClassResize _form_resize;
 
         // ダークモード制御用
         private Dictionary<string, Color> preControlBackColor = new Dictionary<string, Color>();
@@ -197,7 +197,7 @@ namespace MiBocaRecuerda
 
             ManageLanguage_Dic["es"] = new Spanish();
 
-            _form_resize = new ClassResize(this);
+            //_form_resize = new ClassResize(this);
 
             // 各コントロールの現在の色を保持
             foreach (Control ctrl in Controls)
@@ -868,7 +868,7 @@ namespace MiBocaRecuerda
 
             SizeChanged += (o, e) =>
             {
-                _form_resize._resize();
+                _form_resize._resize(false);
             };
 
             KeyDown += (o, e) =>

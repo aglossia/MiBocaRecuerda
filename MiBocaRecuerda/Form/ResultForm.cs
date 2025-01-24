@@ -9,16 +9,19 @@ using ClosedXML.Excel;
 
 namespace MiBocaRecuerda
 {
-    public partial class ResultForm : Form
+    public partial class ResultForm : ResizableForm
     {
         public ResultForm() { }
         private Dictionary<string, string> Supplement = new Dictionary<string, string>();
 
-        private ClassResize _form_resize;
+        //private ClassResize _form_resize;
+        private ResizableForm _form;
 
         public ResultForm(List<QuizResult> qc, MainForm mf)
         {
             InitializeComponent();
+
+            _form = mf;
 
             foreach (QuizResult r in qc)
             {
@@ -102,10 +105,13 @@ namespace MiBocaRecuerda
 
                 BaseAreaInfo baseArea = UtilityFunction.GetBaseArea();
 
+                if (_form is ResizableForm)
+                {
+                    _form_resize._resize(true, (_form as ResizableForm)._form_resize.WidthRate, (_form as ResizableForm)._form_resize.HeightRate);
+                }
+
                 int move_right = mf.Location.X + mf.Width + Width;
                 int move_left = mf.Location.X - Width;
-
-                Console.WriteLine($"{baseArea.MaxX}, {mf.Location.X + mf.Width + Width}");
 
                 if(move_right < baseArea.MaxX)
                 {
@@ -124,14 +130,14 @@ namespace MiBocaRecuerda
             {
                 AdjustRowHeight();
 
-                _form_resize = new ClassResize(this);
+                //_form_resize = new ClassResize(this);
             };
 
             SizeChanged += (o, e) =>
             {
                 dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
 
-                if (_form_resize != null) _form_resize._resize();
+                if (_form_resize != null) _form_resize._resize(false);
             };
 
             dgv.FontChanged += (o, e) =>

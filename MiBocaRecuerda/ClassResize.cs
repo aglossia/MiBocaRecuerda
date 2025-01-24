@@ -16,6 +16,9 @@ namespace MiBocaRecuerda
         private SizeF _formSize;
         private Form form;
 
+        public double WidthRate => form.ClientSize.Width / (double) _formSize.Width;
+        public double HeightRate => form.ClientSize.Height / (double)_formSize.Height;
+
         public ClassResize(Form _form_)
         {
             form = _form_;
@@ -69,10 +72,24 @@ namespace MiBocaRecuerda
         List<Type> ignoreControl = new List<Type>() { typeof(MenuStrip) };
 
 
-        public void _resize()
+        public void _resize(bool manual, double width_rate = 1, double height_rate = 1)
         {
-            double _form_ratio_width = (double)form.ClientSize.Width / (double)_formSize.Width;
-            double _form_ratio_height = (double)form.ClientSize.Height / (double)_formSize.Height;
+            double _form_ratio_width;
+            double _form_ratio_height;
+
+            if (manual == false)
+            {
+                _form_ratio_width = WidthRate;
+                _form_ratio_height = HeightRate;
+            }
+            else
+            {
+                _form_ratio_width = width_rate;
+                _form_ratio_height = height_rate;
+
+                form.Width = (int)(form.Width * width_rate);
+                form.Height = (int)(form.Height * height_rate);
+            }
 
             if ((_form_ratio_width == 0) || (_form_ratio_height == 0)) return;
 

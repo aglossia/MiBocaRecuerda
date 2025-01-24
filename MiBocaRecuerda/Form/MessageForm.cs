@@ -6,10 +6,11 @@ using System.Windows.Forms;
 
 namespace MiBocaRecuerda
 {
-    public partial class MessageForm : Form
+    public partial class MessageForm : ResizableForm
     {
         bool IsKeyDown = false;
-        private ClassResize _form_resize;
+        //private ClassResize _form_resize;
+        private Form _form;
 
         public enum TipoDeUbicacion
         {
@@ -21,9 +22,11 @@ namespace MiBocaRecuerda
 
         public MessageForm() { }
 
-        public MessageForm(List<string> mensajes, string titulo, TipoDeUbicacion locationType, Form mf, bool readOnly = false)
+        public MessageForm(List<string> mensajes, string titulo, TipoDeUbicacion locationType, Form form, bool readOnly = false)
         {
             InitializeComponent();
+
+            _form = form;
 
             // テキストボックスが\nだと改行されないんだが？
             // mensajes.ForEach(s => s.Replace("\n", "\r\n")がきかないのはなぜだ？
@@ -56,29 +59,36 @@ namespace MiBocaRecuerda
 
                 BaseAreaInfo baseArea = UtilityFunction.GetBaseArea();
 
-                int move_right = mf.Location.X + mf.Width + Width;
-                int move_left = mf.Location.X - Width;
+                //_form_resize = new ClassResize(this);
+
+                if(_form is ResizableForm)
+                {
+                    _form_resize._resize(true, (_form as ResizableForm)._form_resize.WidthRate, (_form as ResizableForm)._form_resize.HeightRate);
+                }
+
+                int move_right = form.Location.X + form.Width + Width;
+                int move_left = form.Location.X - Width;
 
                 switch (locationType)
                 {
                     case TipoDeUbicacion.CENTRO:
-                        Location = new Point(mf.Location.X + (mf.Width - Width) / 2, mf.Location.Y + (mf.Height - Height) / 2);
+                        Location = new Point(form.Location.X + (form.Width - Width) / 2, form.Location.Y + (form.Height - Height) / 2);
                         break;
                     case TipoDeUbicacion.DERECHA:
                         //Location = new Point(mf.Location.X + mf.Width, mf.Location.Y);
                         if (move_right < baseArea.MaxX)
                         {
                             // 右に表示する余地があるとき
-                            Location = new Point(move_right - Width, mf.Location.Y);
+                            Location = new Point(move_right - Width, form.Location.Y);
                         }
                         else if (move_left > baseArea.MinX)
                         {
                             // 左に表示する余地があるとき
-                            Location = new Point(move_left, mf.Location.Y);
+                            Location = new Point(move_left, form.Location.Y);
                         }
                         break;
                     case TipoDeUbicacion.PARENT_LINE:
-                        Location = new Point(mf.Location.X, mf.Location.Y);
+                        Location = new Point(form.Location.X, form.Location.Y);
                         break;
                 }
             };
@@ -87,7 +97,9 @@ namespace MiBocaRecuerda
             {
                 button1.Focus();
 
-                _form_resize = new ClassResize(this);
+                //_form_resize = new ClassResize(this);
+
+                //_form_resize._resize(true, (_mf as MainForm)._form_resize.WidthRate, (_mf as MainForm)._form_resize.HeightRate);
             };
 
             SizeChanged += _Resize;
@@ -118,7 +130,7 @@ namespace MiBocaRecuerda
 
         private void _Resize(object o, EventArgs e)
         {
-            if (_form_resize != null) _form_resize._resize();
+            if (_form_resize != null) _form_resize._resize(false);
         }
 
         public void MessageUpdate(List<string> mensajes)
