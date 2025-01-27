@@ -192,6 +192,7 @@
     </Compile>
     <Compile Include="Translate.cs" />
     <Compile Include="UtilityFunction.cs" />
+    <Compile Include="Utility\numeric\ArabicSpanish.cs" />
     <EmbeddedResource Include="Form\EndDialog.resx">
       <DependentUpon>EndDialog.cs</DependentUpon>
     </EmbeddedResource>

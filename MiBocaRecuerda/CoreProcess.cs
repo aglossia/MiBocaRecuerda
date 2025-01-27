@@ -13,7 +13,17 @@ namespace MiBocaRecuerda
         {
             string s1 = Comparelize(user_input);
 
+            // _correctは成形前
             List<string> _correct = ParseAnswer(correct_answer);
+
+            List<string> buffer = new List<string>();
+
+            foreach (string str in _correct)
+            {
+                buffer.Add(ArabicSpanish.ConvertSpanishNumbers(str));
+            }
+
+            _correct = _correct.Union(buffer).ToList();
 
             // 比較用に成形する
             List<string> correct = _correct.Select(s => Comparelize(s)).ToList();
@@ -21,7 +31,7 @@ namespace MiBocaRecuerda
             float max_sim = 1;
             float res = 0;
 
-            adopt_str = _correct[0];
+            adopt_str = "";
 
             int index = 0;
             string _adopt_str = correct[0];
