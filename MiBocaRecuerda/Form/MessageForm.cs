@@ -45,7 +45,7 @@ namespace MiBocaRecuerda
                 if(newLineCount <= 41)
                 {
                     // barra de título:40 + 行数*16 + 余白:10
-                    Size = new Size(maxWidth, 50 + newLineCount * 25 + 10);
+                    Size = new Size(maxWidth, 50 + newLineCount * 40 + 10);
                 }
                 else
                 {
@@ -91,6 +91,15 @@ namespace MiBocaRecuerda
                         Location = new Point(form.Location.X, form.Location.Y);
                         break;
                 }
+
+                if(Location.X + Size.Width > baseArea.MaxX)
+                {
+                    double ratio = (double)baseArea.MaxX / (Location.X + Size.Width);
+
+                    //Size = new Size(Size.Width - ((Location.X + Size.Width) - baseArea.MaxX), Size.Height);
+
+                    Size = new Size((int)(Size.Width * ratio), (int)(Size.Height * ratio));
+                }
             };
 
             Shown += (o, e) =>
@@ -100,9 +109,11 @@ namespace MiBocaRecuerda
                 //_form_resize = new ClassResize(this);
 
                 //_form_resize._resize(true, (_mf as MainForm)._form_resize.WidthRate, (_mf as MainForm)._form_resize.HeightRate);
+
+                SizeChanged += _Resize;
             };
 
-            SizeChanged += _Resize;
+            //SizeChanged += _Resize;
 
             KeyPreview = !KeyPreview;
 
