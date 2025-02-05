@@ -12,10 +12,12 @@ namespace MiBocaRecuerda
         // 辞書: ラテン文字表記からアラビア数字への対応
         static readonly private Dictionary<string, int> TextToNumber = new Dictionary<string, int>
         {
-            {"uno", 1}, {"dos", 2}, {"tres", 3}, {"cuatro", 4}, {"cinco", 5},
+            { "cero", 0},{"uno", 1}, {"dos", 2}, {"tres", 3}, {"cuatro", 4}, {"cinco", 5},
             {"seis", 6}, {"siete", 7}, {"ocho", 8}, {"nueve", 9}, {"diez", 10},
             {"once", 11}, {"doce", 12}, {"trece", 13}, {"catorce", 14}, {"quince", 15},
             {"dieciséis", 16}, {"diecisiete", 17}, {"dieciocho", 18}, {"diecinueve", 19}, {"veinte", 20},
+            {"veintiuno", 21}, {"veintidós", 22}, {"veintitrés", 23}, {"veinticuatro", 24}, {"veinticinco", 25},
+            {"veintiséis", 26}, {"veintisiete", 27}, {"veintiocho", 28}, {"veintinueve", 29},
             {"treinta", 30}, {"cuarenta", 40}, {"cincuenta", 50}, {"sesenta", 60}, {"setenta", 70},
             {"ochenta", 80}, {"noventa", 90}, {"cien", 100}, {"ciento", 100}, {"doscientos", 200},
             {"trescientos", 300}, {"cuatrocientos", 400}, {"quinientos", 500}, {"seiscientos", 600},
@@ -26,10 +28,12 @@ namespace MiBocaRecuerda
         // 辞書: アラビア数字からラテン文字表記への対応
         static readonly private Dictionary<int, string> NumberToText = new Dictionary<int, string>
         {
-            {1, "uno"}, {2, "dos"}, {3, "tres"}, {4, "cuatro"}, {5, "cinco"},
+            { 0, "cero"}, {1, "uno"}, {2, "dos"}, {3, "tres"}, {4, "cuatro"}, {5, "cinco"},
             {6, "seis"}, {7, "siete"}, {8, "ocho"}, {9, "nueve"}, {10, "diez"},
             {11, "once"}, {12, "doce"}, {13, "trece"}, {14, "catorce"}, {15, "quince"},
             {16, "dieciséis"}, {17, "diecisiete"}, {18, "dieciocho"}, {19, "diecinueve"}, {20, "veinte"},
+            {21, "veintiuno"}, {22, "veintidós"}, {23, "veintitrés"}, {24, "veinticuatro"}, {25, "veinticinco"},
+            {26, "veintiséis"}, {27, "veintisiete"}, {28, "veintiocho"}, {29, "veintinueve"},
             {30, "treinta"}, {40, "cuarenta"}, {50, "cincuenta"}, {60, "sesenta"}, {70, "setenta"},
             {80, "ochenta"}, {90, "noventa"}, {100, "cien"}, {200, "doscientos"}, {300, "trescientos"},
             {400, "cuatrocientos"}, {500, "quinientos"}, {600, "seiscientos"}, {700, "setecientos"},
@@ -201,7 +205,11 @@ namespace MiBocaRecuerda
         {
             if (NumberToText.ContainsKey((int)number)) return NumberToText[(int)number];
 
-            if (number < 100)
+            if (number < 30)
+            {
+                return NumberToText[(int)number];
+            }
+            else if (number < 100)
             {
                 int tens = (int)(number / 10) * 10;
                 int units = (int)(number % 10);
@@ -217,30 +225,14 @@ namespace MiBocaRecuerda
             {
                 long thousands = number / 1000;
                 long remainder = number % 1000;
-
-                if (remainder == 0)
-                {
-                    // milが1のときは数詞も冠詞もつけない
-                    return thousands == 1 ? "mil" : $"{ArabicToSpanish(thousands)} mil";
-                }
-                else
-                {
-                    return thousands == 1 ? $"mil {ArabicToSpanish(remainder)}" : $"{ArabicToSpanish(thousands)} mil {ArabicToSpanish(remainder)}";
-                }
+                string thousandsText = thousands == 1 ? "mil" : $"{ArabicToSpanish(thousands)} mil";
+                return remainder == 0 ? thousandsText : $"{thousandsText} {ArabicToSpanish(remainder)}";
             }
             else if (number < 10000000)
             {
                 long millions = number / 1000000;
                 long remainder = number % 1000000;
-
-                if (remainder == 0)
-                {
-                    return millions == 1 ? $"un millón" : $"{ArabicToSpanish(millions)} millón";
-                }
-                else
-                {
-                    return millions == 1 ? $"un millón {ArabicToSpanish(remainder)}" : $"{ArabicToSpanish(millions)} millón {ArabicToSpanish(remainder)}";
-                }
+                return remainder == 0 ? $"{ArabicToSpanish(millions)} millón" : $"{ArabicToSpanish(millions)} millón {ArabicToSpanish(remainder)}";
             }
 
             return number.ToString();
