@@ -1,4 +1,6 @@
-﻿namespace MiBocaRecuerda
+﻿using System.Collections.Generic;
+
+namespace MiBocaRecuerda
 {
     public static class SettingManager
     {
@@ -66,8 +68,9 @@
         public string ChapterTitle { get; set; }
         public string ChapterExample { get; set; }
         public string Supplement { get; set; }
+        public List<string> AutoNombre { get; set; }
 
-        public QuizContents(string quiz, string ca, string qn, string ct, string ce, string s)
+        public QuizContents(string quiz, string ca, string qn, string ct, string ce, string s, List<string> an)
         {
             Quiz = quiz;
             CorrectAnswer = ca;
@@ -75,6 +78,7 @@
             ChapterTitle = ct;
             ChapterExample = ce;
             Supplement = s;
+            AutoNombre = an;
         }
     }
 

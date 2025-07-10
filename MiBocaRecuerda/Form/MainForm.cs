@@ -190,6 +190,7 @@ namespace MiBocaRecuerda
             MessageForm_traducir.Dispose();
 
             txtAnswer.KeyDown += TextBoxKeyDown_AvoidBeep;
+            txtAnswer.KeyDown += TextAnswerKeyDown;
             txtQuiz.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtConsole.KeyDown += TextBoxKeyDown_AvoidBeep;
 
@@ -462,6 +463,7 @@ namespace MiBocaRecuerda
             string chapterTitle = "";
             string chapterExample = "";
             string supplement = "";
+            List<string> autoNombre;
 
             foreach (int index in randomSequence)
             {
@@ -471,8 +473,9 @@ namespace MiBocaRecuerda
                 chapterTitle = ws.Cell((int)Math.Floor((decimal)((index - 1) / 10)) * 10 + 1, 4).Value.ToString();
                 chapterExample = ws.Cell((int)Math.Floor((decimal)((index - 1) / 10)) * 10 + 1, 5).Value.ToString();
                 supplement = ws.Cell(index, 6).Value.ToString();
+                autoNombre = ws.Cell(index, 8).Value.ToString().Split(',').ToList();
 
-                QuizContents.Add(new QuizContents(quizTxt, correctAnswer, quizNum, chapterTitle, chapterExample, supplement));
+                QuizContents.Add(new QuizContents(quizTxt, correctAnswer, quizNum, chapterTitle, chapterExample, supplement, autoNombre));
             }
 
             ShowQuestion();
@@ -771,6 +774,44 @@ namespace MiBocaRecuerda
             }
         }
 
+        private void TextAnswerKeyDown(object o, KeyEventArgs e)
+        {
+            if (e.Control)
+            {
+                int selectionStart = txtAnswer.SelectionStart;
+                string insertText = "";
+
+                switch (e.KeyCode)
+                {
+                    case Keys.D0:
+                    case Keys.D1:
+                    case Keys.D2:
+                    case Keys.D3:
+                    case Keys.D4:
+                    case Keys.D5:
+                    case Keys.D6:
+                    case Keys.D7:
+                    case Keys.D8:
+                    case Keys.D9:
+                        // Dn
+                        int num = (int.Parse(e.KeyCode.ToString()[1].ToString()) + 9) % 10;
+
+                        if (QuizContents[curProgress].AutoNombre.Count <= num) return;
+
+                        insertText = QuizContents[curProgress].AutoNombre[num];
+
+                        break;
+                }
+
+                if(insertText != "")
+                {
+                    txtAnswer.Text = txtAnswer.Text.Insert(selectionStart, insertText);
+                    txtAnswer.SelectionStart = selectionStart + insertText.Length;
+                    e.SuppressKeyPress = true; // 元のキー入力をキャンセル
+                }
+            }
+        }
+
         private void LabelClick(object sender, EventArgs e)
         {
             int bar_index = label_bar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
@@ -880,20 +921,20 @@ namespace MiBocaRecuerda
                 {
                     switch (e.KeyCode)
                     {
-                        case Keys.D0:
-                        case Keys.D1:
-                        case Keys.D2:
-                        case Keys.D3:
-                        case Keys.D4:
-                        case Keys.D5:
-                        case Keys.D6:
-                        case Keys.D7:
-                        case Keys.D8:
-                        case Keys.D9:
+                        case Keys.NumPad0:
+                        case Keys.NumPad1:
+                        case Keys.NumPad2:
+                        case Keys.NumPad3:
+                        case Keys.NumPad4:
+                        case Keys.NumPad5:
+                        case Keys.NumPad6:
+                        case Keys.NumPad7:
+                        case Keys.NumPad8:
+                        case Keys.NumPad9:
 
-                            // KeyCodeをToStringすると"Dn"がでてくるから2文字目を取ってcharからstringにして
+                            // KeyCodeをToStringすると"NumPadn"がでてくるから7文字目を取ってcharからstringにして
                             // 9+してmod10したら1+9 mod 10 =0だし0+9 mod 10 = 9になる
-                            int num = (int.Parse(e.KeyCode.ToString()[1].ToString()) + 9) % 10;
+                            int num = (int.Parse(e.KeyCode.ToString()[6].ToString()) + 9) % 10;
 
                             ShowFeDeErratas(num);
 
