@@ -56,6 +56,7 @@
             this.toolTSMI_translate = new System.Windows.Forms.ToolStripMenuItem();
             this.lbl_PruebaChallengeCount = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -294,6 +295,16 @@
             this.panel2.Size = new System.Drawing.Size(429, 67);
             this.panel2.TabIndex = 14;
             // 
+            // lbl_ErrorAllowCount
+            // 
+            this.lbl_ErrorAllowCount.AutoSize = true;
+            this.lbl_ErrorAllowCount.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.lbl_ErrorAllowCount.Location = new System.Drawing.Point(192, 254);
+            this.lbl_ErrorAllowCount.Name = "lbl_ErrorAllowCount";
+            this.lbl_ErrorAllowCount.Size = new System.Drawing.Size(11, 12);
+            this.lbl_ErrorAllowCount.TabIndex = 12;
+            this.lbl_ErrorAllowCount.Text = "0";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -301,6 +312,7 @@
             this.ClientSize = new System.Drawing.Size(429, 279);
             this.Controls.Add(this.txtAnswer);
             this.Controls.Add(this.panel2);
+            this.Controls.Add(this.lbl_ErrorAllowCount);
             this.Controls.Add(this.lbl_PruebaChallengeCount);
             this.Controls.Add(this.txtConsole);
             this.Controls.Add(this.lblResult);
@@ -350,6 +362,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_pruebaLista;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_DarkMode;
+        private System.Windows.Forms.Label lbl_ErrorAllowCount;
     }
 }
 

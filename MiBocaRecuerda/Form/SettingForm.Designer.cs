@@ -77,7 +77,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(298, 249);
+            this.tabControl1.Size = new System.Drawing.Size(298, 281);
             this.tabControl1.TabIndex = 6;
             // 
             // tabPageSpanish
@@ -86,18 +86,18 @@
             this.tabPageSpanish.Location = new System.Drawing.Point(4, 27);
             this.tabPageSpanish.Name = "tabPageSpanish";
             this.tabPageSpanish.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSpanish.Size = new System.Drawing.Size(290, 218);
+            this.tabPageSpanish.Size = new System.Drawing.Size(290, 250);
             this.tabPageSpanish.TabIndex = 0;
             this.tabPageSpanish.Text = "Español";
             this.tabPageSpanish.UseVisualStyleBackColor = true;
             // 
             // settingSpanish1
             // 
-            this.settingSpanish1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.settingSpanish1.Dock = System.Windows.Forms.DockStyle.Top;
             this.settingSpanish1.LangIndex = 0;
             this.settingSpanish1.Location = new System.Drawing.Point(3, 3);
             this.settingSpanish1.Name = "settingSpanish1";
-            this.settingSpanish1.Size = new System.Drawing.Size(284, 212);
+            this.settingSpanish1.Size = new System.Drawing.Size(284, 257);
             this.settingSpanish1.TabIndex = 0;
             // 
             // tabPageEnglish
@@ -126,7 +126,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(298, 249);
+            this.panel1.Size = new System.Drawing.Size(298, 281);
             this.panel1.TabIndex = 7;
             // 
             // panel2
@@ -134,10 +134,10 @@
             this.panel2.Controls.Add(this.btnAyudar);
             this.panel2.Controls.Add(this.btnApply);
             this.panel2.Controls.Add(this.btnCancel);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(0, 249);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(0, 280);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(298, 40);
+            this.panel2.Size = new System.Drawing.Size(298, 41);
             this.panel2.TabIndex = 8;
             // 
             // btnAyudar
@@ -157,7 +157,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(298, 289);
+            this.ClientSize = new System.Drawing.Size(298, 321);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Name = "SettingForm";

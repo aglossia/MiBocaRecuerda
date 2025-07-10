@@ -38,16 +38,19 @@
             this.chboxComaPunto = new System.Windows.Forms.CheckBox();
             this.chboxFileName = new System.Windows.Forms.ComboBox();
             this.lblFileName = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.nudErrorAllow = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudErrorAllow)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label1.Location = new System.Drawing.Point(14, 68);
+            this.label1.Location = new System.Drawing.Point(5, 68);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(56, 18);
             this.label1.TabIndex = 0;
@@ -99,7 +102,7 @@
             // nudMinChapter
             // 
             this.nudMinChapter.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.nudMinChapter.Location = new System.Drawing.Point(67, 91);
+            this.nudMinChapter.Location = new System.Drawing.Point(67, 93);
             this.nudMinChapter.Minimum = new decimal(new int[] {
             1,
             0,
@@ -147,7 +150,7 @@
             // 
             this.chboxComaPunto.AutoSize = true;
             this.chboxComaPunto.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.chboxComaPunto.Location = new System.Drawing.Point(147, 103);
+            this.chboxComaPunto.Location = new System.Drawing.Point(147, 111);
             this.chboxComaPunto.Name = "chboxComaPunto";
             this.chboxComaPunto.Size = new System.Drawing.Size(72, 40);
             this.chboxComaPunto.TabIndex = 2;
@@ -174,6 +177,29 @@
             this.lblFileName.TabIndex = 4;
             this.lblFileName.Text = "FileName";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.label4.Location = new System.Drawing.Point(5, 148);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(56, 18);
+            this.label4.TabIndex = 0;
+            this.label4.Text = "ミス許容";
+            // 
+            // nudErrorAllow
+            // 
+            this.nudErrorAllow.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.nudErrorAllow.Location = new System.Drawing.Point(67, 146);
+            this.nudErrorAllow.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.nudErrorAllow.Name = "nudErrorAllow";
+            this.nudErrorAllow.Size = new System.Drawing.Size(56, 25);
+            this.nudErrorAllow.TabIndex = 1;
+            // 
             // SettingBase
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -182,17 +208,20 @@
             this.Controls.Add(this.chboxFileName);
             this.Controls.Add(this.chboxComaPunto);
             this.Controls.Add(this.chboxCapital);
+            this.Controls.Add(this.nudErrorAllow);
             this.Controls.Add(this.nudMaxChapter);
             this.Controls.Add(this.nudMinChapter);
             this.Controls.Add(this.nudQuizNum);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Name = "SettingBase";
-            this.Size = new System.Drawing.Size(235, 153);
+            this.Size = new System.Drawing.Size(235, 175);
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudErrorAllow)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -210,5 +239,7 @@
         private System.Windows.Forms.CheckBox chboxComaPunto;
         private System.Windows.Forms.ComboBox chboxFileName;
         private System.Windows.Forms.Label lblFileName;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown nudErrorAllow;
     }
 }

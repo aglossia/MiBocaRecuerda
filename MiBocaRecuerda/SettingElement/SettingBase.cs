@@ -34,6 +34,7 @@ namespace MiBocaRecuerda
             nudQuizNum.Value = lang.QuizNum;
             chboxCapital.Checked = lang.Capital;
             chboxComaPunto.Checked = lang.ComaPunto;
+            nudErrorAllow.Value = lang.ErrorAllow;
         }
 
         public void LoadConfig(Dictionary<string, QuizFileConfig> lengua, string currentFile)
@@ -52,7 +53,8 @@ namespace MiBocaRecuerda
                 MaxChapter = (int)nudMaxChapter.Value,
                 QuizNum = (int)nudQuizNum.Value,
                 Capital = chboxCapital.Checked,
-                ComaPunto = chboxComaPunto.Checked
+                ComaPunto = chboxComaPunto.Checked,
+                ErrorAllow = (int)nudErrorAllow.Value
             };
 
             return lang;

@@ -53,6 +53,7 @@ namespace MiBocaRecuerda
         private int curProgress = -1;
 
         private int PruebaChallengeCount = -1;
+        private Counter ErrorAllowCount = new Counter();
 
         private Dictionary<string, Dictionary<string, QuizFileConfig>> ArchivosDeLengua = new Dictionary<string, Dictionary<string, QuizFileConfig>>();
 
@@ -159,6 +160,14 @@ namespace MiBocaRecuerda
 
             Controls.Add(nudProgress);
 
+            ErrorAllowCount.PropertyChanged += (o, e) =>
+            {
+                if (e.PropertyName == nameof(Counter.Cnt))
+                {
+                    lbl_ErrorAllowCount.Text = $"{ErrorAllowCount.Cnt}/{QuizFileConfig.ErrorAllow}";
+                }
+            };
+
             #endregion
 
             #region デザイナを使わないコントロールプロパティ設定
@@ -170,6 +179,7 @@ namespace MiBocaRecuerda
             lblResult.Visible = false;
             btnAnswer.Enabled = false;
             lbl_PruebaChallengeCount.Visible = false;
+            lbl_ErrorAllowCount.Visible = false;
             txtQuiz.ReadOnly = true;
             txtQuiz.BackColor = Color.White;
 
@@ -234,6 +244,8 @@ namespace MiBocaRecuerda
             // 最初のクイズ設定を保持
             preMinChapter = QuizFileConfig.MinChapter;
             preMaxChapter = QuizFileConfig.MaxChapter;
+
+            ErrorAllowCount.Cnt = -1;
         }
 
         #region 内部処理
@@ -436,6 +448,7 @@ namespace MiBocaRecuerda
             QuizResult.Clear();
             QuizContents.Clear();
             respuestas.Clear();
+            ErrorAllowCount.Cnt = 0;
 
             // 進捗表示作成
             CreateQuizProgress();
@@ -509,9 +522,18 @@ namespace MiBocaRecuerda
 
             Text = $"MBR [{QuizFileConfig.MinChapter * 10 - 9}~{QuizFileConfig.MaxChapter * 10}]";
 
+            lbl_ErrorAllowCount.Visible = false;
+
             // pruebaモードのとき
             if (optionTSMI_prueba.Checked)
             {
+                ErrorAllowCount.Cnt = 0;
+
+                if(QuizFileConfig.ErrorAllow > 0)
+                {
+                    lbl_ErrorAllowCount.Visible = true;
+                }
+
                 // 練習が1章だけならPRUEBA回数を表示する
                 if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
                 {
@@ -565,6 +587,8 @@ namespace MiBocaRecuerda
             curProgress++;
 
             preLastQuiz = int.Parse(QuizContents[curProgress].QuizNum);
+
+            ErrorAllowCount.Cnt = 0;
 
             // 進捗ビジュアルモード
             if (optionTSMI_progresoVisual.Checked)
@@ -1222,8 +1246,23 @@ namespace MiBocaRecuerda
             }
             else
             {
-                // 完答モードの時はやり直し
-                if (optionTSMI_prueba.Checked == false) return;
+                if (optionTSMI_prueba.Checked)
+                {
+                    // pruebaモード
+
+                    // 1個目の条件はいらない気もするがまぁいいだろう
+                    if((QuizFileConfig.ErrorAllow > 0) && (ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllow))
+                    {
+                        // ミス許容が設定されているときはミス数を加算してやり直し
+                        ErrorAllowCount.Cnt++;
+                        return;
+                    }
+                }
+                else
+                {
+                    // 完答モードの時はやり直し
+                    return;
+                }
             }
 
             if (optionTSMI_progresoVisual.Checked)

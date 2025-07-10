@@ -155,6 +155,7 @@
     </Compile>
     <Compile Include="Language\IManageInput.cs" />
     <Compile Include="Language\Spanish.cs" />
+    <Compile Include="Model\Counter.cs" />
     <Compile Include="ParseXML.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -219,6 +220,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form\SettingForm.resx">
       <DependentUpon>SettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingElement\SettingEnglish.resx">
+      <DependentUpon>SettingEnglish.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingElement\SettingSpanish.resx">
+      <DependentUpon>SettingSpanish.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="packages.config" />
