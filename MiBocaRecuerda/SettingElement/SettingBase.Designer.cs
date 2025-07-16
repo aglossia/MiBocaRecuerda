@@ -40,6 +40,7 @@
             this.lblFileName = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.nudErrorAllow = new System.Windows.Forms.NumericUpDown();
+            this.chBoxErrorAllowAll = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
@@ -139,7 +140,7 @@
             // 
             this.chboxCapital.AutoSize = true;
             this.chboxCapital.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.chboxCapital.Location = new System.Drawing.Point(147, 69);
+            this.chboxCapital.Location = new System.Drawing.Point(147, 61);
             this.chboxCapital.Name = "chboxCapital";
             this.chboxCapital.Size = new System.Drawing.Size(88, 40);
             this.chboxCapital.TabIndex = 2;
@@ -150,7 +151,7 @@
             // 
             this.chboxComaPunto.AutoSize = true;
             this.chboxComaPunto.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.chboxComaPunto.Location = new System.Drawing.Point(147, 111);
+            this.chboxComaPunto.Location = new System.Drawing.Point(147, 99);
             this.chboxComaPunto.Name = "chboxComaPunto";
             this.chboxComaPunto.Size = new System.Drawing.Size(72, 40);
             this.chboxComaPunto.TabIndex = 2;
@@ -164,7 +165,7 @@
             this.chboxFileName.FormattingEnabled = true;
             this.chboxFileName.Location = new System.Drawing.Point(3, 29);
             this.chboxFileName.Name = "chboxFileName";
-            this.chboxFileName.Size = new System.Drawing.Size(223, 26);
+            this.chboxFileName.Size = new System.Drawing.Size(260, 26);
             this.chboxFileName.TabIndex = 3;
             // 
             // lblFileName
@@ -200,12 +201,24 @@
             this.nudErrorAllow.Size = new System.Drawing.Size(56, 25);
             this.nudErrorAllow.TabIndex = 1;
             // 
+            // chBoxErrorAllowAll
+            // 
+            this.chBoxErrorAllowAll.AutoSize = true;
+            this.chBoxErrorAllowAll.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.chBoxErrorAllowAll.Location = new System.Drawing.Point(147, 146);
+            this.chBoxErrorAllowAll.Name = "chBoxErrorAllowAll";
+            this.chBoxErrorAllowAll.Size = new System.Drawing.Size(99, 22);
+            this.chBoxErrorAllowAll.TabIndex = 2;
+            this.chBoxErrorAllowAll.Text = "ミス許容全体\r\n";
+            this.chBoxErrorAllowAll.UseVisualStyleBackColor = true;
+            // 
             // SettingBase
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.lblFileName);
             this.Controls.Add(this.chboxFileName);
+            this.Controls.Add(this.chBoxErrorAllowAll);
             this.Controls.Add(this.chboxComaPunto);
             this.Controls.Add(this.chboxCapital);
             this.Controls.Add(this.nudErrorAllow);
@@ -217,7 +230,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Name = "SettingBase";
-            this.Size = new System.Drawing.Size(235, 175);
+            this.Size = new System.Drawing.Size(266, 185);
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).EndInit();
@@ -241,5 +254,6 @@
         private System.Windows.Forms.Label lblFileName;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown nudErrorAllow;
+        private System.Windows.Forms.CheckBox chBoxErrorAllowAll;
     }
 }

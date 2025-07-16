@@ -24,6 +24,7 @@ namespace MiBocaRecuerda
         public bool Capital { get; set; } = false;
         public bool ComaPunto { get; set; } = false;
         public int ErrorAllow { get; set; } = 0;
+        public bool ErrorAllowAll { get; set; } = false;
         public int MaxQuizNum => (MaxChapter - MinChapter + 1) * 10;
         public bool Validation()
         {

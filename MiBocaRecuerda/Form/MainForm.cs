@@ -165,6 +165,10 @@ namespace MiBocaRecuerda
                 if (e.PropertyName == nameof(Counter.Cnt))
                 {
                     lbl_ErrorAllowCount.Text = $"{ErrorAllowCount.Cnt}/{QuizFileConfig.ErrorAllow}";
+                    if (QuizFileConfig.ErrorAllowAll)
+                    {
+                        lbl_ErrorAllowCount.Text = $"Todo: {lbl_ErrorAllowCount.Text}";
+                    }
                 }
             };
 
@@ -532,6 +536,7 @@ namespace MiBocaRecuerda
                 if(QuizFileConfig.ErrorAllow > 0)
                 {
                     lbl_ErrorAllowCount.Visible = true;
+                    //lbl_ErrorAllowCount.BorderStyle = QuizFileConfig.ErrorAllowAll ? BorderStyle.FixedSingle : BorderStyle.None;
                 }
 
                 // 練習が1章だけならPRUEBA回数を表示する
@@ -588,7 +593,11 @@ namespace MiBocaRecuerda
 
             preLastQuiz = int.Parse(QuizContents[curProgress].QuizNum);
 
-            ErrorAllowCount.Cnt = 0;
+            if (QuizFileConfig.ErrorAllowAll == false)
+            {
+                // ミス許容が全体ではないときに問題ごとのミスを初期化する
+                ErrorAllowCount.Cnt = 0;
+            }
 
             // 進捗ビジュアルモード
             if (optionTSMI_progresoVisual.Checked)
