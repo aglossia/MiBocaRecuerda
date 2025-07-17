@@ -5,13 +5,15 @@ using System.Text.RegularExpressions;
 
 namespace MiBocaRecuerda
 {
+    // POR HACER:20250717:CoreProcessは言語に依存してはならない設計なのだが一部、言語に依存してるので要修正
+
     public class CoreProcess
     {
         public string adopt_str = "";
 
         public bool CheckAnswer(string user_input, string correct_answer)
         {
-            string s1 = Comparelize(user_input);
+            string s1 = MainForm.LangCtrl.Comparelize(user_input);
 
             // _correctは成形前
             List<string> _correct = ParseAnswer(correct_answer);
@@ -26,7 +28,7 @@ namespace MiBocaRecuerda
             _correct = _correct.Union(buffer).ToList();
 
             // 比較用に成形する
-            List<string> correct = _correct.Select(s => Comparelize(s)).ToList();
+            List<string> correct = _correct.Select(s => MainForm.LangCtrl.Comparelize(s)).ToList();
 
             float max_sim = 1;
             float res = 0;
@@ -50,7 +52,16 @@ namespace MiBocaRecuerda
                 index++;
             }
 
-            return DisplayDifferences(s1, _adopt_str);
+            string distinction = MainForm.LangCtrl.GetDistinction(s1, _adopt_str);
+
+            if (distinction != "")
+            {
+                adopt_str = distinction;
+
+                return false;
+            }
+
+            return true;
         }
 
         // 解答DBの定義形式から解答群を抽出する ()とか[^]とかを使ってる時用
@@ -70,41 +81,9 @@ namespace MiBocaRecuerda
             ans.Sort();
             ans = ans.Distinct().ToList();
 
-            ans.ForEach(a => ReplaceConsecutiveSpaces(a));
+            ans.ForEach(a => UtilityFunction.ReplaceConsecutiveSpaces(a));
 
             return ans;
-        }
-
-        private string Comparelize(string str)
-        {
-            string s2 = str.Replace("\r\n", "\n");
-            s2 = s2.Replace("¿", "");
-            s2 = s2.Replace("?", "");
-            s2 = s2.Replace("!", "");
-            s2 = s2.Replace("¡", "");
-            s2 = s2.Replace(";", "");
-            s2 = s2.Replace(":", "");
-            s2 = s2.Replace("…", ",");
-
-            s2 = s2.Replace("\n", " ");
-
-            s2 = s2.Replace(".", ". ");
-            s2 = s2.Replace(",", ", ");
-
-            if (MainForm.QuizFileConfig.ComaPunto)
-            {
-                s2 = s2.Replace(".", "");
-                s2 = s2.Replace(",", "");
-            }
-
-            s2 = ReplaceConsecutiveSpaces(s2);
-
-            s2 = (new Regex(" $")).Replace(s2, "");
-
-            // 先頭の空行をなくす
-            s2 = (new Regex("^ +")).Replace(s2, "");
-
-            return s2;
         }
 
         // ()で囲まれた部分を任意文字列とする
@@ -242,73 +221,6 @@ namespace MiBocaRecuerda
 
             // 展開処理の呼び出し
             return Expand(input);
-        }
-
-        private string ReplaceConsecutiveSpaces(string input)
-        {
-            // 連続したスペースを一つのスペースに置き換える
-            string pattern = @"\s+";
-            string replacement = " ";
-            Regex regex = new Regex(pattern);
-            return regex.Replace(input, replacement);
-        }
-
-        private bool DisplayDifferences(string str1, string str2)
-        {
-            int maxLength = Math.Max(str1.Length, str2.Length);
-
-            // 文字列の長さが異なる場合は、*で埋める
-            str1 = str1.PadRight(maxLength, '*');
-            str2 = str2.PadRight(maxLength, '*');
-
-            // 差分を検出し、周辺数文字を表示
-            for (int i = 0; i < maxLength; i++)
-            {
-                // string.Compareの第3引数をtrueにすると文字列の大小を区別しない
-                if (string.Compare(str1[i].ToString(), str2[i].ToString(), MainForm.QuizFileConfig.Capital) != 0)
-                {
-                    Console.WriteLine($"差分が見つかりました: 位置 {i}, 前の文字列: {GetContext(str1, i)}, 後ろの文字列: {GetContext(str2, i)}");
-                    adopt_str = $"{i}: {GetContext(str1, i)} -> {GetContext(str2, i)}";
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private string GetContext(string str, int index, int contextLength = 3)
-        {
-            int start = Math.Max(0, index - contextLength);
-
-            int space_cnt = CountSpaces(str.Substring(start, Math.Abs(start - index)));
-
-            if (space_cnt > 0)
-            {
-                start = Math.Max(0, index - (contextLength + space_cnt));
-            }
-            int end = Math.Min(str.Length - 1, index + contextLength);
-
-            space_cnt = CountSpaces(str.Substring(index, end - index));
-
-            if (space_cnt > 0)
-            {
-                end = Math.Min(str.Length - 1, index + (contextLength + space_cnt));
-            }
-
-            return str.Substring(start, end - start + 1);
-        }
-
-        private int CountSpaces(string str)
-        {
-            int count = 0;
-            foreach (char c in str)
-            {
-                if (c == ' ')
-                {
-                    count++;
-                }
-            }
-            return count;
         }
     }
 }

@@ -4,25 +4,35 @@ namespace MiBocaRecuerda
 {
     public static class SettingManager
     {
-        public static AppConfig AppConfig = new AppConfig();
+        public static Dictionary<string, Dictionary<string, CommonConfig>> CommonConfigManager = new Dictionary<string, Dictionary<string, CommonConfig>>();
         public static InputCache InputCache = new InputCache();
         public static RomConfig RomConfig = new RomConfig();
+
+        public static LenguaConfig currentLengua(string type)
+        {
+            return CommonConfigManager[type][MainForm.currentQuizFile].LenguaConfig;
+        }
     }
 
-    public class AppConfig
+    // 全体設定
+    public class CommonConfig
     {
-        public QuizFileConfig quizFileConfig = new QuizFileConfig();
-        public AppConfig() { }
+        public QuizFileConfig QuizFileConfig { get; set; }
+        public LenguaConfig LenguaConfig { get; set; }
+
+        public CommonConfig(QuizFileConfig qfc, LenguaConfig lc)
+        {
+            QuizFileConfig = qfc;
+            LenguaConfig = lc;
+        }
     }
 
-    // クイズファイルごとの設定
+    // クイズ設定
     public class QuizFileConfig
     {
         public int MinChapter { get; set; } = 1;
         public int MaxChapter { get; set; } = 1;
         public int QuizNum { get; set; } = 5;
-        public bool Capital { get; set; } = false;
-        public bool ComaPunto { get; set; } = false;
         public int ErrorAllow { get; set; } = 0;
         public bool ErrorAllowAll { get; set; } = false;
         public int MaxQuizNum => (MaxChapter - MinChapter + 1) * 10;
@@ -35,6 +45,22 @@ namespace MiBocaRecuerda
             return true;
         }
 
+        public void Copy(QuizFileConfig qfc)
+        {
+            MinChapter = qfc.MinChapter;
+            MaxChapter = qfc.MaxChapter;
+            QuizNum = qfc.QuizNum;
+            ErrorAllow = qfc.ErrorAllow;
+            ErrorAllowAll = qfc.ErrorAllowAll;
+        }
+    }
+
+    // 言語設定
+    public class LenguaConfig
+    {
+        public string Name { get; set; }
+        public bool Capital { get; set; } = false;
+        public bool ComaPunto { get; set; } = false;
     }
 
     public class InputCache

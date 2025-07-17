@@ -1,10 +1,66 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace MiBocaRecuerda
 {
     public class Spanish : IManageInput
     {
+        public string Comparelize(string str)
+        {
+            string s2 = str.Replace("\r\n", "\n");
+            s2 = s2.Replace("¿", "");
+            s2 = s2.Replace("?", "");
+            s2 = s2.Replace("!", "");
+            s2 = s2.Replace("¡", "");
+            s2 = s2.Replace(";", "");
+            s2 = s2.Replace(":", "");
+            s2 = s2.Replace("…", ",");
+
+            s2 = s2.Replace("\n", " ");
+
+            s2 = s2.Replace(".", ". ");
+            s2 = s2.Replace(",", ", ");
+
+            if (SettingManager.currentLengua("es").ComaPunto)
+            {
+                s2 = s2.Replace(".", "");
+                s2 = s2.Replace(",", "");
+            }
+
+            s2 = UtilityFunction.ReplaceConsecutiveSpaces(s2);
+
+            s2 = (new Regex(" $")).Replace(s2, "");
+
+            // 先頭の空行をなくす
+            s2 = (new Regex("^ +")).Replace(s2, "");
+
+            return s2;
+        }
+
+        public string GetDistinction(string str1, string str2)
+        {
+            int maxLength = Math.Max(str1.Length, str2.Length);
+
+            // 文字列の長さが異なる場合は、*で埋める
+            str1 = str1.PadRight(maxLength, '*');
+            str2 = str2.PadRight(maxLength, '*');
+
+            // 差分を検出し、周辺数文字を表示
+            for (int i = 0; i < maxLength; i++)
+            {
+                // string.Compareの第3引数をtrueにすると文字列の大小を区別しない
+                if (string.Compare(str1[i].ToString(), str2[i].ToString(), SettingManager.currentLengua("es").Capital) != 0)
+                {
+                    Console.WriteLine($"差分が見つかりました: 位置 {i}, 前の文字列: {UtilityFunction.GetContext(str1, i)}, 後ろの文字列: {UtilityFunction.GetContext(str2, i)}");
+                    return $"{i}: {UtilityFunction.GetContext(str1, i)} -> {UtilityFunction.GetContext(str2, i)}";
+                }
+            }
+
+            return "";
+        }
+
         private static readonly Dictionary<char, char> letra_acento = new Dictionary<char, char>()
         {
             ['a'] = 'á',

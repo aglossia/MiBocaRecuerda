@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace MiBocaRecuerda
 {
     public partial class SettingForm : Form
     {
-        Dictionary<string, Dictionary<string, QuizFileConfig>> ArchivosDeLengua;
         string CurrentFile;
         bool close_permition = true;
+        List<SettingBase> settingBases = new List<SettingBase>();
 
-        public SettingForm(Dictionary<string, Dictionary<string, QuizFileConfig>> adl, string currentFile)
+        // 言語ごとのタブインデックス
+        static Dictionary<string, int> LenguaTabIndex = new Dictionary<string, int> { { "es", 0 }, { "en", 1 } };
+
+        public SettingForm(string currentFile)
         {
             InitializeComponent();
 
@@ -20,8 +24,10 @@ namespace MiBocaRecuerda
             MaximizeBox = false;
             MinimizeBox = false;
 
-            ArchivosDeLengua = adl;
             CurrentFile = currentFile;
+
+            settingBases.Add(settingSpanish1);
+            settingBases.Add(settingEnglish1);
 
             Load += (o, e) =>
             {
@@ -41,13 +47,12 @@ namespace MiBocaRecuerda
 
         private void LoadConfig()
         {
-            settingSpanish1.LoadConfig(ArchivosDeLengua["es"], CurrentFile);
-            settingEnglish1.LoadConfig(ArchivosDeLengua["en"], CurrentFile);
+            settingBases.ForEach(sb => sb.LoadConfig(CurrentFile));
 
             string select_lang = "";
 
-            // ArchivosDeLenguaから全部の情報を操作
-            foreach (KeyValuePair<string, Dictionary<string, QuizFileConfig>> kvp in ArchivosDeLengua)
+            // 現在のファイルを捜索
+            foreach (KeyValuePair<string, Dictionary<string, CommonConfig>> kvp in SettingManager.CommonConfigManager)
             {
                 // valueのkeyがファイルパス
                 foreach (string file in kvp.Value.Keys)
@@ -61,40 +66,26 @@ namespace MiBocaRecuerda
             }
 
             // 指定ファイルの言語のタブに切り替える
-            switch (select_lang)
-            {
-                case "es":
-                    tabControl1.SelectedIndex = 0;
-                    break;
-                case "en":
-                    tabControl1.SelectedIndex = 1;
-                    break;
-            }
+            tabControl1.SelectedIndex = LenguaTabIndex[select_lang];
         }
 
         private bool SaveConfig()
         {
             string cacheFile = "";
-            QuizFileConfig lang = new QuizFileConfig();
+            QuizFileConfig common = new QuizFileConfig();
+            LenguaConfig lengua = new LenguaConfig();
 
-            switch (tabControl1.SelectedIndex)
-            {
-                case 0:
-                    cacheFile = settingSpanish1.SelectedFileName;
-                    lang = settingSpanish1.GetLang();
-                    break;
-                case 1:
-                    cacheFile = settingEnglish1.SelectedFileName;
-                    lang = settingEnglish1.GetLang();
-                    break;
-            }
+            int index = tabControl1.SelectedIndex;
+
+            cacheFile = settingBases[index].SelectedFileName;
+            common = settingBases[index].GetCommon();
+            lengua = settingBases[index].GetLang();
 
             // 不可な設定検証
-            if (lang.Validation() == false) return false;
+            if (common.Validation() == false) return false;
 
-            CommonFunction.XmlWrite(lang, $"{SettingManager.RomConfig.QuizFilePath}\\cache\\{cacheFile}.xml");
-            SettingManager.AppConfig.quizFileConfig = lang;
-            CommonFunction.XmlWrite(SettingManager.AppConfig, "MBR.config");
+            CommonFunction.XmlWrite(common, $"{SettingManager.RomConfig.QuizFilePath}\\cache\\common\\{cacheFile}_common.xml");
+            CommonFunction.XmlWrite(lengua, $"{SettingManager.RomConfig.QuizFilePath}\\cache\\lang\\{cacheFile}_lang.xml");
 
             return true;
         }

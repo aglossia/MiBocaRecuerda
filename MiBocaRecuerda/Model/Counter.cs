@@ -18,6 +18,11 @@ namespace MiBocaRecuerda
             }
         }
 
+        public Counter(int cnt)
+        {
+            _cnt = cnt;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }

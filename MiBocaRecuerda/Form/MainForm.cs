@@ -44,21 +44,21 @@ namespace MiBocaRecuerda
         private bool IsLoaded = false;
 
         // 現在のクイズファイル
-        private string currentQuizFile;
+        public static string currentQuizFile;
         // クイズファイルの最大行(設定オーバーを対応するため)
         private int MaxRow = 0;
         // 現在のクイズ言語
-        private string langType = "";
+        private static string langType = "";
         // 現在の問題のインデックス
         private int curProgress = -1;
 
         private int PruebaChallengeCount = -1;
-        private Counter ErrorAllowCount = new Counter();
-
-        private Dictionary<string, Dictionary<string, QuizFileConfig>> ArchivosDeLengua = new Dictionary<string, Dictionary<string, QuizFileConfig>>();
+        private Counter ErrorAllowCount = new Counter(-1);
 
         // 言語ごとの入力補助を切り替える用
-        private Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
+        public static Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
+
+        public static IManageInput LangCtrl => ManageLanguage_Dic[langType];
 
         //public ClassResize _form_resize;
 
@@ -242,14 +242,6 @@ namespace MiBocaRecuerda
             LoadConfig();
 
             ParseFile();
-
-            QuizFileConfig = SettingManager.AppConfig.quizFileConfig;
-
-            // 最初のクイズ設定を保持
-            preMinChapter = QuizFileConfig.MinChapter;
-            preMaxChapter = QuizFileConfig.MaxChapter;
-
-            ErrorAllowCount.Cnt = -1;
         }
 
         #region 内部処理
@@ -268,23 +260,25 @@ namespace MiBocaRecuerda
             {
                 using (fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
+                    // クイズファイルから言語を取得する
+
                     type = new XLWorkbook(fs).Worksheet(1).Cell(1, 1).Value.ToString();
-                    if (!ArchivosDeLengua.ContainsKey(type))
+
+                    if (!SettingManager.CommonConfigManager.ContainsKey(type))
                     {
-                        ArchivosDeLengua[type] = new Dictionary<string, QuizFileConfig>();
+                        SettingManager.CommonConfigManager[type] = new Dictionary<string, CommonConfig>();
                     }
                 }
 
-                string cacheFile = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\{Path.GetFileNameWithoutExtension(file)}.xml";
+                // クイズ設定と言語設定のキャッシュを読み込んで共通設定を完成させる
+                string cacheFile_common = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\common\\{Path.GetFileNameWithoutExtension(file)}_common.xml";
+                string cacheFile_lang = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\lang\\{Path.GetFileNameWithoutExtension(file)}_lang.xml";
 
-                QuizFileConfig lang = new QuizFileConfig();
+                QuizFileConfig qfc = File.Exists(cacheFile_common) ? CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common) : new QuizFileConfig();
+                LenguaConfig lc = File.Exists(cacheFile_lang) ? CommonFunction.XmlRead<LenguaConfig>(cacheFile_lang) : new LenguaConfig();
 
-                if (File.Exists(cacheFile))
-                {
-                    lang = CommonFunction.XmlRead<QuizFileConfig>(cacheFile);
-                }
-
-                ArchivosDeLengua[type][file] = lang;
+                // クイズ設定と言語設定の読み込み
+                SettingManager.CommonConfigManager[type][file] = new CommonConfig(qfc, lc);
             }
         }
 
@@ -391,11 +385,6 @@ namespace MiBocaRecuerda
                 toolStripQuizFile.SelectedIndex = SettingManager.InputCache.QuizFilePathIndex;
             }
             optionTSMI_DarkMode.Checked = SettingManager.InputCache.DarkMode;
-
-            if (File.Exists("MBR.config"))
-            {
-                SettingManager.AppConfig = CommonFunction.XmlRead<AppConfig>("MBR.config");
-            }
         }
 
         // 問題集excelを開く
@@ -410,7 +399,7 @@ namespace MiBocaRecuerda
 
             langType = ws.Cell(1, 1).Value.ToString();
 
-            QuizFileConfig = ArchivosDeLengua[langType][filePath];
+            QuizFileConfig = SettingManager.CommonConfigManager[langType][filePath].QuizFileConfig;
         }
 
         private int preLastQuiz = -1;
@@ -1403,7 +1392,7 @@ namespace MiBocaRecuerda
         // Setting
         private void optionTSMI_setting_Click(object sender, EventArgs e)
         {
-            SettingForm s = new SettingForm(ArchivosDeLengua, toolStripQuizFile.Text)
+            SettingForm s = new SettingForm(toolStripQuizFile.Text)
             {
                 ShowInTaskbar = false,
                 ShowIcon = false
@@ -1412,7 +1401,7 @@ namespace MiBocaRecuerda
             if (s.ShowDialog() == DialogResult.OK)
             {
                 ParseFile();
-                InitQuiz(true);
+                //InitQuiz(true);
             }
         }
 

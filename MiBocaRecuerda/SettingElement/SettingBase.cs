@@ -11,19 +11,22 @@ namespace MiBocaRecuerda
     {
         [Browsable(true)]
         [Category("表示")]
-        public int LangIndex { get; set; }
+        [Description("言語設定")]
+        public string LanguageName { get; set; }
 
-        public string SelectedFileName => chboxFileName.SelectedItem.ToString();
+        public string SelectedFileName => cmbboxFileName.SelectedItem.ToString();
 
-        List<QuizFileConfig> langs;
+        List<QuizFileConfig> qfc;
+
+        protected ComboBox _cmbboxFileName => cmbboxFileName;
 
         public SettingBase()
         {
             InitializeComponent();
 
-            chboxFileName.SelectedIndexChanged += (o, e) =>
+            cmbboxFileName.SelectedIndexChanged += (o, e) =>
             {
-                SetValue(langs[chboxFileName.SelectedIndex]);
+                SetValue(qfc[cmbboxFileName.SelectedIndex]);
             };
         }
 
@@ -32,34 +35,36 @@ namespace MiBocaRecuerda
             nudMinChapter.Value = lang.MinChapter;
             nudMaxChapter.Value = lang.MaxChapter;
             nudQuizNum.Value = lang.QuizNum;
-            chboxCapital.Checked = lang.Capital;
-            chboxComaPunto.Checked = lang.ComaPunto;
             nudErrorAllow.Value = lang.ErrorAllow;
             chBoxErrorAllowAll.Checked = lang.ErrorAllowAll;
         }
 
-        public void LoadConfig(Dictionary<string, QuizFileConfig> lengua, string currentFile)
+        public virtual void LoadConfig(string currentFile)
         {
-            langs = lengua.Select(l => l.Value).ToList();
-            chboxFileName.Items.AddRange(lengua.Select(p =>Path.GetFileNameWithoutExtension(p.Key)).ToArray());
+            Dictionary<string, CommonConfig> cc = SettingManager.CommonConfigManager[LanguageName];
 
-            chboxFileName.SelectedItem = currentFile;
+            qfc = cc.Values.Select(s => s.QuizFileConfig).ToList();
+            cmbboxFileName.Items.AddRange(cc.Select(p =>Path.GetFileNameWithoutExtension(p.Key)).ToArray());
+
+            cmbboxFileName.SelectedItem = currentFile;
         }
 
-        public QuizFileConfig GetLang()
+        public QuizFileConfig GetCommon()
         {
             QuizFileConfig lang = new QuizFileConfig
             {
                 MinChapter = (int)nudMinChapter.Value,
                 MaxChapter = (int)nudMaxChapter.Value,
                 QuizNum = (int)nudQuizNum.Value,
-                Capital = chboxCapital.Checked,
-                ComaPunto = chboxComaPunto.Checked,
                 ErrorAllow = (int)nudErrorAllow.Value,
                 ErrorAllowAll = chBoxErrorAllowAll.Checked
             };
 
             return lang;
         }
+
+        // LenguaConfigは継承先で設定するため、このメソッドは継承先で必ず実装すること
+        // SettingFormで共通で使うために、ここで宣言しておく必要があった
+        public virtual LenguaConfig GetLang() { return new LenguaConfig(); }
     }
 }

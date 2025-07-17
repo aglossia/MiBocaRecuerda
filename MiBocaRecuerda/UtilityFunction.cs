@@ -3,12 +3,56 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace MiBocaRecuerda
 {
     static class UtilityFunction
     {
+        public static string ReplaceConsecutiveSpaces(string input)
+        {
+            // 連続したスペースを一つのスペースに置き換える
+            string pattern = @"\s+";
+            string replacement = " ";
+            Regex regex = new Regex(pattern);
+            return regex.Replace(input, replacement);
+        }
+
+        public static string GetContext(string str, int index, int contextLength = 3)
+        {
+            int start = Math.Max(0, index - contextLength);
+
+            int space_cnt = CountSpaces(str.Substring(start, Math.Abs(start - index)));
+
+            if (space_cnt > 0)
+            {
+                start = Math.Max(0, index - (contextLength + space_cnt));
+            }
+            int end = Math.Min(str.Length - 1, index + contextLength);
+
+            space_cnt = CountSpaces(str.Substring(index, end - index));
+
+            if (space_cnt > 0)
+            {
+                end = Math.Min(str.Length - 1, index + (contextLength + space_cnt));
+            }
+
+            return str.Substring(start, end - start + 1);
+        }
+
+        public static int CountSpaces(string str)
+        {
+            int count = 0;
+            foreach (char c in str)
+            {
+                if (c == ' ')
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
 
         public static int GetLastRowInColumn(IXLWorksheet worksheet, string columnName)
         {
