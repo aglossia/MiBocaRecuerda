@@ -35,6 +35,8 @@ namespace MiBocaRecuerda
         public int QuizNum { get; set; } = 5;
         public int ErrorAllow { get; set; } = 0;
         public bool ErrorAllowAll { get; set; } = false;
+        // エラー数が満了したときにエラー数をリセットするか(ErrorAlloAllが有効のときに有効な設定)
+        public bool ErrorReset { get; set; } = false;
         public int MaxQuizNum => (MaxChapter - MinChapter + 1) * 10;
         public bool Validation()
         {

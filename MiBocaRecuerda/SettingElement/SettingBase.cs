@@ -36,7 +36,8 @@ namespace MiBocaRecuerda
             nudMaxChapter.Value = lang.MaxChapter;
             nudQuizNum.Value = lang.QuizNum;
             nudErrorAllow.Value = lang.ErrorAllow;
-            chBoxErrorAllowAll.Checked = lang.ErrorAllowAll;
+            chboxErrorAllowAll.Checked = lang.ErrorAllowAll;
+            chboxErrorReset.Checked = lang.ErrorReset;
         }
 
         public virtual void LoadConfig(string currentFile)
@@ -57,7 +58,8 @@ namespace MiBocaRecuerda
                 MaxChapter = (int)nudMaxChapter.Value,
                 QuizNum = (int)nudQuizNum.Value,
                 ErrorAllow = (int)nudErrorAllow.Value,
-                ErrorAllowAll = chBoxErrorAllowAll.Checked
+                ErrorAllowAll = chboxErrorAllowAll.Checked,
+                ErrorReset = chboxErrorReset.Checked
             };
 
             return lang;

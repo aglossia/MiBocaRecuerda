@@ -38,10 +38,11 @@
             this.lblFileName = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.nudErrorAllow = new System.Windows.Forms.NumericUpDown();
-            this.chBoxErrorAllowAll = new System.Windows.Forms.CheckBox();
+            this.chboxErrorAllowAll = new System.Windows.Forms.CheckBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.chboxErrorReset = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
@@ -182,16 +183,16 @@
             this.nudErrorAllow.Size = new System.Drawing.Size(56, 25);
             this.nudErrorAllow.TabIndex = 1;
             // 
-            // chBoxErrorAllowAll
+            // chboxErrorAllowAll
             // 
-            this.chBoxErrorAllowAll.AutoSize = true;
-            this.chBoxErrorAllowAll.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.chBoxErrorAllowAll.Location = new System.Drawing.Point(158, 16);
-            this.chBoxErrorAllowAll.Name = "chBoxErrorAllowAll";
-            this.chBoxErrorAllowAll.Size = new System.Drawing.Size(99, 22);
-            this.chBoxErrorAllowAll.TabIndex = 2;
-            this.chBoxErrorAllowAll.Text = "ミス許容全体\r\n";
-            this.chBoxErrorAllowAll.UseVisualStyleBackColor = true;
+            this.chboxErrorAllowAll.AutoSize = true;
+            this.chboxErrorAllowAll.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.chboxErrorAllowAll.Location = new System.Drawing.Point(158, 16);
+            this.chboxErrorAllowAll.Name = "chboxErrorAllowAll";
+            this.chboxErrorAllowAll.Size = new System.Drawing.Size(99, 22);
+            this.chboxErrorAllowAll.TabIndex = 2;
+            this.chboxErrorAllowAll.Text = "ミス許容全体\r\n";
+            this.chboxErrorAllowAll.UseVisualStyleBackColor = true;
             // 
             // tabControl1
             // 
@@ -205,10 +206,11 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.chboxErrorReset);
             this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Controls.Add(this.label2);
             this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.chBoxErrorAllowAll);
+            this.tabPage1.Controls.Add(this.chboxErrorAllowAll);
             this.tabPage1.Controls.Add(this.label4);
             this.tabPage1.Controls.Add(this.nudQuizNum);
             this.tabPage1.Controls.Add(this.nudMinChapter);
@@ -233,6 +235,16 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Other";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // chboxErrorReset
+            // 
+            this.chboxErrorReset.AutoSize = true;
+            this.chboxErrorReset.Location = new System.Drawing.Point(158, 49);
+            this.chboxErrorReset.Name = "chboxErrorReset";
+            this.chboxErrorReset.Size = new System.Drawing.Size(123, 22);
+            this.chboxErrorReset.TabIndex = 3;
+            this.chboxErrorReset.Text = "ミス許容リセット";
+            this.chboxErrorReset.UseVisualStyleBackColor = true;
             // 
             // SettingBase
             // 
@@ -266,9 +278,10 @@
         private System.Windows.Forms.Label lblFileName;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown nudErrorAllow;
-        private System.Windows.Forms.CheckBox chBoxErrorAllowAll;
+        private System.Windows.Forms.CheckBox chboxErrorAllowAll;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.CheckBox chboxErrorReset;
     }
 }

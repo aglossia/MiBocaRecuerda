@@ -270,15 +270,17 @@ namespace MiBocaRecuerda
                     }
                 }
 
+                string fileName = Path.GetFileNameWithoutExtension(file);
+
                 // クイズ設定と言語設定のキャッシュを読み込んで共通設定を完成させる
-                string cacheFile_common = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\common\\{Path.GetFileNameWithoutExtension(file)}_common.xml";
-                string cacheFile_lang = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\lang\\{Path.GetFileNameWithoutExtension(file)}_lang.xml";
+                string cacheFile_common = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\common\\{fileName}_common.xml";
+                string cacheFile_lang = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\lang\\{fileName}_lang.xml";
 
                 QuizFileConfig qfc = File.Exists(cacheFile_common) ? CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common) : new QuizFileConfig();
                 LenguaConfig lc = File.Exists(cacheFile_lang) ? CommonFunction.XmlRead<LenguaConfig>(cacheFile_lang) : new LenguaConfig();
 
                 // クイズ設定と言語設定の読み込み
-                SettingManager.CommonConfigManager[type][file] = new CommonConfig(qfc, lc);
+                SettingManager.CommonConfigManager[type][fileName] = new CommonConfig(qfc, lc);
             }
         }
 
@@ -399,7 +401,7 @@ namespace MiBocaRecuerda
 
             langType = ws.Cell(1, 1).Value.ToString();
 
-            QuizFileConfig = SettingManager.CommonConfigManager[langType][filePath].QuizFileConfig;
+            QuizFileConfig = SettingManager.CommonConfigManager[langType][Path.GetFileNameWithoutExtension(filePath)].QuizFileConfig;
         }
 
         private int preLastQuiz = -1;
@@ -520,8 +522,6 @@ namespace MiBocaRecuerda
             // pruebaモードのとき
             if (optionTSMI_prueba.Checked)
             {
-                ErrorAllowCount.Cnt = 0;
-
                 if(QuizFileConfig.ErrorAllow > 0)
                 {
                     lbl_ErrorAllowCount.Visible = true;
@@ -1248,12 +1248,24 @@ namespace MiBocaRecuerda
                 {
                     // pruebaモード
 
-                    // 1個目の条件はいらない気もするがまぁいいだろう
-                    if((QuizFileConfig.ErrorAllow > 0) && (ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllow))
+                    if(QuizFileConfig.ErrorAllow > 0)
                     {
-                        // ミス許容が設定されているときはミス数を加算してやり直し
-                        ErrorAllowCount.Cnt++;
-                        return;
+                        // ミス許容が設定されているとき
+
+                        if(ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllow)
+                        {
+                            // ミス許容未満のあいだはミス数を加算してやり直し
+                            ErrorAllowCount.Cnt++;
+                            return;
+                        }
+                        else
+                        {
+                            // ミス満了でミス許容全体でミス許容リセットのときはリセットする
+                            if(QuizFileConfig.ErrorAllowAll && QuizFileConfig.ErrorReset)
+                            {
+                                ErrorAllowCount.Cnt = 0;
+                            }
+                        }
                     }
                 }
                 else
