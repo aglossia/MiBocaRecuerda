@@ -54,6 +54,7 @@ namespace MiBocaRecuerda
 
         private int PruebaChallengeCount = -1;
         private Counter ErrorAllowCount = new Counter(-1);
+        private int ErrorResetCount;
 
         // 言語ごとの入力補助を切り替える用
         public static Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
@@ -167,7 +168,7 @@ namespace MiBocaRecuerda
                     lbl_ErrorAllowCount.Text = $"{ErrorAllowCount.Cnt}/{QuizFileConfig.ErrorAllow}";
                     if (QuizFileConfig.ErrorAllowAll)
                     {
-                        lbl_ErrorAllowCount.Text = $"Todo: {lbl_ErrorAllowCount.Text}";
+                        lbl_ErrorAllowCount.Text = $"Todo[{ErrorResetCount}]: {lbl_ErrorAllowCount.Text}";
                     }
                 }
             };
@@ -443,6 +444,8 @@ namespace MiBocaRecuerda
             QuizResult.Clear();
             QuizContents.Clear();
             respuestas.Clear();
+            ErrorResetCount = 0;
+            // ErrorAllowCountの表示に関わっているものはErrorAllowCountのプロパティを変化する前に変化させておく必要がある
             ErrorAllowCount.Cnt = 0;
 
             // 進捗表示作成
@@ -708,6 +711,8 @@ namespace MiBocaRecuerda
         // Siguiente制御
         private void MoveQuiz(bool isForward)
         {
+            if (QuizFileConfig == null) return;
+
             if (isForward)
             {
                 if ((QuizFileConfig.MinChapter + 1 > (MaxRow / 10)) || (QuizFileConfig.MaxChapter + 1 > (MaxRow / 10))) return;
@@ -1263,6 +1268,7 @@ namespace MiBocaRecuerda
                             // ミス満了でミス許容全体でミス許容リセットのときはリセットする
                             if(QuizFileConfig.ErrorAllowAll && QuizFileConfig.ErrorReset)
                             {
+                                ErrorResetCount++;
                                 ErrorAllowCount.Cnt = 0;
                             }
                         }
