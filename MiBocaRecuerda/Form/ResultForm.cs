@@ -16,15 +16,56 @@ namespace MiBocaRecuerda
 
         private ClassResize _form_resize;
 
-        public ResultForm(List<QuizResult> qc, MainForm mf)
+        private List<QuizResult> qr = new List<QuizResult>();
+        private MainForm mf;
+
+        private DataGridViewTextBoxColumn col_num;
+        private DataGridViewTextBoxColumn col_quiz;
+        private DataGridViewTextBoxColumn col_correct;
+
+        public ResultForm(List<QuizResult> _qr, MainForm _mf)
         {
             InitializeComponent();
 
-            foreach (QuizResult r in qc)
+            qr = _qr;
+            mf = _mf;
+
+            foreach (QuizResult r in qr)
             {
                 Supplement.Add(r.QuizNum, r.Supplement);
             }
 
+            CreateControls();
+
+            RegisterEvent();
+        }
+
+        // QuizContentsから表を作る用(つまり結果ではなく、答えの一覧)
+        public ResultForm(List<QuizContents> qc, MainForm _mf, bool isOrder)
+        {
+            InitializeComponent();
+
+            mf = _mf;
+
+            foreach (QuizContents c in qc)
+            {
+                qr.Add(new QuizResult(c.Quiz, string.Join("\n", CoreProcess.ParseAnswer(c.CorrectAnswer)), "", c.QuizNum, c.Supplement));
+            }
+
+            if(isOrder) qr = qr.OrderBy(q => int.Parse(q.QuizNum)).ToList();
+
+            foreach (QuizResult r in qr)
+            {
+                Supplement.Add(r.QuizNum, r.Supplement);
+            }
+
+            CreateControls();
+
+            RegisterEvent();
+        }
+
+        private void CreateControls()
+        {
             dgv.Font = new Font("MeiryoKe_Console", 10F, FontStyle.Regular, GraphicsUnit.Point, 128);
 
             dgv.RowHeadersVisible = false;
@@ -32,7 +73,7 @@ namespace MiBocaRecuerda
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
-            DataGridViewTextBoxColumn col_num = new DataGridViewTextBoxColumn
+            col_num = new DataGridViewTextBoxColumn
             {
                 Name = "num",
                 HeaderText = "No",
@@ -41,7 +82,7 @@ namespace MiBocaRecuerda
                 ReadOnly = true
             };
 
-            DataGridViewTextBoxColumn col_quiz = new DataGridViewTextBoxColumn
+            col_quiz = new DataGridViewTextBoxColumn
             {
                 Name = "quiz",
                 HeaderText = "Prueba",
@@ -49,7 +90,7 @@ namespace MiBocaRecuerda
                 SortMode = DataGridViewColumnSortMode.Automatic
             };
 
-            DataGridViewTextBoxColumn col_correct = new DataGridViewTextBoxColumn
+            col_correct = new DataGridViewTextBoxColumn
             {
                 Name = "correct",
                 HeaderText = "Respuesta Correcta",
@@ -66,23 +107,26 @@ namespace MiBocaRecuerda
             dgv.Columns.Add(col_quiz);
             dgv.Columns.Add(col_correct);
 
-            for (int cnt = 0; cnt < qc.Count; cnt++)
+            for (int cnt = 0; cnt < qr.Count; cnt++)
             {
                 dgv.Rows.Add();
-                dgv.Rows[cnt].Cells["num"].Value = qc[cnt].QuizNum;
-                dgv.Rows[cnt].Cells["quiz"].Value = qc[cnt].Quiz;
-                dgv.Rows[cnt].Cells["correct"].Value = qc[cnt].CorrectAnswer;
-                if(qc[cnt].Result == false)
+                dgv.Rows[cnt].Cells["num"].Value = qr[cnt].QuizNum;
+                dgv.Rows[cnt].Cells["quiz"].Value = qr[cnt].Quiz;
+                dgv.Rows[cnt].Cells["correct"].Value = qr[cnt].CorrectAnswer;
+                if (qr[cnt].Result == false)
                 {
                     dgv.Rows[cnt].DefaultCellStyle.BackColor = Color.AliceBlue;
                 }
                 // 補足があるやつは補足の目印をつける
-                if(qc[cnt].Supplement != "")
+                if (qr[cnt].Supplement != "")
                 {
                     dgv.Rows[cnt].Cells["quiz"].Value += " *";
                 }
             }
+        }
 
+        private void RegisterEvent()
+        {
             dgv.SelectionChanged += (o, e) =>
             {
                 dgv.Rows[dgv.CurrentCell.RowIndex].Selected = false;
@@ -107,12 +151,12 @@ namespace MiBocaRecuerda
 
                 Console.WriteLine($"{baseArea.MaxX}, {mf.Location.X + mf.Width + Width}");
 
-                if(move_right < baseArea.MaxX)
+                if (move_right < baseArea.MaxX)
                 {
                     // 右に表示する余地があるとき
                     Location = new Point(move_right - Width, mf.Location.Y);
                 }
-                else if(move_left > baseArea.MinX)
+                else if (move_left > baseArea.MinX)
                 {
                     // 左に表示する余地があるとき
                     Location = new Point(move_left, mf.Location.Y);
@@ -136,13 +180,13 @@ namespace MiBocaRecuerda
 
             dgv.FontChanged += (o, e) =>
             {
-                 if (WindowState == FormWindowState.Maximized)
-                 {
-                     // 最大化のときはDataGridViewAutoSizeRowsMode.DisplayedCellsに任せるしかないか…
-                     return;
-                 }
+                if (WindowState == FormWindowState.Maximized)
+                {
+                    // 最大化のときはDataGridViewAutoSizeRowsMode.DisplayedCellsに任せるしかないか…
+                    return;
+                }
 
-                 AdjustRowHeight();
+                AdjustRowHeight();
             };
 
             bool isShiftPressed = false;
@@ -227,7 +271,7 @@ namespace MiBocaRecuerda
                             {
                                 string clip_str = Clipboard.GetText();
 
-                                if(clip_str == "")
+                                if (clip_str == "")
                                 {
                                     MessageBox.Show("クリップボードに文字列がない");
 
@@ -265,7 +309,7 @@ namespace MiBocaRecuerda
 
                                             string mes = "";
 
-                                            if(result2 == DialogResult.No)
+                                            if (result2 == DialogResult.No)
                                             {
                                                 mes = "上書き";
                                             }
@@ -305,11 +349,11 @@ namespace MiBocaRecuerda
                                     // lista de pruebasを更新する
                                     foreach (DataGridViewRow row in dgv.Rows)
                                     {
-                                        if(row.Cells[0].Value.ToString() == quizNum)
+                                        if (row.Cells[0].Value.ToString() == quizNum)
                                         {
                                             Supplement[quizNum] = clip_str;
                                             // 追記の時はすでに*が付いてるからそのための確認
-                                            if(row.Cells[1].Value.ToString().EndsWith("*") == false)
+                                            if (row.Cells[1].Value.ToString().EndsWith("*") == false)
                                             {
                                                 row.Cells[1].Value += " *";
                                             }

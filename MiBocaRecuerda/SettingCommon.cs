@@ -30,8 +30,12 @@ namespace MiBocaRecuerda
     // クイズ設定
     public class QuizFileConfig
     {
+        // Chapter単位は10個を基準としている
+
         public int MinChapter { get; set; } = 1;
+        public int MinChapterToIndex => MinChapter * 10 - 9;
         public int MaxChapter { get; set; } = 1;
+        public int MaxChapterToIndex => MaxChapter * 10;
         public int QuizNum { get; set; } = 5;
         public int ErrorAllow { get; set; } = 0;
         public bool ErrorAllowAll { get; set; } = false;

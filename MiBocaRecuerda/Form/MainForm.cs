@@ -16,7 +16,6 @@ namespace MiBocaRecuerda
     public partial class MainForm : ResizableForm
     {
         private IXLWorksheet ws;
-        private CoreProcess CoreProcess = new CoreProcess();
         private List<Label> label_progress = new List<Label>();
         private List<Label> label_bar = new List<Label>();
         private NumericUpDown nudProgress;
@@ -55,6 +54,10 @@ namespace MiBocaRecuerda
         private int PruebaChallengeCount = -1;
         private Counter ErrorAllowCount = new Counter(-1);
         private int ErrorResetCount;
+
+        // 答えの表を出すときの指定インデックス記憶用
+        private int cacheDesde = -1;
+        private int cacheHasta = -1;
 
         // 言語ごとの入力補助を切り替える用
         public static Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
@@ -290,12 +293,19 @@ namespace MiBocaRecuerda
         private bool result = false;
         private bool ba = false;
         private bool isHide = false;
+        private int selectionStart;
+        private int selectionLength;
 
         // 表示されてる文字を非表示にする
         private void HideText()
         {
             if (!isHide)
             {
+                // 非表示
+
+                selectionStart = txtAnswer.SelectionStart;
+                selectionLength = txtAnswer.SelectionLength;
+
                 tmp1 = txtQuiz.Text;
                 txtQuiz.Text = "";
 
@@ -330,11 +340,16 @@ namespace MiBocaRecuerda
             }
             else
             {
+                // 表示
+
                 txtQuiz.Text = tmp1;
                 txtAnswer.Text = tmp2;
                 txtAnswer.Select(txtAnswer.Text.Length, 0);
                 txtConsole.Text = tmp3;
                 Text = tmp4;
+
+                txtAnswer.SelectionStart = selectionStart;
+                txtAnswer.SelectionLength = selectionLength;
 
                 btnAnswer.Enabled = ba;
                 btnShowAnswer.Enabled = true;
@@ -453,7 +468,7 @@ namespace MiBocaRecuerda
 
             // nからmまでの整数のリストを作成
             List<int> numberList = new List<int>();
-            for (int i = QuizFileConfig.MinChapter * 10 - 9; i <= QuizFileConfig.MaxChapter * 10; i++)
+            for (int i = QuizFileConfig.MinChapterToIndex; i <= QuizFileConfig.MaxChapterToIndex; i++)
             {
                 numberList.Add(i);
             }
@@ -468,6 +483,20 @@ namespace MiBocaRecuerda
             }
             while (randomSequence[0] == preLastQuiz);
 
+            QuizContents = CreateQuizContents(randomSequence);
+
+            ShowQuestion();
+
+            RefreshDisplay();
+
+            // 今回のクイズ設定を保持
+            preMinChapter = QuizFileConfig.MinChapter;
+            preMaxChapter = QuizFileConfig.MaxChapter;
+        }
+
+        // インデックスリストから問題を取得する
+        private List<QuizContents> CreateQuizContents(List<int> indexList)
+        {
             string quizTxt = "";
             string correctAnswer = "";
             string quizNum = "";
@@ -476,7 +505,9 @@ namespace MiBocaRecuerda
             string supplement = "";
             List<string> autoNombre;
 
-            foreach (int index in randomSequence)
+            List<QuizContents> quizContents = new List<QuizContents>();
+
+            foreach (int index in indexList)
             {
                 quizTxt = ws.Cell(index, 2).Value.ToString();
                 correctAnswer = ws.Cell(index, 3).Value.ToString();
@@ -486,16 +517,10 @@ namespace MiBocaRecuerda
                 supplement = ws.Cell(index, 6).Value.ToString();
                 autoNombre = ws.Cell(index, 8).Value.ToString().Split(',').ToList();
 
-                QuizContents.Add(new QuizContents(quizTxt, correctAnswer, quizNum, chapterTitle, chapterExample, supplement, autoNombre));
+                quizContents.Add(new QuizContents(quizTxt, correctAnswer, quizNum, chapterTitle, chapterExample, supplement, autoNombre));
             }
 
-            ShowQuestion();
-
-            RefreshDisplay();
-
-            // 今回のクイズ設定を保持
-            preMinChapter = QuizFileConfig.MinChapter;
-            preMaxChapter = QuizFileConfig.MaxChapter;
+            return quizContents;
         }
 
         private void RefreshDisplay()
@@ -518,7 +543,7 @@ namespace MiBocaRecuerda
             lbl_PruebaChallengeCount.Text = PruebaChallengeCount.ToString();
             lbl_PruebaChallengeCount.Visible = optionTSMI_prueba.Checked;
 
-            Text = $"MBR [{QuizFileConfig.MinChapter * 10 - 9}~{QuizFileConfig.MaxChapter * 10}]";
+            Text = $"MBR [{QuizFileConfig.MinChapterToIndex}~{QuizFileConfig.MaxChapterToIndex}]";
 
             lbl_ErrorAllowCount.Visible = false;
 
@@ -1194,23 +1219,48 @@ namespace MiBocaRecuerda
                 {
                     case MouseButtons.Right:
 
+                        // Pruebaリストの出題順表示
+
                         if (resultForm.IsDisposed == false) resultForm.Dispose();
                         if (QuizContents.Count == 0) return;
 
-                        List<QuizResult> tmp = new List<QuizResult>();
-
-                        foreach (QuizContents qc in QuizContents)
-                        {
-                            tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
-                        }
-
-                        resultForm = new ResultForm(tmp, this)
+                        resultForm = new ResultForm(QuizContents, this, false)
                         {
                             Text = "Lista de Pruebas",
                             ShowIcon = false
                         };
 
                         resultForm.Show();
+
+                        break;
+                    case MouseButtons.Middle:
+
+                        // Pruebaリストの問題インデックスを指定して表示する
+
+                        if (QuizFileConfig == null) return;
+
+                        if (cacheDesde == -1) cacheDesde = QuizFileConfig.MinChapterToIndex;
+                        if (cacheHasta == -1) cacheHasta = QuizFileConfig.MaxChapterToIndex;
+
+                        InputDialog id = new InputDialog(cacheDesde, cacheHasta);
+
+                        // 問題インデックスを入力する画面
+                        if(id.ShowDialog() == DialogResult.OK)
+                        {
+                            cacheDesde = id.Desde;
+                            cacheHasta = id.Hasta;
+
+                            List<int> sequence = Enumerable.Range(id.Desde, id.Hasta - id.Desde + 1).ToList();
+                            List<QuizContents> quizContents = CreateQuizContents(sequence);
+
+                            resultForm = new ResultForm(quizContents, this, true)
+                            {
+                                Text = "Lista de Pruebas",
+                                ShowIcon = false
+                            };
+
+                            resultForm.Show();
+                        }
 
                         break;
                 }
@@ -1501,16 +1551,7 @@ namespace MiBocaRecuerda
             if (resultForm.IsDisposed == false) resultForm.Dispose();
             if (QuizContents.Count == 0) return;
 
-            List<QuizResult> tmp = new List<QuizResult>();
-
-            foreach (QuizContents qc in QuizContents)
-            {
-                tmp.Add(new QuizResult(qc.Quiz, string.Join("\n", CoreProcess.ParseAnswer(qc.CorrectAnswer)), "", qc.QuizNum, qc.Supplement));
-            }
-
-            tmp = tmp.OrderBy(q => int.Parse(q.QuizNum)).ToList();
-
-            resultForm = new ResultForm(tmp, this)
+            resultForm = new ResultForm(QuizContents, this, true)
             {
                 Text = "Lista de Pruebas",
                 ShowIcon = false

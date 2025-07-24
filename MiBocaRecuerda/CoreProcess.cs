@@ -7,11 +7,11 @@ namespace MiBocaRecuerda
 {
     // POR HACER:20250717:CoreProcessは言語に依存してはならない設計なのだが一部、言語に依存してるので要修正
 
-    public class CoreProcess
+    public static class CoreProcess
     {
-        public string adopt_str = "";
+        public static string adopt_str = "";
 
-        public bool CheckAnswer(string user_input, string correct_answer)
+        public static bool CheckAnswer(string user_input, string correct_answer)
         {
             string s1 = MainForm.LangCtrl.Comparelize(user_input);
 
@@ -65,7 +65,7 @@ namespace MiBocaRecuerda
         }
 
         // 解答DBの定義形式から解答群を抽出する ()とか[^]とかを使ってる時用
-        public List<string> ParseAnswer(string s)
+        public static List<string> ParseAnswer(string s)
         {
             // ()のある文字列を分離させる
             List<string> abbreviation = ParseBrackets(s);
