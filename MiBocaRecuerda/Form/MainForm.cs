@@ -59,6 +59,9 @@ namespace MiBocaRecuerda
         private int cacheDesde = -1;
         private int cacheHasta = -1;
 
+        // タイトルバーのベースとなる文字列
+        private string BaseTitle = "";
+
         // 言語ごとの入力補助を切り替える用
         public static Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
 
@@ -485,9 +488,9 @@ namespace MiBocaRecuerda
 
             QuizContents = CreateQuizContents(randomSequence);
 
-            ShowQuestion();
-
             RefreshDisplay();
+
+            ShowQuestion();
 
             // 今回のクイズ設定を保持
             preMinChapter = QuizFileConfig.MinChapter;
@@ -543,9 +546,9 @@ namespace MiBocaRecuerda
             lbl_PruebaChallengeCount.Text = PruebaChallengeCount.ToString();
             lbl_PruebaChallengeCount.Visible = optionTSMI_prueba.Checked;
 
-            Text = $"MBR [{QuizFileConfig.MinChapterToIndex}~{QuizFileConfig.MaxChapterToIndex}]";
-
             lbl_ErrorAllowCount.Visible = false;
+
+            string baseTitle = $"MBR [{QuizFileConfig.MinChapterToIndex}~{QuizFileConfig.MaxChapterToIndex}]";
 
             // pruebaモードのとき
             if (optionTSMI_prueba.Checked)
@@ -553,7 +556,6 @@ namespace MiBocaRecuerda
                 if(QuizFileConfig.ErrorAllow > 0)
                 {
                     lbl_ErrorAllowCount.Visible = true;
-                    //lbl_ErrorAllowCount.BorderStyle = QuizFileConfig.ErrorAllowAll ? BorderStyle.FixedSingle : BorderStyle.None;
                 }
 
                 // 練習が1章だけならPRUEBA回数を表示する
@@ -566,14 +568,14 @@ namespace MiBocaRecuerda
                         string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
 
                         // prueba回数
-                        Text += $" [PR {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
+                        baseTitle += $" [PR {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
                         // 最近のprueba日
-                        Text += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0].Substring(2)}";
+                        baseTitle += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0].Substring(2)}";
                     }
                 }
             }
 
-            Text += $" {QuizContents[curProgress].ChapterTitle}";
+            BaseTitle = baseTitle;
         }
 
         // OKとかNGとかを表示させる
@@ -607,6 +609,9 @@ namespace MiBocaRecuerda
         {
             // 現在の問題のインデックスを進める
             curProgress++;
+
+            // タイトル更新
+            Text = $"{BaseTitle} {QuizContents[curProgress].ChapterTitle}";
 
             preLastQuiz = int.Parse(QuizContents[curProgress].QuizNum);
 
@@ -1289,6 +1294,11 @@ namespace MiBocaRecuerda
             txtConsole.Text = "";
 
             bool isCorrect = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].CorrectAnswer);
+
+#if DEBUG
+            isCorrect = true;
+#endif
+
             DisplayResult(isCorrect ? "¡Sí!" : "¡No!", 1000);
 
             txtConsole.Text = CoreProcess.adopt_str;
@@ -1364,50 +1374,59 @@ namespace MiBocaRecuerda
                     // PERFECTOしたあとは最終回数を表示していたい
                     PruebaChallengeCount--;
 
-                    // 練習が1章だけならPRUEBA達成を記録する
-                    if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
+                    // チャプター数
+                    int chapterNum = QuizFileConfig.MaxChapter - QuizFileConfig.MinChapter + 1;
+
+                    // チャプター数と、それに対応するクイズ数が一致しているときは進捗を記録する
+                    if (chapterNum * 10 == QuizFileConfig.QuizNum)
                     {
                         string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
 
                         // 進捗ファイルに書き込む
                         if (File.Exists(path))
                         {
-                            string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
-
-                            string[] sp = lines[QuizFileConfig.MinChapter - 1].Split(',');
-                            string today = DateTime.Now.ToString("yyyy/MM/dd");
-
-                            // 同日のPruebaは記録しない
-                            // 日跨ぎのPruebaを重視するため(Ebbinghaus)
-                            if (sp[0] != today)
+                            // チャプター毎に進捗を更新する
+                            for (int cnt = 0; cnt < chapterNum; cnt++)
                             {
-                                sp[0] = today;
-                                sp[1] = (int.Parse(sp[1]) + 1).ToString("D3");
-                                lines[QuizFileConfig.MinChapter - 1] = string.Join(",", sp);
+                                string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
 
-                                File.WriteAllLines(path, lines);
+                                string[] sp = lines[QuizFileConfig.MinChapter - 1 + cnt].Split(',');
+                                string today = DateTime.Now.ToString("yyyy/MM/dd");
+
+                                // 同日のPruebaは記録しない
+                                // 日跨ぎのPruebaを重視するため(Ebbinghaus)
+                                if (sp[0] != today)
+                                {
+                                    sp[0] = today;
+                                    sp[1] = (int.Parse(sp[1]) + 1).ToString("D3");
+                                    lines[QuizFileConfig.MinChapter - 1 + cnt] = string.Join(",", sp);
+
+                                    File.WriteAllLines(path, lines);
+                                }
                             }
                         }
-                    }
-                    else
-                    {
+                        // POR HACER:進捗ファイルがないときと、あっても該当するチャプターがないときの処理
+                        // を入れようと思ったが、章タイトルを全取得する処理はあるからそれを使ってひな形を作る機能を入れた方がよさそう
+
                         // 練習が複数の章にわたるときは、どこからどこまでかを記録する
-
-                        string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_intercontinental.txt";
-                        string write_text = $"{QuizFileConfig.MinChapter}~{QuizFileConfig.MaxChapter}";
-
-                        if (File.Exists(path))
+                        if (chapterNum > 1)
                         {
-                            using(StreamWriter sw = File.AppendText(path))
+                            string path_i = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_intercontinental.txt";
+                            string write_text = $"{QuizFileConfig.MinChapter}~{QuizFileConfig.MaxChapter}";
+
+                            if (File.Exists(path_i))
                             {
-                                sw.WriteLine($"{DateTime.Now.ToString("yyyy/MM/dd")}:{write_text}");
+                                using (StreamWriter sw = File.AppendText(path_i))
+                                {
+                                    sw.WriteLine($"{DateTime.Now.ToString("yyyy/MM/dd")}:{write_text}");
+                                }
                             }
-                        }
-                        else
-                        {
-                            using (StreamWriter sw = File.CreateText(path))
+                            else
                             {
-                                sw.WriteLine($"{DateTime.Now.ToString("yyyy/MM/dd")}:{write_text}");
+                                using (StreamWriter sw = File.CreateText(path_i))
+                                {
+                                    sw.WriteLine($"{DateTime.Now.ToString("yyyy/MM/dd")}:{write_text}");
+                                }
                             }
                         }
                     }

@@ -68,5 +68,15 @@ namespace MiBocaRecuerda
         // LenguaConfigは継承先で設定するため、このメソッドは継承先で必ず実装すること
         // SettingFormで共通で使うために、ここで宣言しておく必要があった
         public virtual LenguaConfig GetLang() { return new LenguaConfig(); }
+
+        private void btnQuizMax_Click(object sender, System.EventArgs e)
+        {
+            int min = (int)nudMinChapter.Value;
+            int max = (int)nudMaxChapter.Value;
+
+            if (max - min < 0) return;
+
+            nudQuizNum.Value = (max - min + 1) * 10;
+        }
     }
 }

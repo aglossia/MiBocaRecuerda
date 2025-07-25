@@ -41,14 +41,16 @@
             this.chboxErrorAllowAll = new System.Windows.Forms.CheckBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.chboxErrorReset = new System.Windows.Forms.CheckBox();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.btnQuizMax = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudErrorAllow)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -164,7 +166,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label4.Location = new System.Drawing.Point(16, 96);
+            this.label4.Location = new System.Drawing.Point(15, 19);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(56, 18);
             this.label4.TabIndex = 0;
@@ -173,7 +175,7 @@
             // nudErrorAllow
             // 
             this.nudErrorAllow.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.nudErrorAllow.Location = new System.Drawing.Point(78, 94);
+            this.nudErrorAllow.Location = new System.Drawing.Point(77, 16);
             this.nudErrorAllow.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -187,7 +189,7 @@
             // 
             this.chboxErrorAllowAll.AutoSize = true;
             this.chboxErrorAllowAll.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.chboxErrorAllowAll.Location = new System.Drawing.Point(158, 16);
+            this.chboxErrorAllowAll.Location = new System.Drawing.Point(160, 17);
             this.chboxErrorAllowAll.Name = "chboxErrorAllowAll";
             this.chboxErrorAllowAll.Size = new System.Drawing.Size(99, 22);
             this.chboxErrorAllowAll.TabIndex = 2;
@@ -206,15 +208,12 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.chboxErrorReset);
+            this.tabPage1.Controls.Add(this.btnQuizMax);
             this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Controls.Add(this.label2);
             this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.chboxErrorAllowAll);
-            this.tabPage1.Controls.Add(this.label4);
             this.tabPage1.Controls.Add(this.nudQuizNum);
             this.tabPage1.Controls.Add(this.nudMinChapter);
-            this.tabPage1.Controls.Add(this.nudErrorAllow);
             this.tabPage1.Controls.Add(this.nudMaxChapter);
             this.tabPage1.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
@@ -222,11 +221,25 @@
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(292, 137);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Quiz Setting";
+            this.tabPage1.Text = "Quiz";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // chboxErrorReset
+            // 
+            this.chboxErrorReset.AutoSize = true;
+            this.chboxErrorReset.Location = new System.Drawing.Point(160, 45);
+            this.chboxErrorReset.Name = "chboxErrorReset";
+            this.chboxErrorReset.Size = new System.Drawing.Size(123, 22);
+            this.chboxErrorReset.TabIndex = 3;
+            this.chboxErrorReset.Text = "ミス許容リセット";
+            this.chboxErrorReset.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.chboxErrorReset);
+            this.tabPage2.Controls.Add(this.label4);
+            this.tabPage2.Controls.Add(this.nudErrorAllow);
+            this.tabPage2.Controls.Add(this.chboxErrorAllowAll);
             this.tabPage2.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
@@ -236,15 +249,15 @@
             this.tabPage2.Text = "Other";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // chboxErrorReset
+            // btnQuizMax
             // 
-            this.chboxErrorReset.AutoSize = true;
-            this.chboxErrorReset.Location = new System.Drawing.Point(158, 49);
-            this.chboxErrorReset.Name = "chboxErrorReset";
-            this.chboxErrorReset.Size = new System.Drawing.Size(123, 22);
-            this.chboxErrorReset.TabIndex = 3;
-            this.chboxErrorReset.Text = "ミス許容リセット";
-            this.chboxErrorReset.UseVisualStyleBackColor = true;
+            this.btnQuizMax.Location = new System.Drawing.Point(170, 14);
+            this.btnQuizMax.Name = "btnQuizMax";
+            this.btnQuizMax.Size = new System.Drawing.Size(94, 23);
+            this.btnQuizMax.TabIndex = 2;
+            this.btnQuizMax.Text = "クイズ数最大";
+            this.btnQuizMax.UseVisualStyleBackColor = true;
+            this.btnQuizMax.Click += new System.EventHandler(this.btnQuizMax_Click);
             // 
             // SettingBase
             // 
@@ -261,6 +274,8 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -283,5 +298,6 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.CheckBox chboxErrorReset;
+        private System.Windows.Forms.Button btnQuizMax;
     }
 }
