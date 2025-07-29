@@ -204,7 +204,7 @@ namespace MiBocaRecuerda
             operationTSMI_siguiente.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
             operationTSMI_anterior.ShortcutKeys = Keys.Control | Keys.Shift | Keys.B;
 
-            toolTSMI_pruebaLista.ShortcutKeys = Keys.Control | Keys.L;
+            toolTSMI_prueba_Order.ShortcutKeys = Keys.Control | Keys.L;
             toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
 
             resultForm.Dispose();
@@ -1243,31 +1243,6 @@ namespace MiBocaRecuerda
                 }
             };
 
-            toolTSMI_pruebaLista.MouseDown += (o, e) =>
-            {
-                switch (e.Button)
-                {
-                    case MouseButtons.Right:
-
-                        // Pruebaリストの出題順表示
-
-                        if (resultForm.IsDisposed == false) resultForm.Dispose();
-                        if (QuizContents.Count == 0) return;
-
-                        resultForm = new ResultForm(QuizContents, this, false)
-                        {
-                            Text = "Lista de Pruebas",
-                            ShowIcon = false
-                        };
-
-                        resultForm.Show();
-
-                        break;
-                    case MouseButtons.Middle:
-                        break;
-                }
-            };
-
             #endregion
         }
 
@@ -1562,7 +1537,8 @@ namespace MiBocaRecuerda
 
         #region Herramientas
 
-        private void toolTSMI_pruebaLista_Click(object sender, EventArgs e)
+        // 正解リストindex順表示
+        private void toolTSMI_prueba_Order_Click(object sender, EventArgs e)
         {
             if (resultForm.IsDisposed == false) resultForm.Dispose();
             if (QuizContents.Count == 0) return;
@@ -1576,7 +1552,23 @@ namespace MiBocaRecuerda
             resultForm.Show();
         }
 
-        private void toolTSMI_prueba_e_Click(object sender, EventArgs e)
+        // 正解リスト出題順表示
+        private void toolTSMI_prueba_QuizOrder_Click(object sender, EventArgs e)
+        {
+            if (resultForm.IsDisposed == false) resultForm.Dispose();
+            if (QuizContents.Count == 0) return;
+
+            resultForm = new ResultForm(QuizContents, this, false)
+            {
+                Text = "Lista de Pruebas",
+                ShowIcon = false
+            };
+
+            resultForm.Show();
+        }
+
+        // 正解リスト指定表示
+        private void toolTSMI_prueba_Select_Click(object sender, EventArgs e)
         {
             // Pruebaリストの問題インデックスを指定して表示する
 

@@ -12,6 +12,18 @@ namespace MiBocaRecuerda
             CurrentQuiz,
         }
 
+        public enum DBColmun
+        {
+            Header = 1,
+            Quiestion,
+            Answer,
+            ChapterTitle,
+            ChapterExample,
+            Supplement,
+            Date,
+            Auxiliary
+        }
+
         public static readonly string ProgressStateCharacter_Neutral = "○";
         public static readonly string ProgressStateCharacter_Correct = "■";
         public static readonly string ProgressStateCharacter_Incorrect = "×";

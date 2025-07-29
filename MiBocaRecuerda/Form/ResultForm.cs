@@ -4,8 +4,6 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
-using System.IO;
-using ClosedXML.Excel;
 
 namespace MiBocaRecuerda
 {
@@ -129,7 +127,7 @@ namespace MiBocaRecuerda
         {
             dgv.SelectionChanged += (o, e) =>
             {
-                dgv.Rows[dgv.CurrentCell.RowIndex].Selected = false;
+                //dgv.Rows[dgv.CurrentCell.RowIndex].Selected = false;
             };
 
             Load += (o, e) =>
@@ -189,16 +187,16 @@ namespace MiBocaRecuerda
                 AdjustRowHeight();
             };
 
-            bool isShiftPressed = false;
+            //bool isShiftPressed = false;
 
             KeyPreview = !KeyPreview;
 
             KeyDown += (o, e) =>
             {
-                if (e.KeyCode == Keys.ShiftKey)
-                {
-                    isShiftPressed = true;
-                }
+                //if (e.KeyCode == Keys.ShiftKey)
+                //{
+                //    isShiftPressed = true;
+                //}
 
                 bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
 
@@ -231,160 +229,55 @@ namespace MiBocaRecuerda
                 }
             };
 
-            KeyUp += (o, e) =>
+            //KeyUp += (o, e) =>
+            //{
+            //    if (e.KeyCode == Keys.ShiftKey)
+            //    {
+            //        isShiftPressed = false;
+            //    }
+            //};
+
+            //Deactivate += (o, e) =>
+            //{
+            //    isShiftPressed = false;
+            //};
+        }
+
+        private string cellValue = "";
+        private string quizNum = "";
+        private int ColumnIndex;
+
+        private void dgv_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            // クリックされたセルが有効なセルかを確認
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
             {
-                if (e.KeyCode == Keys.ShiftKey)
-                {
-                    isShiftPressed = false;
-                }
-            };
+                dgv.ClearSelection();
 
-            Deactivate += (o, e) =>
+                // セルの値を取得
+                cellValue = dgv[e.ColumnIndex, e.RowIndex].Value?.ToString().Replace("*", "");
+                ColumnIndex = e.ColumnIndex;
+                quizNum = dgv[0, e.RowIndex].Value?.ToString();
+                dgv.Rows[e.RowIndex].Selected = true;
+
+            }
+            else
             {
-                isShiftPressed = false;
-            };
+                return;
+            }
 
-            dgv.CellMouseClick += (o, e) =>
+            switch (e.Button)
             {
-                string cellValue = "";
-                string quizNum = "";
+                case MouseButtons.Middle:
+                    break;
+                case MouseButtons.Right:
 
-                // クリックされたセルが有効なセルかを確認
-                if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
-                {
-                    // セルの値を取得
-                    cellValue = dgv[e.ColumnIndex, e.RowIndex].Value?.ToString().Replace("*", "");
-                    quizNum = dgv[0, e.RowIndex].Value?.ToString();
-                }
-                else
-                {
-                    return;
-                }
+                    if (dgv.SelectedRows.Count == 0) return;
 
-                switch (e.Button)
-                {
-                    case MouseButtons.Middle:
+                    contextMenuStrip1.Show(Cursor.Position);
 
-                        if (isShiftPressed)
-                        {
-                            try
-                            {
-                                string clip_str = Clipboard.GetText();
-
-                                if (clip_str == "")
-                                {
-                                    MessageBox.Show("クリップボードに文字列がない");
-
-                                    return;
-                                }
-
-                                using (FileStream fs = new FileStream(mf.currentFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
-                                {
-                                    XLWorkbook workBook = new XLWorkbook(fs);
-                                    IXLWorksheet ws = workBook.Worksheet(1);
-
-                                    string existir = ws.Cell(int.Parse(quizNum), 6).Value.ToString();
-
-                                    if (existir != "")
-                                    {
-                                        DialogResult result = MessageBox.Show("すでにSupplementがあるよ。上書きしますか？",
-                                                                                "おっと",
-                                                                                MessageBoxButtons.YesNo,
-                                                                                MessageBoxIcon.Exclamation,
-                                                                                MessageBoxDefaultButton.Button2);
-
-                                        if (result == DialogResult.No)
-                                        {
-                                            // 上書きしない
-                                            return;
-                                        }
-                                        else
-                                        {
-
-                                            DialogResult result2 = MessageBox.Show("追記？",
-                                                                                "おっとっと",
-                                                                                MessageBoxButtons.YesNo,
-                                                                                MessageBoxIcon.Exclamation,
-                                                                                MessageBoxDefaultButton.Button2);
-
-                                            string mes = "";
-
-                                            if (result2 == DialogResult.No)
-                                            {
-                                                mes = "上書き";
-                                            }
-                                            else
-                                            {
-                                                mes = "追記";
-
-                                                clip_str = existir + "\r\n\r\n======\r\n\r\n" + clip_str;
-                                            }
-
-
-                                            DialogResult result3 = MessageBox.Show($"本当に{mes}する？",
-                                                                                "おっとっとっと",
-                                                                                MessageBoxButtons.YesNo,
-                                                                                MessageBoxIcon.Exclamation,
-                                                                                MessageBoxDefaultButton.Button2);
-
-                                            if (result == DialogResult.No)
-                                            {
-                                                // 上書きも追記もしない
-                                                return;
-                                            }
-                                        }
-                                    }
-
-                                    // supplement
-                                    ws.Cell(int.Parse(quizNum), 6).Value = clip_str;
-
-                                    string date = ws.Cell(int.Parse(quizNum), 7).Value.ToString();
-
-                                    if (date != "") date += "\r\n";
-                                    // supplementの横に日付をいれる
-                                    ws.Cell(int.Parse(quizNum), 7).Value = date + DateTime.Today.ToShortDateString();
-                                    workBook.Save();
-                                    MessageBox.Show("Supplement書込完了");
-
-                                    // lista de pruebasを更新する
-                                    foreach (DataGridViewRow row in dgv.Rows)
-                                    {
-                                        if (row.Cells[0].Value.ToString() == quizNum)
-                                        {
-                                            Supplement[quizNum] = clip_str;
-                                            // 追記の時はすでに*が付いてるからそのための確認
-                                            if (row.Cells[1].Value.ToString().EndsWith("*") == false)
-                                            {
-                                                row.Cells[1].Value += " *";
-                                            }
-                                        }
-                                    }
-
-                                    mf.UpdateQuizSupplement(quizNum, clip_str);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message);
-                            }
-                        }
-                        else
-                        {
-                            // セルの値をクリップボードにコピー
-                            if (!string.IsNullOrEmpty(cellValue))
-                            {
-                                Clipboard.SetText(cellValue);
-                            }
-                        }
-
-                        break;
-                    case MouseButtons.Right:
-
-                        ShowSupplement(e.RowIndex);
-
-                        break;
-                }
-            };
+                    break;
+            }
         }
 
         private void ShowSupplement(int RowIndex)
@@ -456,6 +349,31 @@ namespace MiBocaRecuerda
 
             //幅の変更
             return (int)maxWidth + 16;
+        }
+
+        private void CMS_supl_Click(object sender, EventArgs e)
+        {
+            int index = dgv.SelectedRows[0].Index;
+
+            ShowSupplement(index);
+        }
+
+        private void CMS_copy_Click(object sender, EventArgs e)
+        {
+            // セルの値をクリップボードにコピー
+            if (!string.IsNullOrEmpty(cellValue))
+            {
+                Clipboard.SetText(cellValue);
+
+                MessageBox.Show($"{(ColumnIndex == 1 ? "問題" : ColumnIndex  == 2 ? "答え" : "???")}をコピー");
+            }
+        }
+
+        private void CMS_edit_Click(object sender, EventArgs e)
+        {
+            EditDBForm edb = new EditDBForm(mf.currentFilePath, int.Parse(quizNum));
+
+            if(!edb.IsDisposed) edb.ShowDialog();
         }
     }
 }

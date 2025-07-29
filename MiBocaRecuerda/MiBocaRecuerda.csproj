@@ -138,6 +138,12 @@
     <Compile Include="Form\Dialogs\InputDialog.Designer.cs">
       <DependentUpon>InputDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form\EditDBForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\EditDBForm.Designer.cs">
+      <DependentUpon>EditDBForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form\EndDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -202,6 +208,9 @@
     <Compile Include="Utility\numeric\ArabicSpanish.cs" />
     <EmbeddedResource Include="Form\Dialogs\InputDialog.resx">
       <DependentUpon>InputDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\EditDBForm.resx">
+      <DependentUpon>EditDBForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form\EndDialog.resx">
       <DependentUpon>EndDialog.cs</DependentUpon>
