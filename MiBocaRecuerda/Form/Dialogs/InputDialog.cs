@@ -7,8 +7,9 @@ namespace MiBocaRecuerda
     {
         public int Desde { get; private set; }
         public int Hasta { get; private set; }
+        public bool IsIndex { get; private set; }
 
-        public InputDialog(int desde = 1, int hasta = 1)
+        public InputDialog(int desde = 1, int hasta = 1, bool isIndex = true)
         {
             InitializeComponent();
 
@@ -16,6 +17,7 @@ namespace MiBocaRecuerda
 
             nudDesde.Value = desde;
             nudHasta.Value = hasta;
+            chboxIndex.Checked = isIndex;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -33,6 +35,7 @@ namespace MiBocaRecuerda
 
             Desde = desde;
             Hasta = hasta;
+            IsIndex = chboxIndex.Checked;
 
             DialogResult = DialogResult.OK;
             Close();
@@ -46,8 +49,18 @@ namespace MiBocaRecuerda
 
         private void btnAhora_Click(object sender, EventArgs e)
         {
-            nudDesde.Value = MainForm.QuizFileConfig.MinChapterToIndex;
-            nudHasta.Value = MainForm.QuizFileConfig.MaxChapterToIndex;
+            nudDesde.Value = chboxIndex.Checked ? MainForm.QuizFileConfig.MinChapterToIndex : MainForm.QuizFileConfig.MinChapter;
+            nudHasta.Value = chboxIndex.Checked ? MainForm.QuizFileConfig.MaxChapterToIndex : MainForm.QuizFileConfig.MaxChapter;
+        }
+
+        private void chboxChapter_CheckedChanged(object sender, EventArgs e)
+        {
+            bool check = (sender as CheckBox).Checked;
+
+            nudDesde.Increment = check ? 10 : 1;
+            nudHasta.Increment = check ? 10 : 1;
+
+            lblModo.Text = $"Selección de {(check ? "Índice" : "Capítulo")}";
         }
     }
 }

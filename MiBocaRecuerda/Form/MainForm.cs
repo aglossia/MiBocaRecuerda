@@ -58,6 +58,7 @@ namespace MiBocaRecuerda
         // 答えの表を出すときの指定インデックス記憶用
         private int cacheDesde = -1;
         private int cacheHasta = -1;
+        private bool cacheIsIndex = false;
 
         // タイトルバーのベースとなる文字列
         private string BaseTitle = "";
@@ -743,22 +744,46 @@ namespace MiBocaRecuerda
         {
             if (QuizFileConfig == null) return;
 
+            int diff = QuizFileConfig.MaxChapter - QuizFileConfig.MinChapter + 1;
+
             if (isForward)
             {
-                if ((QuizFileConfig.MinChapter + 1 > (MaxRow / 10)) || (QuizFileConfig.MaxChapter + 1 > (MaxRow / 10))) return;
+                // 最小章がMAX数を超えていたら何もすることがない
+                if (QuizFileConfig.MinChapter + diff > MaxRow / 10) return;
 
-                QuizFileConfig.MinChapter++;
-                QuizFileConfig.MaxChapter++;
-                InitQuiz(true);
+                if (QuizFileConfig.MaxChapter + diff > MaxRow / 10)
+                {
+                    // 最大章がMAX数を超えていたら最大章をMAX数にする
+                    QuizFileConfig.MinChapter += diff;
+                    QuizFileConfig.MaxChapter = MaxRow / 10;
+                }
+                else
+                {
+                    // 基準の差分分を順シフトする
+                    QuizFileConfig.MinChapter += diff;
+                    QuizFileConfig.MaxChapter += diff;
+                }
             }
             else
             {
-                if ((QuizFileConfig.MinChapter - 1 <= 0) || (QuizFileConfig.MaxChapter - 1 <= 0)) return;
+                // 最大章が0以下だと何もすることがない
+                if (QuizFileConfig.MaxChapter - diff < 1) return;
 
-                QuizFileConfig.MinChapter--;
-                QuizFileConfig.MaxChapter--;
-                InitQuiz(true);
+                if (QuizFileConfig.MinChapter - diff < 1)
+                {
+                    // 最大章が0以下だと最小の1にする
+                    QuizFileConfig.MinChapter = 1;
+                    QuizFileConfig.MaxChapter -= diff;
+                }
+                else
+                {
+                    // 基準の差分分を逆シフトする
+                    QuizFileConfig.MinChapter -= diff;
+                    QuizFileConfig.MaxChapter -= diff;
+                }
             }
+
+            InitQuiz(true);
         }
 
         // QuizのSupplementを更新する
@@ -1239,34 +1264,6 @@ namespace MiBocaRecuerda
 
                         break;
                     case MouseButtons.Middle:
-
-                        // Pruebaリストの問題インデックスを指定して表示する
-
-                        if (QuizFileConfig == null) return;
-
-                        if (cacheDesde == -1) cacheDesde = QuizFileConfig.MinChapterToIndex;
-                        if (cacheHasta == -1) cacheHasta = QuizFileConfig.MaxChapterToIndex;
-
-                        InputDialog id = new InputDialog(cacheDesde, cacheHasta);
-
-                        // 問題インデックスを入力する画面
-                        if(id.ShowDialog() == DialogResult.OK)
-                        {
-                            cacheDesde = id.Desde;
-                            cacheHasta = id.Hasta;
-
-                            List<int> sequence = Enumerable.Range(id.Desde, id.Hasta - id.Desde + 1).ToList();
-                            List<QuizContents> quizContents = CreateQuizContents(sequence);
-
-                            resultForm = new ResultForm(quizContents, this, true)
-                            {
-                                Text = "Lista de Pruebas",
-                                ShowIcon = false
-                            };
-
-                            resultForm.Show();
-                        }
-
                         break;
                 }
             };
@@ -1577,6 +1574,40 @@ namespace MiBocaRecuerda
             };
 
             resultForm.Show();
+        }
+
+        private void toolTSMI_prueba_e_Click(object sender, EventArgs e)
+        {
+            // Pruebaリストの問題インデックスを指定して表示する
+
+            if (QuizFileConfig == null) return;
+
+            if (cacheDesde == -1) cacheDesde = cacheIsIndex ? QuizFileConfig.MinChapterToIndex : QuizFileConfig.MinChapter;
+            if (cacheHasta == -1) cacheHasta = cacheIsIndex ? QuizFileConfig.MaxChapterToIndex : QuizFileConfig.MaxChapter;
+
+            InputDialog id = new InputDialog(cacheDesde, cacheHasta, cacheIsIndex);
+
+            // 問題インデックスを入力する画面
+            if (id.ShowDialog() == DialogResult.OK)
+            {
+                cacheDesde = id.Desde;
+                cacheHasta = id.Hasta;
+                cacheIsIndex = id.IsIndex;
+
+                int desde = cacheIsIndex ? cacheDesde : cacheDesde * 10 - 9;
+                int hasta = cacheIsIndex ? cacheHasta : cacheHasta * 10;
+
+                List<int> sequence = Enumerable.Range(desde, hasta - desde + 1).ToList();
+                List<QuizContents> quizContents = CreateQuizContents(sequence);
+
+                resultForm = new ResultForm(quizContents, this, true)
+                {
+                    Text = "Lista de Pruebas",
+                    ShowIcon = false
+                };
+
+                resultForm.Show();
+            }
         }
 
         private void toolTSMI_chapterList_Click(object sender, EventArgs e)

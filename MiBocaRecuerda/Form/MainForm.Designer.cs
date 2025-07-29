@@ -52,6 +52,7 @@
             this.operationTSMI_anterior = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_pruebaLista = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_prueba_e = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_chapterList = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_translate = new System.Windows.Forms.ToolStripMenuItem();
             this.lbl_PruebaChallengeCount = new System.Windows.Forms.Label();
@@ -249,6 +250,7 @@
             // 
             this.toolTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolTSMI_pruebaLista,
+            this.toolTSMI_prueba_e,
             this.toolTSMI_chapterList,
             this.toolTSMI_translate});
             this.toolTSMI.Name = "toolTSMI";
@@ -258,21 +260,28 @@
             // toolTSMI_pruebaLista
             // 
             this.toolTSMI_pruebaLista.Name = "toolTSMI_pruebaLista";
-            this.toolTSMI_pruebaLista.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_pruebaLista.Size = new System.Drawing.Size(206, 22);
             this.toolTSMI_pruebaLista.Text = "Mostrar Lista de Pruebas";
             this.toolTSMI_pruebaLista.Click += new System.EventHandler(this.toolTSMI_pruebaLista_Click);
+            // 
+            // toolTSMI_prueba_e
+            // 
+            this.toolTSMI_prueba_e.Name = "toolTSMI_prueba_e";
+            this.toolTSMI_prueba_e.Size = new System.Drawing.Size(206, 22);
+            this.toolTSMI_prueba_e.Text = "Mostrar lista especificada";
+            this.toolTSMI_prueba_e.Click += new System.EventHandler(this.toolTSMI_prueba_e_Click);
             // 
             // toolTSMI_chapterList
             // 
             this.toolTSMI_chapterList.Name = "toolTSMI_chapterList";
-            this.toolTSMI_chapterList.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_chapterList.Size = new System.Drawing.Size(206, 22);
             this.toolTSMI_chapterList.Text = "Chapter list";
             this.toolTSMI_chapterList.Click += new System.EventHandler(this.toolTSMI_chapterList_Click);
             // 
             // toolTSMI_translate
             // 
             this.toolTSMI_translate.Name = "toolTSMI_translate";
-            this.toolTSMI_translate.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_translate.Size = new System.Drawing.Size(206, 22);
             this.toolTSMI_translate.Text = "Traducir";
             this.toolTSMI_translate.Click += new System.EventHandler(this.toolTSMI_translate_Click);
             // 
@@ -363,6 +372,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_DarkMode;
         private System.Windows.Forms.Label lbl_ErrorAllowCount;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_prueba_e;
     }
 }
 
