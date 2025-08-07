@@ -140,8 +140,14 @@ namespace MiBocaRecuerda
             System.Reflection.AssemblyName asmName = assembly.GetName();
             Version version = asmName.Version;
 
+            // メジャーバージョンとマイナーバージョンは手動指定のみ
+            // ビルド番号は2000年1月1日からの経過日数
+            // リビジョンはその日の00:00:00からの経過秒数/2
+            string date = ConvertToDateTime(version.Build, version.Revision).ToString("yyyy/MM/dd HH:mm:ss");
+
             mensaje_de_ayuda.Add("───────");
-            mensaje_de_ayuda.Add($"Ver:{version.Major}.{version.Minor}");
+            mensaje_de_ayuda.Add($"Version    : {version.Major}.{version.Minor}");
+            mensaje_de_ayuda.Add($"Build time : {date}");
 
             MessageForm s = new MessageForm(mensaje_de_ayuda, "AYUDA", MessageForm.TipoDeUbicacion.CENTRO, this, true)
             {
@@ -150,6 +156,20 @@ namespace MiBocaRecuerda
             };
 
             s.Show();
+        }
+
+        private DateTime ConvertToDateTime(int daysSince2000, int secondsOfDay)
+        {
+            // 基準日: 2000年1月1日
+            DateTime baseDate = new DateTime(2000, 1, 1);
+
+            // 経過日数を加算
+            DateTime dateWithDays = baseDate.AddDays(daysSince2000);
+
+            // 経過秒数を加算
+            DateTime finalDateTime = dateWithDays.AddSeconds(secondsOfDay * 2);
+
+            return finalDateTime;
         }
     }
 }

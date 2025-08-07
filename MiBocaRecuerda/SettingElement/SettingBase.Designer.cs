@@ -41,9 +41,11 @@
             this.chboxErrorAllowAll = new System.Windows.Forms.CheckBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.chboxErrorReset = new System.Windows.Forms.CheckBox();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.btnQuizMax = new System.Windows.Forms.Button();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.chboxErrorReset = new System.Windows.Forms.CheckBox();
+            this.lblErrorAll = new System.Windows.Forms.Label();
+            this.lblErrorReset = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
@@ -184,6 +186,7 @@
             this.nudErrorAllow.Name = "nudErrorAllow";
             this.nudErrorAllow.Size = new System.Drawing.Size(56, 25);
             this.nudErrorAllow.TabIndex = 1;
+            this.nudErrorAllow.ValueChanged += new System.EventHandler(this.nudErrorAllow_ValueChanged);
             // 
             // chboxErrorAllowAll
             // 
@@ -195,6 +198,7 @@
             this.chboxErrorAllowAll.TabIndex = 2;
             this.chboxErrorAllowAll.Text = "ミス許容全体\r\n";
             this.chboxErrorAllowAll.UseVisualStyleBackColor = true;
+            this.chboxErrorAllowAll.CheckedChanged += new System.EventHandler(this.chboxErrorAllowAll_CheckedChanged);
             // 
             // tabControl1
             // 
@@ -224,18 +228,20 @@
             this.tabPage1.Text = "Quiz";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // chboxErrorReset
+            // btnQuizMax
             // 
-            this.chboxErrorReset.AutoSize = true;
-            this.chboxErrorReset.Location = new System.Drawing.Point(160, 45);
-            this.chboxErrorReset.Name = "chboxErrorReset";
-            this.chboxErrorReset.Size = new System.Drawing.Size(123, 22);
-            this.chboxErrorReset.TabIndex = 3;
-            this.chboxErrorReset.Text = "ミス許容リセット";
-            this.chboxErrorReset.UseVisualStyleBackColor = true;
+            this.btnQuizMax.Location = new System.Drawing.Point(170, 14);
+            this.btnQuizMax.Name = "btnQuizMax";
+            this.btnQuizMax.Size = new System.Drawing.Size(94, 23);
+            this.btnQuizMax.TabIndex = 2;
+            this.btnQuizMax.Text = "クイズ数最大";
+            this.btnQuizMax.UseVisualStyleBackColor = true;
+            this.btnQuizMax.Click += new System.EventHandler(this.btnQuizMax_Click);
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.lblErrorReset);
+            this.tabPage2.Controls.Add(this.lblErrorAll);
             this.tabPage2.Controls.Add(this.chboxErrorReset);
             this.tabPage2.Controls.Add(this.label4);
             this.tabPage2.Controls.Add(this.nudErrorAllow);
@@ -249,15 +255,34 @@
             this.tabPage2.Text = "Other";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // btnQuizMax
+            // chboxErrorReset
             // 
-            this.btnQuizMax.Location = new System.Drawing.Point(170, 14);
-            this.btnQuizMax.Name = "btnQuizMax";
-            this.btnQuizMax.Size = new System.Drawing.Size(94, 23);
-            this.btnQuizMax.TabIndex = 2;
-            this.btnQuizMax.Text = "クイズ数最大";
-            this.btnQuizMax.UseVisualStyleBackColor = true;
-            this.btnQuizMax.Click += new System.EventHandler(this.btnQuizMax_Click);
+            this.chboxErrorReset.AutoSize = true;
+            this.chboxErrorReset.Location = new System.Drawing.Point(160, 45);
+            this.chboxErrorReset.Name = "chboxErrorReset";
+            this.chboxErrorReset.Size = new System.Drawing.Size(123, 22);
+            this.chboxErrorReset.TabIndex = 3;
+            this.chboxErrorReset.Text = "ミス許容リセット";
+            this.chboxErrorReset.UseVisualStyleBackColor = true;
+            this.chboxErrorReset.CheckedChanged += new System.EventHandler(this.chboxErrorReset_CheckedChanged);
+            // 
+            // lblErrorAll
+            // 
+            this.lblErrorAll.AutoSize = true;
+            this.lblErrorAll.Location = new System.Drawing.Point(15, 75);
+            this.lblErrorAll.Name = "lblErrorAll";
+            this.lblErrorAll.Size = new System.Drawing.Size(92, 18);
+            this.lblErrorAll.TabIndex = 4;
+            this.lblErrorAll.Text = "ミス許容範囲：";
+            // 
+            // lblErrorReset
+            // 
+            this.lblErrorReset.AutoSize = true;
+            this.lblErrorReset.Location = new System.Drawing.Point(15, 104);
+            this.lblErrorReset.Name = "lblErrorReset";
+            this.lblErrorReset.Size = new System.Drawing.Size(116, 18);
+            this.lblErrorReset.TabIndex = 4;
+            this.lblErrorReset.Text = "ミス満了リセット：";
             // 
             // SettingBase
             // 
@@ -299,5 +324,7 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.CheckBox chboxErrorReset;
         private System.Windows.Forms.Button btnQuizMax;
+        private System.Windows.Forms.Label lblErrorReset;
+        private System.Windows.Forms.Label lblErrorAll;
     }
 }

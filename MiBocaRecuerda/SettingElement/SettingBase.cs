@@ -28,6 +28,8 @@ namespace MiBocaRecuerda
             {
                 SetValue(qfc[cmbboxFileName.SelectedIndex]);
             };
+
+            UpdateErrorControls();
         }
 
         private void SetValue(QuizFileConfig lang)
@@ -77,6 +79,45 @@ namespace MiBocaRecuerda
             if (max - min < 0) return;
 
             nudQuizNum.Value = (max - min + 1) * 10;
+        }
+
+        private void chboxErrorAllowAll_CheckedChanged(object sender, System.EventArgs e)
+        {
+            UpdateErrorControls();
+        }
+
+        private void chboxErrorReset_CheckedChanged(object sender, System.EventArgs e)
+        {
+            UpdateErrorControls();
+        }
+
+        private void UpdateErrorControls()
+        {
+            bool check_eaa = chboxErrorAllowAll.Checked;
+            bool check_er = chboxErrorReset.Checked;
+            int error_cnt = (int)nudErrorAllow.Value;
+
+            if(error_cnt > 0)
+            {
+                lblErrorAll.Text = $"ミス許容範囲：{(check_eaa ? "セッション" : "問題")}";
+                lblErrorReset.Text = $"ミス満了リセット：{(check_er ? "はい" : "いいえ")}";
+
+                chboxErrorAllowAll.Enabled = true;
+                chboxErrorReset.Enabled = true;
+            }
+            else
+            {
+                lblErrorAll.Text = $"ミス許容範囲：-";
+                lblErrorReset.Text = $"ミス満了リセット：-";
+
+                chboxErrorAllowAll.Enabled = false;
+                chboxErrorReset.Enabled = false;
+            }
+        }
+
+        private void nudErrorAllow_ValueChanged(object sender, System.EventArgs e)
+        {
+            UpdateErrorControls();
         }
     }
 }

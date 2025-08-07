@@ -186,6 +186,7 @@ namespace MiBocaRecuerda
 
 #if DEBUG
             Text += " [debug]";
+            chboxDebug.Visible = true;
 #endif
 
             lblResult.Visible = false;
@@ -203,6 +204,7 @@ namespace MiBocaRecuerda
             operationTSMI_start.ShortcutKeys = Keys.Control | Keys.Q;
             operationTSMI_siguiente.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
             operationTSMI_anterior.ShortcutKeys = Keys.Control | Keys.Shift | Keys.B;
+            operationTSMI_Undo.ShortcutKeys = Keys.Control | Keys.U;
 
             toolTSMI_prueba_Order.ShortcutKeys = Keys.Control | Keys.L;
             toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
@@ -616,7 +618,7 @@ namespace MiBocaRecuerda
 
             preLastQuiz = int.Parse(QuizContents[curProgress].QuizNum);
 
-            if (QuizFileConfig.ErrorAllowAll == false)
+            if ((QuizFileConfig.ErrorAllowAll == false) && (QuizFileConfig.ErrorReset == true))
             {
                 // ミス許容が全体ではないときに問題ごとのミスを初期化する
                 ErrorAllowCount.Cnt = 0;
@@ -1268,7 +1270,7 @@ namespace MiBocaRecuerda
             bool isCorrect = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].CorrectAnswer);
 
 #if DEBUG
-            isCorrect = true;
+            if (chboxDebug.Checked) isCorrect = true;
 #endif
 
             DisplayResult(isCorrect ? "¡Sí!" : "¡No!", 1000);
@@ -1297,10 +1299,15 @@ namespace MiBocaRecuerda
                         }
                         else
                         {
-                            // ミス満了でミス許容全体でミス許容リセットのときはリセットする
-                            if(QuizFileConfig.ErrorAllowAll && QuizFileConfig.ErrorReset)
+                            // ミス許容全体はリセットカウント進める
+                            if (QuizFileConfig.ErrorAllowAll)
                             {
                                 ErrorResetCount++;
+                            }
+
+                            // ミス許容リセットのときはミス数リセットする
+                            if (QuizFileConfig.ErrorReset)
+                            {
                                 ErrorAllowCount.Cnt = 0;
                             }
                         }
@@ -1531,6 +1538,33 @@ namespace MiBocaRecuerda
         private void operationTSMI_anterior_Click(object sender, EventArgs e)
         {
             MoveQuiz(false);
+        }
+
+        private void operationTSMI_Undo_Click(object sender, EventArgs e)
+        {
+            if (QuizResult.Count == 0) return;
+
+            if (optionTSMI_prueba.Checked)
+            {
+                if(QuizResult[QuizResult.Count - 1].Result == false)
+                {
+                    ErrorAllowCount.Cnt = 0;
+                }
+            }
+
+            QuizResult.RemoveAt(QuizResult.Count - 1);
+            respuestas.RemoveAt(respuestas.Count - 1);
+
+            if (optionTSMI_progresoVisual.Checked)
+            {
+                label_progress[curProgress % 10].Text = AppRom.ProgressStateCharacter_Neutral;
+                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = AppRom.ProgressState.Neutral;
+            }
+
+            // ShowQuestionで++されるからここでは-2する
+            curProgress -= 2;
+
+            ShowQuestion();
         }
 
         #endregion

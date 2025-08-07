@@ -50,6 +50,7 @@
             this.operationTSMI_start = new System.Windows.Forms.ToolStripMenuItem();
             this.operationTSMI_siguiente = new System.Windows.Forms.ToolStripMenuItem();
             this.operationTSMI_anterior = new System.Windows.Forms.ToolStripMenuItem();
+            this.operationTSMI_Undo = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_pruebaLista = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_prueba_Order = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,6 +61,7 @@
             this.lbl_PruebaChallengeCount = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
+            this.chboxDebug = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -222,7 +224,8 @@
             this.operationTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.operationTSMI_start,
             this.operationTSMI_siguiente,
-            this.operationTSMI_anterior});
+            this.operationTSMI_anterior,
+            this.operationTSMI_Undo});
             this.operationTSMI.Name = "operationTSMI";
             this.operationTSMI.Size = new System.Drawing.Size(59, 23);
             this.operationTSMI.Text = "Manejo";
@@ -248,6 +251,13 @@
             this.operationTSMI_anterior.Text = "Anterior Quiz";
             this.operationTSMI_anterior.Click += new System.EventHandler(this.operationTSMI_anterior_Click);
             // 
+            // operationTSMI_Undo
+            // 
+            this.operationTSMI_Undo.Name = "operationTSMI_Undo";
+            this.operationTSMI_Undo.Size = new System.Drawing.Size(150, 22);
+            this.operationTSMI_Undo.Text = "Undo";
+            this.operationTSMI_Undo.Click += new System.EventHandler(this.operationTSMI_Undo_Click);
+            // 
             // toolTSMI
             // 
             this.toolTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -271,21 +281,21 @@
             // toolTSMI_prueba_Order
             // 
             this.toolTSMI_prueba_Order.Name = "toolTSMI_prueba_Order";
-            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_Order.Text = "index順表示";
             this.toolTSMI_prueba_Order.Click += new System.EventHandler(this.toolTSMI_prueba_Order_Click);
             // 
             // toolTSMI_prueba_QuizOrder
             // 
             this.toolTSMI_prueba_QuizOrder.Name = "toolTSMI_prueba_QuizOrder";
-            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_QuizOrder.Text = "出題順表示";
             this.toolTSMI_prueba_QuizOrder.Click += new System.EventHandler(this.toolTSMI_prueba_QuizOrder_Click);
             // 
             // toolTSMI_prueba_Select
             // 
             this.toolTSMI_prueba_Select.Name = "toolTSMI_prueba_Select";
-            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_Select.Text = "指定表示";
             this.toolTSMI_prueba_Select.Click += new System.EventHandler(this.toolTSMI_prueba_Select_Click);
             // 
@@ -332,11 +342,22 @@
             this.lbl_ErrorAllowCount.TabIndex = 12;
             this.lbl_ErrorAllowCount.Text = "0";
             // 
+            // chboxDebug
+            // 
+            this.chboxDebug.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chboxDebug.Location = new System.Drawing.Point(113, 247);
+            this.chboxDebug.Name = "chboxDebug";
+            this.chboxDebug.Size = new System.Drawing.Size(18, 23);
+            this.chboxDebug.TabIndex = 15;
+            this.chboxDebug.UseVisualStyleBackColor = true;
+            this.chboxDebug.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(429, 279);
+            this.Controls.Add(this.chboxDebug);
             this.Controls.Add(this.txtAnswer);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.lbl_ErrorAllowCount);
@@ -393,6 +414,8 @@
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_prueba_Order;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_prueba_QuizOrder;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_prueba_Select;
+        private System.Windows.Forms.ToolStripMenuItem operationTSMI_Undo;
+        private System.Windows.Forms.CheckBox chboxDebug;
     }
 }
 
