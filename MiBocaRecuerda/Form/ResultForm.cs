@@ -21,6 +21,8 @@ namespace MiBocaRecuerda
         private DataGridViewTextBoxColumn col_quiz;
         private DataGridViewTextBoxColumn col_correct;
 
+        private bool IsAuto = false;
+
         public ResultForm(List<QuizResult> _qr, MainForm _mf)
         {
             InitializeComponent();
@@ -171,6 +173,8 @@ namespace MiBocaRecuerda
 
             SizeChanged += (o, e) =>
             {
+                if (IsAuto) return;
+
                 dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
 
                 if (_form_resize != null) _form_resize._resize(false);
@@ -178,6 +182,8 @@ namespace MiBocaRecuerda
 
             dgv.FontChanged += (o, e) =>
             {
+                if (IsAuto) return;
+
                 if (WindowState == FormWindowState.Maximized)
                 {
                     // 最大化のときはDataGridViewAutoSizeRowsMode.DisplayedCellsに任せるしかないか…
@@ -374,6 +380,29 @@ namespace MiBocaRecuerda
             EditDBForm edb = new EditDBForm(mf.currentFilePath, int.Parse(quizNum));
 
             if(!edb.IsDisposed) edb.ShowDialog();
+        }
+
+        private void CMS_quiz_hide_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+
+            // IsAutoをONにしてサイズ変更しないと想定外にフォントサイズが変更されてしまう
+            IsAuto = true;
+            ToggleColumnVisibility("quiz", item.Checked);
+            IsAuto = false;
+
+            item.Checked = !item.Checked;
+        }
+
+        private void ToggleColumnVisibility(string columnName, bool visible)
+        {
+            // 対象列の表示・非表示を切り替え
+            dgv.Columns[columnName].Visible = visible;
+
+            int adjustWidth = (visible ? 1 : -1) * dgv.Columns[columnName].Width;
+
+            // 表示(非表示)した分を調整する
+            Size = new Size(Size.Width + adjustWidth, Size.Height);
         }
     }
 }

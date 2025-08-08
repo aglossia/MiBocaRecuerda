@@ -35,6 +35,8 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.CMS_copy = new System.Windows.Forms.ToolStripMenuItem();
             this.CMS_edit = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.CMS_quiz_hide = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.dgv)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -55,9 +57,11 @@
             this.CMS_supl,
             this.toolStripMenuItem1,
             this.CMS_copy,
-            this.CMS_edit});
+            this.CMS_edit,
+            this.toolStripMenuItem2,
+            this.CMS_quiz_hide});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 98);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(138, 104);
             // 
             // CMS_supl
             // 
@@ -85,6 +89,18 @@
             this.CMS_edit.Text = "編集";
             this.CMS_edit.Click += new System.EventHandler(this.CMS_edit_Click);
             // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+            // 
+            // CMS_quiz_hide
+            // 
+            this.CMS_quiz_hide.Name = "CMS_quiz_hide";
+            this.CMS_quiz_hide.Size = new System.Drawing.Size(180, 22);
+            this.CMS_quiz_hide.Text = "クイズ非表示";
+            this.CMS_quiz_hide.Click += new System.EventHandler(this.CMS_quiz_hide_Click);
+            // 
             // ResultForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -108,5 +124,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem CMS_copy;
         private System.Windows.Forms.ToolStripMenuItem CMS_edit;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem CMS_quiz_hide;
     }
 }
