@@ -36,8 +36,30 @@ namespace MiBocaRecuerda
         public int MinChapterToIndex => MinChapter * 10 - 9;
         public int MaxChapter { get; set; } = 1;
         public int MaxChapterToIndex => MaxChapter * 10;
-        public int QuizNum { get; set; } = 5;
-        public int ErrorAllow { get; set; } = 0;
+
+        private int _quizNum;
+        public int QuizNum
+        {
+            get
+            {
+                // クイズ数が最大クイズ数をこえていた場合は最大クイズ数にする
+                // シフトで次の問題に移動した時に端に来た時に調整されてズレがでたときを想定
+                if(_quizNum > MaxQuizNum)
+                {
+                    return MaxQuizNum;
+                }
+                else
+                {
+                    return _quizNum;
+                }
+            }
+            set
+            {
+                _quizNum = value;
+            }
+        }
+
+        public int ErrorAllowCnt { get; set; } = 0;
         public bool ErrorAllowAll { get; set; } = false;
         // エラー数が満了したときにエラー数をリセットするか(ErrorAlloAllが有効のときに有効な設定)
         public bool ErrorReset { get; set; } = false;
@@ -56,7 +78,7 @@ namespace MiBocaRecuerda
             MinChapter = qfc.MinChapter;
             MaxChapter = qfc.MaxChapter;
             QuizNum = qfc.QuizNum;
-            ErrorAllow = qfc.ErrorAllow;
+            ErrorAllowCnt = qfc.ErrorAllowCnt;
             ErrorAllowAll = qfc.ErrorAllowAll;
         }
     }

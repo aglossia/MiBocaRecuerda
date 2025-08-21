@@ -37,7 +37,7 @@ namespace MiBocaRecuerda
             nudMinChapter.Value = lang.MinChapter;
             nudMaxChapter.Value = lang.MaxChapter;
             nudQuizNum.Value = lang.QuizNum;
-            nudErrorAllow.Value = lang.ErrorAllow;
+            nudErrorAllow.Value = lang.ErrorAllowCnt;
             chboxErrorAllowAll.Checked = lang.ErrorAllowAll;
             chboxErrorReset.Checked = lang.ErrorReset;
         }
@@ -59,7 +59,7 @@ namespace MiBocaRecuerda
                 MinChapter = (int)nudMinChapter.Value,
                 MaxChapter = (int)nudMaxChapter.Value,
                 QuizNum = (int)nudQuizNum.Value,
-                ErrorAllow = (int)nudErrorAllow.Value,
+                ErrorAllowCnt = (int)nudErrorAllow.Value,
                 ErrorAllowAll = chboxErrorAllowAll.Checked,
                 ErrorReset = chboxErrorReset.Checked
             };

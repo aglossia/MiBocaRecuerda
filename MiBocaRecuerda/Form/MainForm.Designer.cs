@@ -50,7 +50,7 @@
             this.operationTSMI_start = new System.Windows.Forms.ToolStripMenuItem();
             this.operationTSMI_siguiente = new System.Windows.Forms.ToolStripMenuItem();
             this.operationTSMI_anterior = new System.Windows.Forms.ToolStripMenuItem();
-            this.operationTSMI_Undo = new System.Windows.Forms.ToolStripMenuItem();
+            this.operationTSMI_Undo_p = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_pruebaLista = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_prueba_Order = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,6 +62,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
             this.chboxDebug = new System.Windows.Forms.CheckBox();
+            this.operationTSMI_Undo_e = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -225,7 +226,8 @@
             this.operationTSMI_start,
             this.operationTSMI_siguiente,
             this.operationTSMI_anterior,
-            this.operationTSMI_Undo});
+            this.operationTSMI_Undo_p,
+            this.operationTSMI_Undo_e});
             this.operationTSMI.Name = "operationTSMI";
             this.operationTSMI.Size = new System.Drawing.Size(59, 23);
             this.operationTSMI.Text = "Manejo";
@@ -233,30 +235,30 @@
             // operationTSMI_start
             // 
             this.operationTSMI_start.Name = "operationTSMI_start";
-            this.operationTSMI_start.Size = new System.Drawing.Size(150, 22);
+            this.operationTSMI_start.Size = new System.Drawing.Size(180, 22);
             this.operationTSMI_start.Text = "Comenzar";
             this.operationTSMI_start.Click += new System.EventHandler(this.operationTSMI_start_Click);
             // 
             // operationTSMI_siguiente
             // 
             this.operationTSMI_siguiente.Name = "operationTSMI_siguiente";
-            this.operationTSMI_siguiente.Size = new System.Drawing.Size(150, 22);
+            this.operationTSMI_siguiente.Size = new System.Drawing.Size(180, 22);
             this.operationTSMI_siguiente.Text = "Siguiente Quiz";
             this.operationTSMI_siguiente.Click += new System.EventHandler(this.operationTSMI_siguiente_Click);
             // 
             // operationTSMI_anterior
             // 
             this.operationTSMI_anterior.Name = "operationTSMI_anterior";
-            this.operationTSMI_anterior.Size = new System.Drawing.Size(150, 22);
+            this.operationTSMI_anterior.Size = new System.Drawing.Size(180, 22);
             this.operationTSMI_anterior.Text = "Anterior Quiz";
             this.operationTSMI_anterior.Click += new System.EventHandler(this.operationTSMI_anterior_Click);
             // 
-            // operationTSMI_Undo
+            // operationTSMI_Undo_p
             // 
-            this.operationTSMI_Undo.Name = "operationTSMI_Undo";
-            this.operationTSMI_Undo.Size = new System.Drawing.Size(150, 22);
-            this.operationTSMI_Undo.Text = "Undo";
-            this.operationTSMI_Undo.Click += new System.EventHandler(this.operationTSMI_Undo_Click);
+            this.operationTSMI_Undo_p.Name = "operationTSMI_Undo_p";
+            this.operationTSMI_Undo_p.Size = new System.Drawing.Size(180, 22);
+            this.operationTSMI_Undo_p.Text = "Undo progress";
+            this.operationTSMI_Undo_p.Click += new System.EventHandler(this.operationTSMI_Undo_p_Click);
             // 
             // toolTSMI
             // 
@@ -352,6 +354,13 @@
             this.chboxDebug.UseVisualStyleBackColor = true;
             this.chboxDebug.Visible = false;
             // 
+            // operationTSMI_Undo_e
+            // 
+            this.operationTSMI_Undo_e.Name = "operationTSMI_Undo_e";
+            this.operationTSMI_Undo_e.Size = new System.Drawing.Size(180, 22);
+            this.operationTSMI_Undo_e.Text = "Undo error";
+            this.operationTSMI_Undo_e.Click += new System.EventHandler(this.operationTSMI_Undo_e_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -414,8 +423,9 @@
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_prueba_Order;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_prueba_QuizOrder;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_prueba_Select;
-        private System.Windows.Forms.ToolStripMenuItem operationTSMI_Undo;
+        private System.Windows.Forms.ToolStripMenuItem operationTSMI_Undo_p;
         private System.Windows.Forms.CheckBox chboxDebug;
+        private System.Windows.Forms.ToolStripMenuItem operationTSMI_Undo_e;
     }
 }
 

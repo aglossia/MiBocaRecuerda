@@ -41,6 +41,8 @@ namespace MiBocaRecuerda
         private List<QuizContents> QuizContents = new List<QuizContents>();
 
         private bool IsLoaded = false;
+        // 待機中かどうかは解答ボタンのEnabledで判断
+        private bool IsIdle => !btnAnswer.Enabled;
 
         // 現在のクイズファイル
         public static string currentQuizFile;
@@ -53,7 +55,7 @@ namespace MiBocaRecuerda
 
         private int PruebaChallengeCount = -1;
         private Counter ErrorAllowCount = new Counter(-1);
-        private int ErrorResetCount;
+        private Counter ErrorResetCount = new Counter(-1);
 
         // 答えの表を出すときの指定インデックス記憶用
         private int cacheDesde = -1;
@@ -168,17 +170,8 @@ namespace MiBocaRecuerda
 
             Controls.Add(nudProgress);
 
-            ErrorAllowCount.PropertyChanged += (o, e) =>
-            {
-                if (e.PropertyName == nameof(Counter.Cnt))
-                {
-                    lbl_ErrorAllowCount.Text = $"{ErrorAllowCount.Cnt}/{QuizFileConfig.ErrorAllow}";
-                    if (QuizFileConfig.ErrorAllowAll)
-                    {
-                        lbl_ErrorAllowCount.Text = $"Todo[{ErrorResetCount}]: {lbl_ErrorAllowCount.Text}";
-                    }
-                }
-            };
+            ErrorAllowCount.PropertyChanged += ErrorCountPropertyChanged;
+            ErrorResetCount.PropertyChanged += ErrorCountPropertyChanged;
 
             #endregion
 
@@ -204,7 +197,8 @@ namespace MiBocaRecuerda
             operationTSMI_start.ShortcutKeys = Keys.Control | Keys.Q;
             operationTSMI_siguiente.ShortcutKeys = Keys.Control | Keys.Shift | Keys.N;
             operationTSMI_anterior.ShortcutKeys = Keys.Control | Keys.Shift | Keys.B;
-            operationTSMI_Undo.ShortcutKeys = Keys.Control | Keys.U;
+            operationTSMI_Undo_p.ShortcutKeys = Keys.Control | Keys.U;
+            operationTSMI_Undo_e.ShortcutKeys = Keys.Control | Keys.Z;
 
             toolTSMI_prueba_Order.ShortcutKeys = Keys.Control | Keys.L;
             toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
@@ -465,8 +459,8 @@ namespace MiBocaRecuerda
             QuizResult.Clear();
             QuizContents.Clear();
             respuestas.Clear();
-            ErrorResetCount = 0;
-            // ErrorAllowCountの表示に関わっているものはErrorAllowCountのプロパティを変化する前に変化させておく必要がある
+            ErrorResetCount.Cnt = 0;
+            // ErrorAllowCount,ErrorResetCountの表示に関わっているものはErrorAllowCountのプロパティを変化する前に変化させておく必要がある
             ErrorAllowCount.Cnt = 0;
 
             // 進捗表示作成
@@ -556,7 +550,7 @@ namespace MiBocaRecuerda
             // pruebaモードのとき
             if (optionTSMI_prueba.Checked)
             {
-                if(QuizFileConfig.ErrorAllow > 0)
+                if(QuizFileConfig.ErrorAllowCnt > 0)
                 {
                     lbl_ErrorAllowCount.Visible = true;
                 }
@@ -744,7 +738,11 @@ namespace MiBocaRecuerda
         // Siguiente制御
         private void MoveQuiz(bool isForward)
         {
-            if (QuizFileConfig == null) return;
+            if (QuizFileConfig == null)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             int diff = QuizFileConfig.MaxChapter - QuizFileConfig.MinChapter + 1;
 
@@ -980,6 +978,19 @@ namespace MiBocaRecuerda
                 HideText();
 
                 e.Handled = true;
+            }
+        }
+
+        // エラーカウントの表示更新イベント
+        private void ErrorCountPropertyChanged(object o, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Counter.Cnt))
+            {
+                lbl_ErrorAllowCount.Text = $"{ErrorAllowCount.Cnt}/{QuizFileConfig.ErrorAllowCnt}";
+                if (QuizFileConfig.ErrorAllowAll)
+                {
+                    lbl_ErrorAllowCount.Text = $"Todo[{ErrorResetCount.Cnt}]: {lbl_ErrorAllowCount.Text}";
+                }
             }
         }
 
@@ -1277,6 +1288,8 @@ namespace MiBocaRecuerda
 
             txtConsole.Text = CoreProcess.adopt_str;
 
+            IsFirstMistake = false;
+
             if (isCorrect)
             {
                 correctAnswerNum++;
@@ -1287,11 +1300,11 @@ namespace MiBocaRecuerda
                 {
                     // pruebaモード
 
-                    if(QuizFileConfig.ErrorAllow > 0)
+                    if(QuizFileConfig.ErrorAllowCnt > 0)
                     {
                         // ミス許容が設定されているとき
 
-                        if(ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllow)
+                        if(ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllowCnt)
                         {
                             // ミス許容未満のあいだはミス数を加算してやり直し
                             ErrorAllowCount.Cnt++;
@@ -1302,7 +1315,7 @@ namespace MiBocaRecuerda
                             // ミス許容全体はリセットカウント進める
                             if (QuizFileConfig.ErrorAllowAll)
                             {
-                                ErrorResetCount++;
+                                ErrorResetCount.Cnt++;
                             }
 
                             // ミス許容リセットのときはミス数リセットする
@@ -1310,6 +1323,8 @@ namespace MiBocaRecuerda
                             {
                                 ErrorAllowCount.Cnt = 0;
                             }
+
+                            IsFirstMistake = true;
                         }
                     }
                 }
@@ -1475,7 +1490,12 @@ namespace MiBocaRecuerda
         private void optionTSMI_quizInfo_Click(object sender, EventArgs e)
         {
             if (MessageForm_quizInfo.IsDisposed == false) MessageForm_quizInfo.Dispose();
-            if (ws == null) return;
+
+            if (ws == null)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
             List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum, QuizContents[curProgress].ChapterTitle };
@@ -1540,13 +1560,14 @@ namespace MiBocaRecuerda
             MoveQuiz(false);
         }
 
-        private void operationTSMI_Undo_Click(object sender, EventArgs e)
+        // 進捗Undo
+        private void UndoProgress()
         {
             if (QuizResult.Count == 0) return;
 
             if (optionTSMI_prueba.Checked)
             {
-                if(QuizResult[QuizResult.Count - 1].Result == false)
+                if (QuizResult[QuizResult.Count - 1].Result == false)
                 {
                     ErrorAllowCount.Cnt = 0;
                 }
@@ -1557,6 +1578,7 @@ namespace MiBocaRecuerda
 
             if (optionTSMI_progresoVisual.Checked)
             {
+                // 現在のラベル★をニュートラル○にする
                 label_progress[curProgress % 10].Text = AppRom.ProgressStateCharacter_Neutral;
                 progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = AppRom.ProgressState.Neutral;
             }
@@ -1567,6 +1589,70 @@ namespace MiBocaRecuerda
             ShowQuestion();
         }
 
+        // Undo progress
+        private void operationTSMI_Undo_p_Click(object sender, EventArgs e)
+        {
+            if (IsIdle) return;
+
+            UndoProgress();
+        }
+
+        // ミスが確定した初回
+        private bool IsFirstMistake;
+
+        // Undo error
+        private void operationTSMI_Undo_e_Click(object sender, EventArgs e)
+        {
+            if (IsIdle) return;
+
+            if (QuizFileConfig.ErrorAllowCnt > 0)
+            {
+                // ミス許容が設定されているとき
+
+                if (IsFirstMistake)
+                {
+                    // ミス確定初回の場合のUndoは進捗をUndoする
+                    UndoProgress();
+
+                    ErrorResetCount.Cnt--;
+                    ErrorAllowCount.Cnt = QuizFileConfig.ErrorAllowCnt;
+                }
+                else
+                {
+                    if (QuizFileConfig.ErrorAllowAll)
+                    {
+                        // ミス許容全体
+
+                        if (ErrorAllowCount.Cnt == 0)
+                        {
+                            // ミス数が0でミス許容リセットが1以上はミス許容リセットを-1
+                            if(ErrorResetCount.Cnt > 0)
+                            {
+                                ErrorResetCount.Cnt--;
+                            }
+                        }
+                        else
+                        {
+                            // ミス数が1以上はミス数を-1
+                            ErrorAllowCount.Cnt--;
+                        }
+                    }
+                    else
+                    {
+                        // ミス許容全体ではないときはミス数を-1するだけ
+                        ErrorAllowCount.Cnt--;
+                    }
+                }
+
+                IsFirstMistake = false;
+            }
+            else
+            {
+                // ミス許容が設定されていないときは無条件に進捗Undoする
+                UndoProgress();
+            }
+        }
+
         #endregion
 
         #region Herramientas
@@ -1575,7 +1661,12 @@ namespace MiBocaRecuerda
         private void toolTSMI_prueba_Order_Click(object sender, EventArgs e)
         {
             if (resultForm.IsDisposed == false) resultForm.Dispose();
-            if (QuizContents.Count == 0) return;
+
+            if (QuizContents.Count == 0)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             resultForm = new ResultForm(QuizContents, this, true)
             {
@@ -1590,7 +1681,12 @@ namespace MiBocaRecuerda
         private void toolTSMI_prueba_QuizOrder_Click(object sender, EventArgs e)
         {
             if (resultForm.IsDisposed == false) resultForm.Dispose();
-            if (QuizContents.Count == 0) return;
+
+            if (QuizContents.Count == 0)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             resultForm = new ResultForm(QuizContents, this, false)
             {
@@ -1606,7 +1702,11 @@ namespace MiBocaRecuerda
         {
             // Pruebaリストの問題インデックスを指定して表示する
 
-            if (QuizFileConfig == null) return;
+            if (QuizFileConfig == null)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             if (cacheDesde == -1) cacheDesde = cacheIsIndex ? QuizFileConfig.MinChapterToIndex : QuizFileConfig.MinChapter;
             if (cacheHasta == -1) cacheHasta = cacheIsIndex ? QuizFileConfig.MaxChapterToIndex : QuizFileConfig.MaxChapter;
@@ -1639,7 +1739,12 @@ namespace MiBocaRecuerda
         private void toolTSMI_chapterList_Click(object sender, EventArgs e)
         {
             if (MessageForm_chapterList.IsDisposed == false) MessageForm_chapterList.Dispose();
-            if (ws == null) return;
+
+            if (ws == null)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             int chapter = ws.LastRowUsed().RowNumber() / 10;
 
