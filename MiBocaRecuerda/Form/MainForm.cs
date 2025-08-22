@@ -203,6 +203,9 @@ namespace MiBocaRecuerda
             toolTSMI_prueba_Order.ShortcutKeys = Keys.Control | Keys.L;
             toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
 
+            DBTSMI_QuizDB.ShortcutKeys = Keys.Control | Keys.D;
+            DBTSMI_Progress.ShortcutKeys = Keys.Control | Keys.G;
+
             resultForm.Dispose();
             MessageForm_respuesta.Dispose();
             MessageForm_traducir.Dispose();
@@ -398,10 +401,12 @@ namespace MiBocaRecuerda
             optionTSMI_prueba.Checked = SettingManager.InputCache.Complete;
             optionTSMI_progresoVisual.Checked = SettingManager.InputCache.Exercise;
             optionTSMI_resultados.Checked = SettingManager.InputCache.Result;
-            if (toolStripQuizFile.Items.Count > SettingManager.InputCache.QuizFilePathIndex)
+
+            if (toolStripQuizFile.Items.Contains(SettingManager.InputCache.QuizFileName))
             {
-                toolStripQuizFile.SelectedIndex = SettingManager.InputCache.QuizFilePathIndex;
+                toolStripQuizFile.SelectedItem = SettingManager.InputCache.QuizFileName;
             }
+
             optionTSMI_DarkMode.Checked = SettingManager.InputCache.DarkMode;
         }
 
@@ -429,7 +434,13 @@ namespace MiBocaRecuerda
             // 非表示中はクイズを始めない
             if (isHide)
             {
-                MessageBox.Show("No se puede continuar con la prueba mientras está oculto");
+                MessageBox.Show("No se puede continuar con la prueba mientras está oculto", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if(toolStripQuizFile.SelectedItem == null)
+            {
+                MessageBox.Show("Seleccione un archivo.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -1064,7 +1075,7 @@ namespace MiBocaRecuerda
                 SettingManager.InputCache.Complete = optionTSMI_prueba.Checked;
                 SettingManager.InputCache.Exercise = optionTSMI_progresoVisual.Checked;
                 SettingManager.InputCache.Result = optionTSMI_resultados.Checked;
-                SettingManager.InputCache.QuizFilePathIndex = toolStripQuizFile.SelectedIndex;
+                SettingManager.InputCache.QuizFileName = toolStripQuizFile.SelectedItem.ToString();
                 SettingManager.InputCache.DarkMode = optionTSMI_DarkMode.Checked;
 
                 CommonFunction.XmlWrite(SettingManager.InputCache, "cache.xml");
@@ -1216,31 +1227,6 @@ namespace MiBocaRecuerda
                 if (e.Button == MouseButtons.Right)
                 {
                     HideText();
-                }
-            };
-
-            toolStripQuizFile.MouseDown += (o, e) =>
-            {
-                string file = (o as ToolStripComboBox).SelectedItem.ToString();
-                string path = "";
-
-                switch (e.Button)
-                {
-                    case MouseButtons.Right:
-                        // 進捗
-                        path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{file}_p.csv";
-
-                        break;
-                    case MouseButtons.Middle:
-                        // DB
-                        path = $"{SettingManager.RomConfig.QuizFilePath}\\{file}.xlsx";
-
-                        break;
-                }
-
-                if (File.Exists(path))
-                {
-                    System.Diagnostics.Process.Start(path);
                 }
             };
 
@@ -1797,6 +1783,42 @@ namespace MiBocaRecuerda
                 EditDBForm edb = new EditDBForm(currentFilePath, QuizContents[curProgress - 1].QuizNum);
 
                 if (!edb.IsDisposed) edb.ShowDialog();
+            }
+        }
+
+        private void DBTSMI_QuizDB_Click(object sender, EventArgs e)
+        {
+            if (currentFilePath == "")
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string fileName = Path.GetFileNameWithoutExtension(currentFilePath);
+
+            string path = $"{SettingManager.RomConfig.QuizFilePath}\\{fileName}.xlsx";
+
+            if (File.Exists(path))
+            {
+                System.Diagnostics.Process.Start(path);
+            }
+        }
+
+        private void DBTSMI_Progress_Click(object sender, EventArgs e)
+        {
+            if (currentFilePath == "")
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string fileName = Path.GetFileNameWithoutExtension(currentFilePath);
+
+            string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{fileName}_p.csv";
+
+            if (File.Exists(path))
+            {
+                System.Diagnostics.Process.Start(path);
             }
         }
 

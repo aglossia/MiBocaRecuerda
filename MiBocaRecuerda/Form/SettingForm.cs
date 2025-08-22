@@ -66,7 +66,7 @@ namespace MiBocaRecuerda
             }
 
             // 指定ファイルの言語のタブに切り替える
-            tabControl1.SelectedIndex = LenguaTabIndex[select_lang];
+            if(select_lang != "") tabControl1.SelectedIndex = LenguaTabIndex[select_lang];
         }
 
         private bool SaveConfig()
@@ -81,6 +81,8 @@ namespace MiBocaRecuerda
             common = settingBases[index].GetCommon();
             lengua = settingBases[index].GetLang();
 
+            if (cacheFile == null) return false;
+
             // 不可な設定検証
             if (common.Validation() == false) return false;
 
@@ -94,7 +96,7 @@ namespace MiBocaRecuerda
         {
             if(SaveConfig() == false)
             {
-                MessageBox.Show("Hay una entrada no válida");
+                MessageBox.Show("Hay una entrada no válida", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 close_permition = false;
 
                 return;

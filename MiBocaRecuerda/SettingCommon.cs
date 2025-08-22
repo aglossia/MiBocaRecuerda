@@ -37,7 +37,7 @@ namespace MiBocaRecuerda
         public int MaxChapter { get; set; } = 1;
         public int MaxChapterToIndex => MaxChapter * 10;
 
-        private int _quizNum;
+        private int _quizNum = 10;
         public int QuizNum
         {
             get
@@ -99,10 +99,7 @@ namespace MiBocaRecuerda
         public bool Exercise { get; set; }
         // Resultado表示設定
         public bool Result { get; set; }
-        public bool QuizNum { get; set; }
-        public bool ChapterTitle { get; set; }
-        public bool ChapterExample { get; set; }
-        public int QuizFilePathIndex { get; set; } = 0;
+        public string QuizFileName { get; set; }
         public bool DarkMode { get; set; }
 
         public InputCache() { }

@@ -14,7 +14,7 @@ namespace MiBocaRecuerda
         [Description("言語設定")]
         public string LanguageName { get; set; }
 
-        public string SelectedFileName => cmbboxFileName.SelectedItem.ToString();
+        public string SelectedFileName => cmbboxFileName.SelectedItem?.ToString();
 
         List<QuizFileConfig> qfc;
 
