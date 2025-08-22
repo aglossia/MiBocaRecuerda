@@ -21,6 +21,8 @@ namespace MiBocaRecuerda
             //FormBorderStyle = FormBorderStyle.FixedSingle;
             //MaximizeBox = false;
 
+            Text = $"Edit - {_quizNum}";
+
             currentFilePath = _currentFilePath;
             quizNum = _quizNum;
 
@@ -79,6 +81,11 @@ namespace MiBocaRecuerda
             dgv.SizeChanged += (o, e) =>
             {
                 AdjustRowHeightToFillGrid();
+            };
+
+            txtSupplement.TextChanged += (o, e) =>
+            {
+                btnPreview.Enabled = txtSupplement.Text != "";
             };
 
             AdjustRowHeightToFillGrid();

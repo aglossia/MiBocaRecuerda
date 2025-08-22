@@ -499,7 +499,7 @@ namespace MiBocaRecuerda
         {
             string quizTxt = "";
             string correctAnswer = "";
-            string quizNum = "";
+            int quizNum;
             string chapterTitle = "";
             string chapterExample = "";
             string supplement = "";
@@ -511,7 +511,7 @@ namespace MiBocaRecuerda
             {
                 quizTxt = ws.Cell(index, 2).Value.ToString();
                 correctAnswer = ws.Cell(index, 3).Value.ToString();
-                quizNum = index.ToString();
+                quizNum = index;
                 chapterTitle = ws.Cell((int)Math.Floor((decimal)((index - 1) / 10)) * 10 + 1, 4).Value.ToString();
                 chapterExample = ws.Cell((int)Math.Floor((decimal)((index - 1) / 10)) * 10 + 1, 5).Value.ToString();
                 supplement = ws.Cell(index, 6).Value.ToString();
@@ -540,7 +540,7 @@ namespace MiBocaRecuerda
                 }
             }
 
-            lbl_PruebaChallengeCount.Text = PruebaChallengeCount.ToString();
+            lbl_PruebaChallengeCount.Text = $"Try: {PruebaChallengeCount}";
             lbl_PruebaChallengeCount.Visible = optionTSMI_prueba.Checked;
 
             lbl_ErrorAllowCount.Visible = false;
@@ -610,7 +610,7 @@ namespace MiBocaRecuerda
             // タイトル更新
             Text = $"{BaseTitle} {QuizContents[curProgress].ChapterTitle}";
 
-            preLastQuiz = int.Parse(QuizContents[curProgress].QuizNum);
+            preLastQuiz = QuizContents[curProgress].QuizNum;
 
             if ((QuizFileConfig.ErrorAllowAll == false) && (QuizFileConfig.ErrorReset == true))
             {
@@ -637,7 +637,7 @@ namespace MiBocaRecuerda
             {
                 // 同じ処理がTSMI_quizInfoにあるので冗長
                 List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
-                List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum, QuizContents[curProgress].ChapterTitle };
+                List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].ChapterTitle };
                 List<string> quizInfo = new List<string>();
 
                 string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
@@ -784,18 +784,6 @@ namespace MiBocaRecuerda
             }
 
             InitQuiz(true);
-        }
-
-        // QuizのSupplementを更新する
-        public void UpdateQuizSupplement(string QuizNum, string supplement)
-        {
-            foreach (QuizContents qc in QuizContents)
-            {
-                if (qc.QuizNum == QuizNum)
-                {
-                    qc.Supplement = supplement;
-                }
-            }
         }
 
         // 正誤表表示
@@ -1498,7 +1486,7 @@ namespace MiBocaRecuerda
             }
 
             List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
-            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum, QuizContents[curProgress].ChapterTitle };
+            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].ChapterTitle };
             List<string> quizInfo = new List<string>();
 
             string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
@@ -1781,6 +1769,35 @@ namespace MiBocaRecuerda
             };
 
             MessageForm_traducir.Show();
+        }
+
+        private void toolTSMI_EditQuiz_Click(object sender, EventArgs e)
+        {
+            if (QuizContents.Count == 0)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            EditDBForm edb = new EditDBForm(currentFilePath, QuizContents[curProgress].QuizNum);
+
+            if (!edb.IsDisposed) edb.ShowDialog();
+        }
+
+        private void toolTSMI_EditQuiz2_Click(object sender, EventArgs e)
+        {
+            if (QuizContents.Count == 0)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if(curProgress - 1 >= 0)
+            {
+                EditDBForm edb = new EditDBForm(currentFilePath, QuizContents[curProgress - 1].QuizNum);
+
+                if (!edb.IsDisposed) edb.ShowDialog();
+            }
         }
 
         #endregion

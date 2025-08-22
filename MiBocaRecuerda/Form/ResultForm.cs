@@ -10,7 +10,7 @@ namespace MiBocaRecuerda
     public partial class ResultForm : Form
     {
         public ResultForm() { }
-        private Dictionary<string, string> Supplement = new Dictionary<string, string>();
+        private Dictionary<int, string> Supplement = new Dictionary<int, string>();
 
         private ClassResize _form_resize;
 
@@ -52,7 +52,7 @@ namespace MiBocaRecuerda
                 qr.Add(new QuizResult(c.Quiz, string.Join("\n", CoreProcess.ParseAnswer(c.CorrectAnswer)), "", c.QuizNum, c.Supplement));
             }
 
-            if(isOrder) qr = qr.OrderBy(q => int.Parse(q.QuizNum)).ToList();
+            if(isOrder) qr = qr.OrderBy(q => q.QuizNum).ToList();
 
             foreach (QuizResult r in qr)
             {
@@ -282,13 +282,16 @@ namespace MiBocaRecuerda
 
                     contextMenuStrip1.Show(Cursor.Position);
 
+                    // 補足の有無を末尾の*で判断
+                    CMS_supl.Enabled = dgv[1, dgv.SelectedRows[0].Index].Value.ToString().EndsWith("*");
+
                     break;
             }
         }
 
         private void ShowSupplement(int RowIndex)
         {
-            string quizNum = dgv[0, RowIndex].Value?.ToString();
+            int quizNum = int.Parse(dgv[0, RowIndex].Value?.ToString());
             string japones = dgv[1, RowIndex].Value?.ToString().Replace("*", "");
             string correcto = dgv[2, RowIndex].Value?.ToString();
 

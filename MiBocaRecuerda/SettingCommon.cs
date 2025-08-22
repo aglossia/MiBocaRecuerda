@@ -120,13 +120,13 @@ namespace MiBocaRecuerda
     {
         public string Quiz { get; set; }
         public string CorrectAnswer { get; set; }
-        public string QuizNum { get; set; }
+        public int QuizNum { get; set; }
         public string ChapterTitle { get; set; }
         public string ChapterExample { get; set; }
         public string Supplement { get; set; }
         public List<string> AutoNombre { get; set; }
 
-        public QuizContents(string quiz, string ca, string qn, string ct, string ce, string s, List<string> an)
+        public QuizContents(string quiz, string ca, int qn, string ct, string ce, string s, List<string> an)
         {
             Quiz = quiz;
             CorrectAnswer = ca;
@@ -144,11 +144,11 @@ namespace MiBocaRecuerda
         public string Quiz { get; set; }
         public string CorrectAnswer { get; set; }
         public string Input { get; set; }
-        public string QuizNum { get; set; }
+        public int QuizNum { get; set; }
         public string Supplement { get; set; }
         public bool Result { get; set; }
 
-        public QuizResult(string quiz, string ca, string input, string quizNum, string s, bool result = false)
+        public QuizResult(string quiz, string ca, string input, int quizNum, string s, bool result = false)
         {
             Quiz = quiz;
             CorrectAnswer = ca;

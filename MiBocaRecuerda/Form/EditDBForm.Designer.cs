@@ -74,6 +74,7 @@
             this.txtSupplement.Name = "txtSupplement";
             this.txtSupplement.Size = new System.Drawing.Size(281, 75);
             this.txtSupplement.TabIndex = 0;
+            this.txtSupplement.Text = "-";
             // 
             // dgv
             // 
