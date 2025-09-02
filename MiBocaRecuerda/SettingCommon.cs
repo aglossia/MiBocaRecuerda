@@ -4,11 +4,15 @@ namespace MiBocaRecuerda
 {
     public static class SettingManager
     {
+        // ファイルごとの設定
+        // Dic<Language name, Dic<File, Config>>
         public static Dictionary<string, Dictionary<string, CommonConfig>> CommonConfigManager = new Dictionary<string, Dictionary<string, CommonConfig>>();
+        // 言語単位の設定
+        public static Dictionary<string, LanguageConfig> LanguageConfigManager = new Dictionary<string, LanguageConfig>();
         public static InputCache InputCache = new InputCache();
         public static RomConfig RomConfig = new RomConfig();
 
-        public static LenguaConfig currentLengua(string type)
+        public static FileLenguaConfig currentLengua(string type)
         {
             return CommonConfigManager[type][MainForm.currentQuizFile].LenguaConfig;
         }
@@ -18,16 +22,16 @@ namespace MiBocaRecuerda
     public class CommonConfig
     {
         public QuizFileConfig QuizFileConfig { get; set; }
-        public LenguaConfig LenguaConfig { get; set; }
+        public FileLenguaConfig LenguaConfig { get; set; }
 
-        public CommonConfig(QuizFileConfig qfc, LenguaConfig lc)
+        public CommonConfig(QuizFileConfig qfc, FileLenguaConfig lc)
         {
             QuizFileConfig = qfc;
             LenguaConfig = lc;
         }
     }
 
-    // クイズ設定
+    // ファイルごとのクイズ設定
     public class QuizFileConfig
     {
         // Chapter単位は10個を基準としている
@@ -83,12 +87,24 @@ namespace MiBocaRecuerda
         }
     }
 
-    // 言語設定
-    public class LenguaConfig
+    // ファイルごとの言語設定
+    public class FileLenguaConfig
     {
-        public string Name { get; set; }
         public bool Capital { get; set; } = false;
         public bool ComaPunto { get; set; } = false;
+    }
+
+    // 言語単位の設定
+    public class LanguageConfig
+    {
+        public List<string> InputSupport { get; set; }
+
+        public LanguageConfig() { }
+
+        public LanguageConfig(List<string> inputSupport)
+        {
+            InputSupport = inputSupport;
+        }
     }
 
     public class InputCache

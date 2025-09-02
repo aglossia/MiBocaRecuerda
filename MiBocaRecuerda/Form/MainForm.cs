@@ -280,14 +280,59 @@ namespace MiBocaRecuerda
                 string fileName = Path.GetFileNameWithoutExtension(file);
 
                 // クイズ設定と言語設定のキャッシュを読み込んで共通設定を完成させる
-                string cacheFile_common = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\common\\{fileName}_common.xml";
-                string cacheFile_lang = $"{SettingManager.RomConfig.QuizFilePath}\\cache\\lang\\{fileName}_lang.xml";
+                string cacheFile_common = PathManager.QuizFileSettingCommon(fileName);
+                string cacheFile_lang = PathManager.QuizFileSettingLang(fileName);
 
-                QuizFileConfig qfc = File.Exists(cacheFile_common) ? CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common) : new QuizFileConfig();
-                LenguaConfig lc = File.Exists(cacheFile_lang) ? CommonFunction.XmlRead<LenguaConfig>(cacheFile_lang) : new LenguaConfig();
+                if(!File.Exists(cacheFile_common) || !File.Exists(cacheFile_lang))
+                {
+                    continue;
+                }
+
+                QuizFileConfig qfc = new QuizFileConfig();
+                FileLenguaConfig lc = new FileLenguaConfig();
+
+                try
+                {
+                    qfc = CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common);
+                    lc = CommonFunction.XmlRead<FileLenguaConfig>(cacheFile_lang);
+                }
+                catch (Exception ex)
+                {
+                    txtConsole.Text += $"{ex.GetType().Name}: {ex.Message}\n{cacheFile_common} or {cacheFile_lang}\n";
+                }
 
                 // クイズ設定と言語設定の読み込み
                 SettingManager.CommonConfigManager[type][fileName] = new CommonConfig(qfc, lc);
+            }
+
+            string[] langFiles = new string[0];
+
+            try
+            {
+                langFiles = Directory.GetFiles(SettingManager.RomConfig.QuizFilePath + "\\cache\\language", "*.xml");
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                txtConsole.Text += $"{ex.GetType().Name}: {ex.Message}\n\n";
+                return;
+            }
+
+            string lang;
+
+            foreach (string file in langFiles)
+            {
+                lang = Path.GetFileNameWithoutExtension(file);
+
+                if (!AppRom.LenguaIndex.ContainsKey(lang)) continue;
+
+                try
+                {
+                    SettingManager.LanguageConfigManager[lang] = CommonFunction.XmlRead<LanguageConfig>(file);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"エラーが発生しました: {ex.Message}");
+                }
             }
         }
 
@@ -874,12 +919,22 @@ namespace MiBocaRecuerda
                     case Keys.D7:
                     case Keys.D8:
                     case Keys.D9:
+
                         // Dn
                         int num = (int.Parse(e.KeyCode.ToString()[1].ToString()) + 9) % 10;
 
-                        if (QuizContents[curProgress].AutoNombre.Count <= num) return;
+                        if (e.Shift)
+                        {
+                            // 言語ごとの補助入力
+                            insertText = SettingManager.LanguageConfigManager[langType].InputSupport[num];
+                        }
+                        else
+                        {
+                            // ファイルごとの補助入力
+                            if (QuizContents[curProgress].AutoNombre.Count <= num) return;
 
-                        insertText = QuizContents[curProgress].AutoNombre[num];
+                            insertText = QuizContents[curProgress].AutoNombre[num];
+                        }
 
                         break;
                 }
@@ -1457,6 +1512,20 @@ namespace MiBocaRecuerda
             {
                 ParseFile();
                 //InitQuiz(true);
+            }
+        }
+
+        private void optionTSMI_SettingLanguage_Click(object sender, EventArgs e)
+        {
+            SettingLanguageForm s = new SettingLanguageForm(langType)
+            {
+                ShowInTaskbar = false,
+                ShowIcon = false
+            };
+
+            if (s.ShowDialog() == DialogResult.OK)
+            {
+                Console.WriteLine("ok");
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 
 namespace MiBocaRecuerda
 {
@@ -23,6 +24,9 @@ namespace MiBocaRecuerda
             Date,
             Auxiliary
         }
+
+        public static Dictionary<string, int> LenguaIndex = new Dictionary<string, int> { { "es", 0 }, { "en", 1 } };
+        public static Dictionary<string, string> EnglishToCode = new Dictionary<string, string> { { "Spanish", "es" }, { "English", "en" } };
 
         public static readonly string ProgressStateCharacter_Neutral = "○";
         public static readonly string ProgressStateCharacter_Correct = "■";

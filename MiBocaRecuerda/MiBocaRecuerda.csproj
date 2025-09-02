@@ -130,6 +130,7 @@
     <Compile Include="AppRom.cs" />
     <Compile Include="ClassResize.cs" />
     <Compile Include="CommonFunction.cs" />
+    <Compile Include="Common\PathManager.cs" />
     <Compile Include="CoreProcess.cs" />
     <Compile Include="DisplayRayout.cs" />
     <Compile Include="Form\Dialogs\InputDialog.cs">
@@ -164,6 +165,12 @@
     </Compile>
     <Compile Include="Form\ResizableForm.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\SettingLanguageForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\SettingLanguageForm.Designer.cs">
+      <DependentUpon>SettingLanguageForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Language\IManageInput.cs" />
     <Compile Include="Language\Spanish.cs" />
@@ -203,6 +210,24 @@
     <Compile Include="Form\SettingForm.Designer.cs">
       <DependentUpon>SettingForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SettingLanguageElement\SettingLanguageBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SettingLanguageElement\SettingLanguageBase.Designer.cs">
+      <DependentUpon>SettingLanguageBase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SettingLanguageElement\SettingLanguageEnglish.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SettingLanguageElement\SettingLanguageEnglish.Designer.cs">
+      <DependentUpon>SettingLanguageEnglish.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SettingLanguageElement\SettingLanguageSpanish.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SettingLanguageElement\SettingLanguageSpanish.Designer.cs">
+      <DependentUpon>SettingLanguageSpanish.cs</DependentUpon>
+    </Compile>
     <Compile Include="Translate.cs" />
     <Compile Include="UtilityFunction.cs" />
     <Compile Include="Utility\numeric\ArabicSpanish.cs" />
@@ -220,6 +245,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form\MessageForm.resx">
       <DependentUpon>MessageForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\SettingLanguageForm.resx">
+      <DependentUpon>SettingLanguageForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -244,6 +272,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SettingElement\SettingSpanish.resx">
       <DependentUpon>SettingSpanish.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingLanguageElement\SettingLanguageBase.resx">
+      <DependentUpon>SettingLanguageBase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingLanguageElement\SettingLanguageEnglish.resx">
+      <DependentUpon>SettingLanguageEnglish.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingLanguageElement\SettingLanguageSpanish.resx">
+      <DependentUpon>SettingLanguageSpanish.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="packages.config" />

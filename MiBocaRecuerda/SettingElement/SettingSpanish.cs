@@ -5,7 +5,7 @@ namespace MiBocaRecuerda.SettingElement
 {
     public partial class SettingSpanish : SettingBase
     {
-        List<LenguaConfig> lengua;
+        List<FileLenguaConfig> lengua;
 
         public SettingSpanish()
         {
@@ -18,7 +18,7 @@ namespace MiBocaRecuerda.SettingElement
         }
 
         // SettingBaseが持ってるcmbboxFileNameを教えてもらってそのイベントを拾ってそれぞれでSetValueを実行している
-        public void SetValue(LenguaConfig _lengua)
+        public void SetValue(FileLenguaConfig _lengua)
         {
             chboxCapital.Checked = _lengua.Capital;
             chboxComaPunto.Checked = _lengua.ComaPunto;
@@ -32,11 +32,10 @@ namespace MiBocaRecuerda.SettingElement
             base.LoadConfig(currentFile);
         }
 
-        public override LenguaConfig GetLang()
+        public override FileLenguaConfig GetLang()
         {
-            LenguaConfig lang = new LenguaConfig
+            FileLenguaConfig lang = new FileLenguaConfig
             {
-                Name = LanguageName,
                 Capital = chboxCapital.Checked,
                 ComaPunto = chboxComaPunto.Checked
             };

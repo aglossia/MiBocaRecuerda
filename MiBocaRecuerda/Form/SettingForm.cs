@@ -12,9 +12,6 @@ namespace MiBocaRecuerda
         bool close_permition = true;
         List<SettingBase> settingBases = new List<SettingBase>();
 
-        // 言語ごとのタブインデックス
-        static Dictionary<string, int> LenguaTabIndex = new Dictionary<string, int> { { "es", 0 }, { "en", 1 } };
-
         public SettingForm(string currentFile)
         {
             InitializeComponent();
@@ -66,14 +63,14 @@ namespace MiBocaRecuerda
             }
 
             // 指定ファイルの言語のタブに切り替える
-            if(select_lang != "") tabControl1.SelectedIndex = LenguaTabIndex[select_lang];
+            if(select_lang != "") tabControl1.SelectedIndex = AppRom.LenguaIndex[select_lang];
         }
 
         private bool SaveConfig()
         {
             string cacheFile = "";
             QuizFileConfig common = new QuizFileConfig();
-            LenguaConfig lengua = new LenguaConfig();
+            FileLenguaConfig lengua = new FileLenguaConfig();
 
             int index = tabControl1.SelectedIndex;
 
@@ -86,8 +83,8 @@ namespace MiBocaRecuerda
             // 不可な設定検証
             if (common.Validation() == false) return false;
 
-            CommonFunction.XmlWrite(common, $"{SettingManager.RomConfig.QuizFilePath}\\cache\\common\\{cacheFile}_common.xml");
-            CommonFunction.XmlWrite(lengua, $"{SettingManager.RomConfig.QuizFilePath}\\cache\\lang\\{cacheFile}_lang.xml");
+            CommonFunction.XmlWrite(common, PathManager.QuizFileSettingCommon(cacheFile));
+            CommonFunction.XmlWrite(lengua, PathManager.QuizFileSettingLang(cacheFile));
 
             return true;
         }

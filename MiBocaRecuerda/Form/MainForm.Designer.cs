@@ -61,13 +61,14 @@
             this.toolTSMI_translate = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.DBTSMI = new System.Windows.Forms.ToolStripMenuItem();
+            this.DBTSMI_QuizDB = new System.Windows.Forms.ToolStripMenuItem();
+            this.DBTSMI_Progress = new System.Windows.Forms.ToolStripMenuItem();
             this.lbl_PruebaChallengeCount = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
             this.chboxDebug = new System.Windows.Forms.CheckBox();
-            this.DBTSMI = new System.Windows.Forms.ToolStripMenuItem();
-            this.DBTSMI_QuizDB = new System.Windows.Forms.ToolStripMenuItem();
-            this.DBTSMI_Progress = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionTSMI_SettingLanguage = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -157,6 +158,7 @@
             // 
             this.optionTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.optionTSMI_setting,
+            this.optionTSMI_SettingLanguage,
             this.optionTSMI_quizInfo,
             this.toolStripMenuItem1,
             this.optionTSMI_prueba,
@@ -171,52 +173,52 @@
             // optionTSMI_setting
             // 
             this.optionTSMI_setting.Name = "optionTSMI_setting";
-            this.optionTSMI_setting.Size = new System.Drawing.Size(155, 22);
+            this.optionTSMI_setting.Size = new System.Drawing.Size(180, 22);
             this.optionTSMI_setting.Text = "Setting";
             this.optionTSMI_setting.Click += new System.EventHandler(this.optionTSMI_setting_Click);
             // 
             // optionTSMI_quizInfo
             // 
             this.optionTSMI_quizInfo.Name = "optionTSMI_quizInfo";
-            this.optionTSMI_quizInfo.Size = new System.Drawing.Size(155, 22);
+            this.optionTSMI_quizInfo.Size = new System.Drawing.Size(180, 22);
             this.optionTSMI_quizInfo.Text = "QuizInfo";
             this.optionTSMI_quizInfo.Click += new System.EventHandler(this.optionTSMI_quizInfo_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(152, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
             // 
             // optionTSMI_prueba
             // 
             this.optionTSMI_prueba.Name = "optionTSMI_prueba";
-            this.optionTSMI_prueba.Size = new System.Drawing.Size(155, 22);
+            this.optionTSMI_prueba.Size = new System.Drawing.Size(180, 22);
             this.optionTSMI_prueba.Text = "Prueba";
             this.optionTSMI_prueba.Click += new System.EventHandler(this.optionTSMI_prueba_Click);
             // 
             // optionTSMI_resultados
             // 
             this.optionTSMI_resultados.Name = "optionTSMI_resultados";
-            this.optionTSMI_resultados.Size = new System.Drawing.Size(155, 22);
+            this.optionTSMI_resultados.Size = new System.Drawing.Size(180, 22);
             this.optionTSMI_resultados.Text = "Resultados";
             this.optionTSMI_resultados.Click += new System.EventHandler(this.optionTSMI_resultados_Click);
             // 
             // optionTSMI_progresoVisual
             // 
             this.optionTSMI_progresoVisual.Name = "optionTSMI_progresoVisual";
-            this.optionTSMI_progresoVisual.Size = new System.Drawing.Size(155, 22);
+            this.optionTSMI_progresoVisual.Size = new System.Drawing.Size(180, 22);
             this.optionTSMI_progresoVisual.Text = "Progreso Visual";
             this.optionTSMI_progresoVisual.Click += new System.EventHandler(this.optionTSMI_progresoVisual_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(152, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
             // 
             // optionTSMI_DarkMode
             // 
             this.optionTSMI_DarkMode.Name = "optionTSMI_DarkMode";
-            this.optionTSMI_DarkMode.Size = new System.Drawing.Size(155, 22);
+            this.optionTSMI_DarkMode.Size = new System.Drawing.Size(180, 22);
             this.optionTSMI_DarkMode.Text = "Dark Mode";
             this.optionTSMI_DarkMode.Click += new System.EventHandler(this.optionTSMI_DarkMode_Click);
             // 
@@ -345,6 +347,29 @@
             this.toolTSMI_EditQuiz2.Text = "ひとつ前の問題を編集";
             this.toolTSMI_EditQuiz2.Click += new System.EventHandler(this.toolTSMI_EditQuiz2_Click);
             // 
+            // DBTSMI
+            // 
+            this.DBTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.DBTSMI_QuizDB,
+            this.DBTSMI_Progress});
+            this.DBTSMI.Name = "DBTSMI";
+            this.DBTSMI.Size = new System.Drawing.Size(34, 23);
+            this.DBTSMI.Text = "DB";
+            // 
+            // DBTSMI_QuizDB
+            // 
+            this.DBTSMI_QuizDB.Name = "DBTSMI_QuizDB";
+            this.DBTSMI_QuizDB.Size = new System.Drawing.Size(141, 22);
+            this.DBTSMI_QuizDB.Text = "問題DBを開く";
+            this.DBTSMI_QuizDB.Click += new System.EventHandler(this.DBTSMI_QuizDB_Click);
+            // 
+            // DBTSMI_Progress
+            // 
+            this.DBTSMI_Progress.Name = "DBTSMI_Progress";
+            this.DBTSMI_Progress.Size = new System.Drawing.Size(141, 22);
+            this.DBTSMI_Progress.Text = "進捗を開く";
+            this.DBTSMI_Progress.Click += new System.EventHandler(this.DBTSMI_Progress_Click);
+            // 
             // lbl_PruebaChallengeCount
             // 
             this.lbl_PruebaChallengeCount.AutoSize = true;
@@ -384,28 +409,12 @@
             this.chboxDebug.UseVisualStyleBackColor = true;
             this.chboxDebug.Visible = false;
             // 
-            // DBTSMI
+            // optionTSMI_SettingLanguage
             // 
-            this.DBTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.DBTSMI_QuizDB,
-            this.DBTSMI_Progress});
-            this.DBTSMI.Name = "DBTSMI";
-            this.DBTSMI.Size = new System.Drawing.Size(34, 23);
-            this.DBTSMI.Text = "DB";
-            // 
-            // DBTSMI_QuizDB
-            // 
-            this.DBTSMI_QuizDB.Name = "DBTSMI_QuizDB";
-            this.DBTSMI_QuizDB.Size = new System.Drawing.Size(180, 22);
-            this.DBTSMI_QuizDB.Text = "問題DBを開く";
-            this.DBTSMI_QuizDB.Click += new System.EventHandler(this.DBTSMI_QuizDB_Click);
-            // 
-            // DBTSMI_Progress
-            // 
-            this.DBTSMI_Progress.Name = "DBTSMI_Progress";
-            this.DBTSMI_Progress.Size = new System.Drawing.Size(180, 22);
-            this.DBTSMI_Progress.Text = "進捗を開く";
-            this.DBTSMI_Progress.Click += new System.EventHandler(this.DBTSMI_Progress_Click);
+            this.optionTSMI_SettingLanguage.Name = "optionTSMI_SettingLanguage";
+            this.optionTSMI_SettingLanguage.Size = new System.Drawing.Size(180, 22);
+            this.optionTSMI_SettingLanguage.Text = "Setting language";
+            this.optionTSMI_SettingLanguage.Click += new System.EventHandler(this.optionTSMI_SettingLanguage_Click);
             // 
             // MainForm
             // 
@@ -477,6 +486,7 @@
         private System.Windows.Forms.ToolStripMenuItem DBTSMI;
         private System.Windows.Forms.ToolStripMenuItem DBTSMI_QuizDB;
         private System.Windows.Forms.ToolStripMenuItem DBTSMI_Progress;
+        private System.Windows.Forms.ToolStripMenuItem optionTSMI_SettingLanguage;
     }
 }
 
