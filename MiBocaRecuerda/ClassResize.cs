@@ -11,7 +11,8 @@ namespace MiBocaRecuerda
         //private List<Rectangle> _arr_control_storage = new List<Rectangle>();
         private Dictionary<string, float> FontTable = new Dictionary<string, float>();
         private Dictionary<string, Rectangle> ControlTable = new Dictionary<string, Rectangle>();
-        private Dictionary<string, List<int>> ControlTable_dgv = new Dictionary<string, List<int>>();
+        private Dictionary<string, List<int>> ControlTable_dgv_col = new Dictionary<string, List<int>>();
+        private Dictionary<string, List<int>> ControlTable_dgv_row = new Dictionary<string, List<int>>();
 
         private SizeF _formSize;
         private Form form;
@@ -36,6 +37,8 @@ namespace MiBocaRecuerda
 
             FontTable.Clear();
             ControlTable.Clear();
+            ControlTable_dgv_col.Clear();
+            ControlTable_dgv_row.Clear();
 
             foreach (Control control in _controls)
             {
@@ -50,9 +53,20 @@ namespace MiBocaRecuerda
 
                     List<int> col_widths = (control as DataGridView).Columns.Cast<DataGridViewColumn>().Select(col => col.Width).ToList();
 
-                    ControlTable_dgv.Add(control.Name, col_widths);
+                    ControlTable_dgv_col.Add(control.Name, col_widths);
+
+                    List<int> row_heights = (control as DataGridView).Rows.Cast<DataGridViewRow>().Select(row => row.Height).ToList();
+
+                    ControlTable_dgv_row.Add(control.Name, row_heights);
                 }
             }
+        }
+
+        public void UpdateFormSize(Form fm)
+        {
+            _formSize = fm.ClientSize;
+            //
+            GetControlTable(fm);
         }
 
         //public void _get_initial_size()
@@ -108,12 +122,19 @@ namespace MiBocaRecuerda
 
                     //dgv.Columns.Cast<DataGridViewColumn>().ToList().ForEach(col => col.Width =(int)( * _form_ratio_width));
 
-                    foreach (var (item1, item2) in dgv.Columns.Cast<DataGridViewColumn>().Zip((ControlTable_dgv[control.Name] as List<int>), (x, y) => (x, y)))
+                    // 列幅の調整
+                    foreach (var (item1, item2) in dgv.Columns.Cast<DataGridViewColumn>().Zip((ControlTable_dgv_col[control.Name] as List<int>), (x, y) => (x, y)))
                     {
                         item1.Width = (int)(item2 * _form_ratio_width);
                     }
+
+                    // 行高さの調整
+                    foreach (var (item1, item2) in dgv.Rows.Cast<DataGridViewRow>().Zip((ControlTable_dgv_row[control.Name] as List<int>), (x, y) => (x, y)))
+                    {
+                        item1.Height = (int)(item2 * _form_ratio_height);
+                    }
                 }
-                    //_dgv_Column_Adjust((DataGridView)control, showRowHeader);
+                //_dgv_Column_Adjust((DataGridView)control, showRowHeader);
                 control.Font = new Font(form.Font.FontFamily, (float)(((FontTable[control.Name] * _form_ratio_width) / 2) + ((FontTable[control.Name] * _form_ratio_height) / 2)));
             }
         }

@@ -70,7 +70,7 @@ namespace MiBocaRecuerda
 
             dgv.RowHeadersVisible = false;
             dgv.AllowUserToAddRows = false;
-            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
+            //dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
             col_num = new DataGridViewTextBoxColumn
@@ -127,11 +127,6 @@ namespace MiBocaRecuerda
 
         private void RegisterEvent()
         {
-            dgv.SelectionChanged += (o, e) =>
-            {
-                //dgv.Rows[dgv.CurrentCell.RowIndex].Selected = false;
-            };
-
             Load += (o, e) =>
             {
                 int width_num = AutoSizeColumnWidth(dgv, 0);
@@ -166,44 +161,24 @@ namespace MiBocaRecuerda
 
             Shown += (o, e) =>
             {
-                AdjustRowHeight();
-
                 _form_resize = new ClassResize(this);
+
+                AdjustRowHeight();
             };
 
             SizeChanged += (o, e) =>
             {
                 if (IsAuto) return;
 
-                dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
-
                 if (_form_resize != null) _form_resize._resize(false);
-            };
-
-            dgv.FontChanged += (o, e) =>
-            {
-                if (IsAuto) return;
-
-                if (WindowState == FormWindowState.Maximized)
-                {
-                    // 最大化のときはDataGridViewAutoSizeRowsMode.DisplayedCellsに任せるしかないか…
-                    return;
-                }
 
                 AdjustRowHeight();
             };
-
-            //bool isShiftPressed = false;
 
             KeyPreview = !KeyPreview;
 
             KeyDown += (o, e) =>
             {
-                //if (e.KeyCode == Keys.ShiftKey)
-                //{
-                //    isShiftPressed = true;
-                //}
-
                 bool ctrlPressed = (ModifierKeys & Keys.Control) == Keys.Control;
 
                 if (ctrlPressed)
@@ -234,19 +209,6 @@ namespace MiBocaRecuerda
                     }
                 }
             };
-
-            //KeyUp += (o, e) =>
-            //{
-            //    if (e.KeyCode == Keys.ShiftKey)
-            //    {
-            //        isShiftPressed = false;
-            //    }
-            //};
-
-            //Deactivate += (o, e) =>
-            //{
-            //    isShiftPressed = false;
-            //};
         }
 
         private string cellValue = "";
@@ -317,20 +279,9 @@ namespace MiBocaRecuerda
 
         private void AdjustRowHeight()
         {
-            // dgv.AutoSizeRowsModeの設定によって最適高さにされた高さを取得する
-            List<int> row_heights = new List<int>();
-
             foreach (DataGridViewRow row in dgv.Rows)
             {
-                row_heights.Add(row.Height);
-            }
-
-            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
-
-            // AutoSizeモードを無効にして最適高さに固定マージンを入れた高さにする
-            foreach (var (item1, item2) in dgv.Rows.Cast<DataGridViewRow>().Zip(row_heights, (x, y) => (x, y)))
-            {
-                item1.Height = item2 + 10;
+                row.Height += 10;
             }
         }
 
@@ -393,6 +344,7 @@ namespace MiBocaRecuerda
             IsAuto = true;
             ToggleColumnVisibility("quiz", item.Checked);
             IsAuto = false;
+            _form_resize.UpdateFormSize(this);
 
             item.Checked = !item.Checked;
         }
