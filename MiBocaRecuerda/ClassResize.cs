@@ -64,9 +64,8 @@ namespace MiBocaRecuerda
 
         public void UpdateFormSize(Form fm)
         {
-            _formSize = fm.ClientSize;
-            //
-            GetControlTable(fm);
+            _formSize = fm.ClientSize;           
+            //GetControlTable(fm);
         }
 
         //public void _get_initial_size()
