@@ -283,18 +283,13 @@ namespace MiBocaRecuerda
                 string cacheFile_common = PathManager.QuizFileSettingCommon(fileName);
                 string cacheFile_lang = PathManager.QuizFileSettingLang(fileName);
 
-                if(!File.Exists(cacheFile_common) || !File.Exists(cacheFile_lang))
-                {
-                    continue;
-                }
-
                 QuizFileConfig qfc = new QuizFileConfig();
                 FileLenguaConfig lc = new FileLenguaConfig();
 
                 try
                 {
-                    qfc = CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common);
-                    lc = CommonFunction.XmlRead<FileLenguaConfig>(cacheFile_lang);
+                    if(File.Exists(cacheFile_common)) qfc = CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common);
+                    if(File.Exists(cacheFile_lang)) lc = CommonFunction.XmlRead<FileLenguaConfig>(cacheFile_lang);
                 }
                 catch (Exception ex)
                 {
@@ -1754,7 +1749,7 @@ namespace MiBocaRecuerda
             if (cacheDesde == -1) cacheDesde = cacheIsIndex ? QuizFileConfig.MinChapterToIndex : QuizFileConfig.MinChapter;
             if (cacheHasta == -1) cacheHasta = cacheIsIndex ? QuizFileConfig.MaxChapterToIndex : QuizFileConfig.MaxChapter;
 
-            InputDialog id = new InputDialog(cacheDesde, cacheHasta, cacheIsIndex);
+            InputDialog id = new InputDialog(cacheDesde, cacheHasta, MaxRow, cacheIsIndex);
 
             // 問題インデックスを入力する画面
             if (id.ShowDialog() == DialogResult.OK)
@@ -1765,6 +1760,7 @@ namespace MiBocaRecuerda
 
                 int desde = cacheIsIndex ? cacheDesde : cacheDesde * 10 - 9;
                 int hasta = cacheIsIndex ? cacheHasta : cacheHasta * 10;
+                hasta = hasta > MaxRow ? MaxRow : hasta;
 
                 List<int> sequence = Enumerable.Range(desde, hasta - desde + 1).ToList();
                 List<QuizContents> quizContents = CreateQuizContents(sequence);

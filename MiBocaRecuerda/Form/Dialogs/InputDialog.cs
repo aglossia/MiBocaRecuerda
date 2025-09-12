@@ -8,8 +8,9 @@ namespace MiBocaRecuerda
         public int Desde { get; private set; }
         public int Hasta { get; private set; }
         public bool IsIndex { get; private set; }
+        private int Max;
 
-        public InputDialog(int desde = 1, int hasta = 1, bool isIndex = true)
+        public InputDialog(int desde, int hasta, int max, bool isIndex)
         {
             InitializeComponent();
 
@@ -18,6 +19,7 @@ namespace MiBocaRecuerda
             nudDesde.Value = desde;
             nudHasta.Value = hasta;
             chboxIndex.Checked = isIndex;
+            Max = max;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -61,6 +63,20 @@ namespace MiBocaRecuerda
             nudHasta.Increment = check ? 10 : 1;
 
             lblModo.Text = $"Selección de {(check ? "Índice" : "Capítulo")}";
+        }
+
+        private void btnMax_Click(object sender, EventArgs e)
+        {
+            nudDesde.Value = 1;
+
+            if (chboxIndex.Checked)
+            {
+                nudHasta.Value = Max;
+            }
+            else
+            {
+                nudHasta.Value = UtilityFunction.Techo(Max, 10);
+            }
         }
     }
 }

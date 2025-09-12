@@ -37,6 +37,7 @@
             this.btnAhora = new System.Windows.Forms.Button();
             this.chboxIndex = new System.Windows.Forms.CheckBox();
             this.lblModo = new System.Windows.Forms.Label();
+            this.btnMax = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nudDesde)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudHasta)).BeginInit();
             this.SuspendLayout();
@@ -64,7 +65,7 @@
             // btnOK
             // 
             this.btnOK.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.btnOK.Location = new System.Drawing.Point(138, 84);
+            this.btnOK.Location = new System.Drawing.Point(140, 112);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(52, 23);
             this.btnOK.TabIndex = 2;
@@ -75,7 +76,7 @@
             // btnNO
             // 
             this.btnNO.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.btnNO.Location = new System.Drawing.Point(198, 84);
+            this.btnNO.Location = new System.Drawing.Point(198, 112);
             this.btnNO.Name = "btnNO";
             this.btnNO.Size = new System.Drawing.Size(52, 23);
             this.btnNO.TabIndex = 2;
@@ -132,7 +133,7 @@
             // btnAhora
             // 
             this.btnAhora.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.btnAhora.Location = new System.Drawing.Point(22, 84);
+            this.btnAhora.Location = new System.Drawing.Point(12, 112);
             this.btnAhora.Name = "btnAhora";
             this.btnAhora.Size = new System.Drawing.Size(52, 23);
             this.btnAhora.TabIndex = 2;
@@ -162,11 +163,23 @@
             this.lblModo.TabIndex = 0;
             this.lblModo.Text = "Selección de Capítulo";
             // 
+            // btnMax
+            // 
+            this.btnMax.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.btnMax.Location = new System.Drawing.Point(12, 83);
+            this.btnMax.Name = "btnMax";
+            this.btnMax.Size = new System.Drawing.Size(52, 23);
+            this.btnMax.TabIndex = 5;
+            this.btnMax.Text = "MAX";
+            this.btnMax.UseVisualStyleBackColor = true;
+            this.btnMax.Click += new System.EventHandler(this.btnMax_Click);
+            // 
             // InputDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(262, 118);
+            this.ClientSize = new System.Drawing.Size(262, 147);
+            this.Controls.Add(this.btnMax);
             this.Controls.Add(this.chboxIndex);
             this.Controls.Add(this.nudHasta);
             this.Controls.Add(this.nudDesde);
@@ -198,5 +211,6 @@
         private System.Windows.Forms.Button btnAhora;
         private System.Windows.Forms.CheckBox chboxIndex;
         private System.Windows.Forms.Label lblModo;
+        private System.Windows.Forms.Button btnMax;
     }
 }
