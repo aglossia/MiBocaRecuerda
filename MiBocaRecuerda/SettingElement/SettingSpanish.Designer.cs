@@ -54,7 +54,8 @@
             // 
             // SettingSpanish
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this.chboxComaPunto);
             this.Controls.Add(this.chboxCapital);
             this.Name = "SettingSpanish";

@@ -38,6 +38,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.optionTSMI = new System.Windows.Forms.ToolStripMenuItem();
             this.optionTSMI_setting = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionTSMI_SettingLanguage = new System.Windows.Forms.ToolStripMenuItem();
             this.optionTSMI_quizInfo = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.optionTSMI_prueba = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,7 +69,6 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
             this.chboxDebug = new System.Windows.Forms.CheckBox();
-            this.optionTSMI_SettingLanguage = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -173,52 +173,59 @@
             // optionTSMI_setting
             // 
             this.optionTSMI_setting.Name = "optionTSMI_setting";
-            this.optionTSMI_setting.Size = new System.Drawing.Size(180, 22);
+            this.optionTSMI_setting.Size = new System.Drawing.Size(163, 22);
             this.optionTSMI_setting.Text = "Setting";
             this.optionTSMI_setting.Click += new System.EventHandler(this.optionTSMI_setting_Click);
+            // 
+            // optionTSMI_SettingLanguage
+            // 
+            this.optionTSMI_SettingLanguage.Name = "optionTSMI_SettingLanguage";
+            this.optionTSMI_SettingLanguage.Size = new System.Drawing.Size(163, 22);
+            this.optionTSMI_SettingLanguage.Text = "Setting language";
+            this.optionTSMI_SettingLanguage.Click += new System.EventHandler(this.optionTSMI_SettingLanguage_Click);
             // 
             // optionTSMI_quizInfo
             // 
             this.optionTSMI_quizInfo.Name = "optionTSMI_quizInfo";
-            this.optionTSMI_quizInfo.Size = new System.Drawing.Size(180, 22);
+            this.optionTSMI_quizInfo.Size = new System.Drawing.Size(163, 22);
             this.optionTSMI_quizInfo.Text = "QuizInfo";
             this.optionTSMI_quizInfo.Click += new System.EventHandler(this.optionTSMI_quizInfo_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(160, 6);
             // 
             // optionTSMI_prueba
             // 
             this.optionTSMI_prueba.Name = "optionTSMI_prueba";
-            this.optionTSMI_prueba.Size = new System.Drawing.Size(180, 22);
+            this.optionTSMI_prueba.Size = new System.Drawing.Size(163, 22);
             this.optionTSMI_prueba.Text = "Prueba";
             this.optionTSMI_prueba.Click += new System.EventHandler(this.optionTSMI_prueba_Click);
             // 
             // optionTSMI_resultados
             // 
             this.optionTSMI_resultados.Name = "optionTSMI_resultados";
-            this.optionTSMI_resultados.Size = new System.Drawing.Size(180, 22);
+            this.optionTSMI_resultados.Size = new System.Drawing.Size(163, 22);
             this.optionTSMI_resultados.Text = "Resultados";
             this.optionTSMI_resultados.Click += new System.EventHandler(this.optionTSMI_resultados_Click);
             // 
             // optionTSMI_progresoVisual
             // 
             this.optionTSMI_progresoVisual.Name = "optionTSMI_progresoVisual";
-            this.optionTSMI_progresoVisual.Size = new System.Drawing.Size(180, 22);
+            this.optionTSMI_progresoVisual.Size = new System.Drawing.Size(163, 22);
             this.optionTSMI_progresoVisual.Text = "Progreso Visual";
             this.optionTSMI_progresoVisual.Click += new System.EventHandler(this.optionTSMI_progresoVisual_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(160, 6);
             // 
             // optionTSMI_DarkMode
             // 
             this.optionTSMI_DarkMode.Name = "optionTSMI_DarkMode";
-            this.optionTSMI_DarkMode.Size = new System.Drawing.Size(180, 22);
+            this.optionTSMI_DarkMode.Size = new System.Drawing.Size(163, 22);
             this.optionTSMI_DarkMode.Text = "Dark Mode";
             this.optionTSMI_DarkMode.Click += new System.EventHandler(this.optionTSMI_DarkMode_Click);
             // 
@@ -393,7 +400,7 @@
             // 
             this.lbl_ErrorAllowCount.AutoSize = true;
             this.lbl_ErrorAllowCount.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.lbl_ErrorAllowCount.Location = new System.Drawing.Point(169, 252);
+            this.lbl_ErrorAllowCount.Location = new System.Drawing.Point(150, 252);
             this.lbl_ErrorAllowCount.Name = "lbl_ErrorAllowCount";
             this.lbl_ErrorAllowCount.Size = new System.Drawing.Size(11, 12);
             this.lbl_ErrorAllowCount.TabIndex = 12;
@@ -408,13 +415,6 @@
             this.chboxDebug.TabIndex = 15;
             this.chboxDebug.UseVisualStyleBackColor = true;
             this.chboxDebug.Visible = false;
-            // 
-            // optionTSMI_SettingLanguage
-            // 
-            this.optionTSMI_SettingLanguage.Name = "optionTSMI_SettingLanguage";
-            this.optionTSMI_SettingLanguage.Size = new System.Drawing.Size(180, 22);
-            this.optionTSMI_SettingLanguage.Text = "Setting language";
-            this.optionTSMI_SettingLanguage.Click += new System.EventHandler(this.optionTSMI_SettingLanguage_Click);
             // 
             // MainForm
             // 

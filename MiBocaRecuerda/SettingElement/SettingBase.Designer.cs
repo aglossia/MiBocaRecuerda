@@ -43,9 +43,9 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.btnQuizMax = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.chboxErrorReset = new System.Windows.Forms.CheckBox();
-            this.lblErrorAll = new System.Windows.Forms.Label();
             this.lblErrorReset = new System.Windows.Forms.Label();
+            this.lblErrorAll = new System.Windows.Forms.Label();
+            this.chboxErrorReset = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
@@ -255,6 +255,24 @@
             this.tabPage2.Text = "Other";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // lblErrorReset
+            // 
+            this.lblErrorReset.AutoSize = true;
+            this.lblErrorReset.Location = new System.Drawing.Point(15, 104);
+            this.lblErrorReset.Name = "lblErrorReset";
+            this.lblErrorReset.Size = new System.Drawing.Size(116, 18);
+            this.lblErrorReset.TabIndex = 4;
+            this.lblErrorReset.Text = "ミス満了リセット：";
+            // 
+            // lblErrorAll
+            // 
+            this.lblErrorAll.AutoSize = true;
+            this.lblErrorAll.Location = new System.Drawing.Point(15, 75);
+            this.lblErrorAll.Name = "lblErrorAll";
+            this.lblErrorAll.Size = new System.Drawing.Size(92, 18);
+            this.lblErrorAll.TabIndex = 4;
+            this.lblErrorAll.Text = "ミス許容範囲：";
+            // 
             // chboxErrorReset
             // 
             this.chboxErrorReset.AutoSize = true;
@@ -266,27 +284,10 @@
             this.chboxErrorReset.UseVisualStyleBackColor = true;
             this.chboxErrorReset.CheckedChanged += new System.EventHandler(this.chboxErrorReset_CheckedChanged);
             // 
-            // lblErrorAll
-            // 
-            this.lblErrorAll.AutoSize = true;
-            this.lblErrorAll.Location = new System.Drawing.Point(15, 75);
-            this.lblErrorAll.Name = "lblErrorAll";
-            this.lblErrorAll.Size = new System.Drawing.Size(92, 18);
-            this.lblErrorAll.TabIndex = 4;
-            this.lblErrorAll.Text = "ミス許容範囲：";
-            // 
-            // lblErrorReset
-            // 
-            this.lblErrorReset.AutoSize = true;
-            this.lblErrorReset.Location = new System.Drawing.Point(15, 104);
-            this.lblErrorReset.Name = "lblErrorReset";
-            this.lblErrorReset.Size = new System.Drawing.Size(116, 18);
-            this.lblErrorReset.TabIndex = 4;
-            this.lblErrorReset.Text = "ミス満了リセット：";
-            // 
             // SettingBase
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.lblFileName);
             this.Controls.Add(this.cmbboxFileName);

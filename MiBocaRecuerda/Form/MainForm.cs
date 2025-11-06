@@ -48,6 +48,8 @@ namespace MiBocaRecuerda
         public static string currentQuizFile;
         // クイズファイルの最大行(設定オーバーを対応するため)
         private int MaxRow = 0;
+        // 起動時のエラー情報
+        private List<string> InitError = new List<string>();
         // 現在のクイズ言語
         private static string langType = "";
         // 現在の問題のインデックス
@@ -261,72 +263,86 @@ namespace MiBocaRecuerda
             QuizFiles = QuizFiles.Where(s => !Path.GetFileName(s).StartsWith('~'.ToString())).ToArray();
 
             FileStream fs;
-            string type;
+            string type = "";
 
             foreach (string file in QuizFiles)
             {
-                using (fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                try
                 {
-                    // クイズファイルから言語を取得する
-
-                    type = new XLWorkbook(fs).Worksheet(1).Cell(1, 1).Value.ToString();
-
-                    if (!SettingManager.CommonConfigManager.ContainsKey(type))
+                    using (fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        SettingManager.CommonConfigManager[type] = new Dictionary<string, CommonConfig>();
+                        // クイズファイルから言語を取得する
+
+                        type = new XLWorkbook(fs).Worksheet(1).Cell(1, 1).Value.ToString();
+
+                        if (!SettingManager.CommonConfigManager.ContainsKey(type))
+                        {
+                            SettingManager.CommonConfigManager[type] = new Dictionary<string, CommonConfig>();
+                        }
                     }
+                }
+                catch(Exception ex)
+                {
+                    InitError.Add($"{ex.GetType().Name};{ex.Message};{file}");
                 }
 
                 string fileName = Path.GetFileNameWithoutExtension(file);
 
-                // クイズ設定と言語設定のキャッシュを読み込んで共通設定を完成させる
-                string cacheFile_common = PathManager.QuizFileSettingCommon(fileName);
-                string cacheFile_lang = PathManager.QuizFileSettingLang(fileName);
-
                 QuizFileConfig qfc = new QuizFileConfig();
                 FileLenguaConfig lc = new FileLenguaConfig();
 
-                try
+                // クイズキャッシュがある場合に、キャッシュを設定
+                if (Directory.Exists(SettingManager.RomConfig.QuizFilePath + "\\cache\\quiz"))
                 {
-                    if(File.Exists(cacheFile_common)) qfc = CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common);
-                    if(File.Exists(cacheFile_lang)) lc = CommonFunction.XmlRead<FileLenguaConfig>(cacheFile_lang);
-                }
-                catch (Exception ex)
-                {
-                    txtConsole.Text += $"{ex.GetType().Name}: {ex.Message}\n{cacheFile_common} or {cacheFile_lang}\n";
+                    // クイズ設定と言語設定のキャッシュを読み込んで共通設定を完成させる
+                    string cacheFile_common = PathManager.QuizFileSettingCommon(fileName);
+                    string cacheFile_lang = PathManager.QuizFileSettingLang(fileName);
+
+                    try
+                    {
+                        if (File.Exists(cacheFile_common)) qfc = CommonFunction.XmlRead<QuizFileConfig>(cacheFile_common);
+                        if (File.Exists(cacheFile_lang)) lc = CommonFunction.XmlRead<FileLenguaConfig>(cacheFile_lang);
+                    }
+                    catch (Exception ex)
+                    {
+                        InitError.Add($"{ex.GetType().Name};{ex.Message};{cacheFile_common} or {cacheFile_lang}");
+                    }
                 }
 
                 // クイズ設定と言語設定の読み込み
                 SettingManager.CommonConfigManager[type][fileName] = new CommonConfig(qfc, lc);
             }
 
-            string[] langFiles = new string[0];
-
-            try
+            // 言語キャッシュがある場合に、キャッシュを設定
+            if (Directory.Exists(SettingManager.RomConfig.QuizFilePath + "\\cache\\language"))
             {
-                langFiles = Directory.GetFiles(SettingManager.RomConfig.QuizFilePath + "\\cache\\language", "*.xml");
-            }
-            catch (DirectoryNotFoundException ex)
-            {
-                txtConsole.Text += $"{ex.GetType().Name}: {ex.Message}\n\n";
-                return;
-            }
-
-            string lang;
-
-            foreach (string file in langFiles)
-            {
-                lang = Path.GetFileNameWithoutExtension(file);
-
-                if (!AppRom.LenguaIndex.ContainsKey(lang)) continue;
+                string[] langFiles = new string[0];
 
                 try
                 {
-                    SettingManager.LanguageConfigManager[lang] = CommonFunction.XmlRead<LanguageConfig>(file);
+                    langFiles = Directory.GetFiles(SettingManager.RomConfig.QuizFilePath + "\\cache\\language", "*.xml");
                 }
-                catch (Exception ex)
+                catch (DirectoryNotFoundException ex)
                 {
-                    MessageBox.Show($"エラーが発生しました: {ex.Message}");
+                    InitError.Add($"{ex.GetType().Name};{ex.Message};cache");
+                }
+
+                string lang;
+
+                foreach (string file in langFiles)
+                {
+                    lang = Path.GetFileNameWithoutExtension(file);
+
+                    if (!AppRom.LenguaIndex.ContainsKey(lang)) continue;
+
+                    try
+                    {
+                        SettingManager.LanguageConfigManager[lang] = CommonFunction.XmlRead<LanguageConfig>(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        InitError.Add($"{ex.GetType().Name};{ex.Message};{file};{lang}");
+                    }
                 }
             }
         }
@@ -1049,6 +1065,15 @@ namespace MiBocaRecuerda
 
             Load += (o, e) =>
             {
+                if (InitError.Count != 0)
+                {
+                    MessageForm s = new MessageForm(InitError, "Load error", MessageForm.TipoDeUbicacion.CENTRO, this, true, true, true)
+                    {
+                        ShowIcon = false
+                    };
+
+                    s.Show();
+                }
             };
 
             SizeChanged += (o, e) =>
@@ -1098,26 +1123,6 @@ namespace MiBocaRecuerda
             Shown += (o, e) =>
             {
                 IsLoaded = true;
-            };
-
-            Load += (o, e) =>
-            {
-                KeyPreview = true;
-
-                //ToolTipを作成する
-                ToolTip tt = new ToolTip
-                {
-                    //ToolTipが表示されるまでの時間
-                    InitialDelay = 10,
-                    //ToolTipが表示されている時に、別のToolTipを表示するまでの時間
-                    ReshowDelay = 10,
-                    //ToolTipを表示する時間
-                    AutoPopDelay = 10000,
-                    //フォームがアクティブでない時でもToolTipを表示する
-                    ShowAlways = true
-                };
-
-                //tt.SetToolTip(btnTranslate, "traducción");
             };
 
             FormClosing += (o, e) =>

@@ -12,6 +12,10 @@ namespace MiBocaRecuerda
         //private ClassResize _form_resize;
         private Form _form;
 
+        private bool NotResize;
+        private bool Editable;
+        private bool WidthLimit;
+
         public enum TipoDeUbicacion
         {
             CENTRO,
@@ -22,7 +26,7 @@ namespace MiBocaRecuerda
 
         public MessageForm() { }
 
-        public MessageForm(List<string> mensajes, string titulo, TipoDeUbicacion locationType, Form form, bool readOnly = false)
+        public MessageForm(List<string> mensajes, string titulo, TipoDeUbicacion locationType, Form form, bool notResize = false, bool widthLimit = false, bool editable = false, bool readOnly = false)
         {
             InitializeComponent();
 
@@ -34,10 +38,24 @@ namespace MiBocaRecuerda
             txtMensaje.SelectionStart = 0;
             txtMensaje.ReadOnly = readOnly;
 
+            NotResize = notResize;
+            Editable = editable;
+            WidthLimit = widthLimit;
+
             Load += (o, e) =>
             {
-                // maxWidthは文字列のピッタリサイズのはずなので、余白分をたす
-                int maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 30;
+                int maxWidth = 0;
+
+                if (WidthLimit)
+                {
+                    // 横幅制限がある場合は親フォーム＋マージンにする
+                    maxWidth = _form.Width + 30;
+                }
+                else
+                {
+                    // maxWidthは文字列のピッタリサイズのはずなので、余白分をたす
+                    maxWidth = CommonFunction.GetMaxStringWidth(txtMensaje.Text, txtMensaje.Font) + 30;
+                }
 
                 int newLineCount = txtMensaje.Text.Where(c => c == '\n').Count() + 1;
 
@@ -110,7 +128,7 @@ namespace MiBocaRecuerda
 
                 //_form_resize._resize(true, (_mf as MainForm)._form_resize.WidthRate, (_mf as MainForm)._form_resize.HeightRate);
 
-                SizeChanged += _Resize;
+                if(!NotResize) SizeChanged += _Resize;
             };
 
             //SizeChanged += _Resize;
@@ -120,6 +138,8 @@ namespace MiBocaRecuerda
             KeyDown += (o, e) =>
             {
                 if (IsKeyDown) return;
+
+                if (Editable) return;
 
                 bool ctrlPressed = (ModifierKeys & (Keys.Control | Keys.Alt)) != 0;
                 bool designatedKeyPressed = (e.KeyCode & Keys.C) == Keys.C;
