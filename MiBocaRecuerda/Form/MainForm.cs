@@ -187,7 +187,7 @@ namespace MiBocaRecuerda
             lblResult.Visible = false;
             btnAnswer.Enabled = false;
             lbl_PruebaChallengeCount.Visible = false;
-            lbl_ErrorAllowCount.Visible = false;
+            //lbl_ErrorAllowCount.Visible = false;
             txtQuiz.ReadOnly = true;
             txtQuiz.BackColor = Color.White;
 
@@ -355,6 +355,10 @@ namespace MiBocaRecuerda
         private int selectionStart;
         private int selectionLength;
 
+        [DllImport("user32.dll")]
+        private static extern bool HideCaret(IntPtr hWnd);
+
+
         // 表示されてる文字を非表示にする
         private void HideText()
         {
@@ -396,6 +400,8 @@ namespace MiBocaRecuerda
                     resultForm.Visible = false;
                     result = true;
                 }
+
+                HideCaret(txtAnswer.Handle);
             }
             else
             {
@@ -425,6 +431,8 @@ namespace MiBocaRecuerda
 
                 if (resultForm.IsDisposed == false) resultForm.Visible = result;
                 txtAnswer.Focus();
+
+                ShowCaret(txtAnswer.Handle);
             }
 
             txtAnswer.ReadOnly = !txtAnswer.ReadOnly;
@@ -610,7 +618,8 @@ namespace MiBocaRecuerda
             lbl_PruebaChallengeCount.Text = $"Try: {PruebaChallengeCount}";
             lbl_PruebaChallengeCount.Visible = optionTSMI_prueba.Checked;
 
-            lbl_ErrorAllowCount.Visible = false;
+            // POR HACER:settingで切り替える
+            //lbl_ErrorAllowCount.Visible = false;
 
             string baseTitle = $"MBR [{QuizFileConfig.MinChapterToIndex}~{QuizFileConfig.MaxChapterToIndex}]";
 
@@ -1359,6 +1368,16 @@ namespace MiBocaRecuerda
                 }
                 else
                 {
+                    if (ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllowCnt)
+                    {
+                        ErrorAllowCount.Cnt++;
+                    }
+                    else
+                    {
+                        ErrorResetCount.Cnt++;
+                        ErrorAllowCount.Cnt = 0;
+                    }
+
                     // 完答モードの時はやり直し
                     return;
                 }
