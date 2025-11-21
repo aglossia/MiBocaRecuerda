@@ -63,7 +63,7 @@ namespace MiBocaRecuerda
                 if(newLineCount <= 41)
                 {
                     // barra de título:40 + 行数*16 + 余白:10
-                    Size = new Size(maxWidth, 50 + newLineCount * 40 + 10);
+                    Size = new Size(maxWidth, 50 + newLineCount * 16 + 10);
                 }
                 else
                 {

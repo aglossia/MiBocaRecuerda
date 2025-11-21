@@ -4,6 +4,7 @@ using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MiBocaRecuerda
 {
@@ -22,6 +23,9 @@ namespace MiBocaRecuerda
         private DataGridViewTextBoxColumn col_correct;
 
         private bool IsAuto = false;
+
+        // 答え全体コピー用
+        private Dictionary<int, string> RespuestaCopy = new Dictionary<int, string>();
 
         public ResultForm(List<QuizResult> _qr, MainForm _mf)
         {
@@ -47,12 +51,35 @@ namespace MiBocaRecuerda
 
             mf = _mf;
 
+            int cnt = 0;
+            List<string> parseAnswer = new List<string>();
+
+            if (isOrder) qc = qc.OrderBy(q => q.QuizNum).ToList();
+
             foreach (QuizContents c in qc)
             {
-                qr.Add(new QuizResult(c.Quiz, string.Join("\n", CoreProcess.ParseAnswer(c.CorrectAnswer)), "", c.QuizNum, c.Supplement));
-            }
+                cnt++;
 
-            if(isOrder) qr = qr.OrderBy(q => q.QuizNum).ToList();
+                parseAnswer = CoreProcess.ParseAnswer(c.CorrectAnswer);
+
+                // 答え全体コピー用を生成する(「答え」は複数パターンある場合があるのでDGVの表示をそのまま使えない)
+                if(parseAnswer.Count == 1)
+                {
+                    // 解答パターンが複数ない場合
+                    RespuestaCopy[cnt] = parseAnswer[0];
+                }
+                else
+                {
+                    // 解答パターンが複数
+                    for (int i = 0; i < parseAnswer.Count; i++)
+                    {
+                        // 下位16ビットは問題番号として17ビット以降を解答パターン通番にする
+                        RespuestaCopy[cnt | ((i + 1) << 16)] = parseAnswer[i];
+                    }
+                }
+
+                qr.Add(new QuizResult(c.Quiz, string.Join("\n", parseAnswer), "", c.QuizNum, c.Supplement));
+            }
 
             foreach (QuizResult r in qr)
             {
@@ -311,6 +338,9 @@ namespace MiBocaRecuerda
             return (int)maxWidth + 16;
         }
 
+        #region CMS
+
+        // 補足を表示
         private void CMS_supl_Click(object sender, EventArgs e)
         {
             int index = dgv.SelectedRows[0].Index;
@@ -318,17 +348,90 @@ namespace MiBocaRecuerda
             ShowSupplement(index);
         }
 
-        private void CMS_copy_Click(object sender, EventArgs e)
+        // 指定箇所をコピー
+        private void CMS_copy_designate_Click(object sender, EventArgs e)
         {
             // セルの値をクリップボードにコピー
             if (!string.IsNullOrEmpty(cellValue))
             {
                 Clipboard.SetText(cellValue);
 
-                MessageBox.Show($"{(ColumnIndex == 1 ? "問題" : ColumnIndex  == 2 ? "答え" : "???")}をコピー");
+                MessageBox.Show($"{(ColumnIndex == 1 ? "問題" : ColumnIndex == 2 ? "答え" : "???")}をコピー");
             }
         }
 
+        // 表全体をコピー
+        private void CMS_copy_all_Click(object sender, EventArgs e)
+        {
+            string quiz, answer;
+            List<string> ret = new List<string>();
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                quiz = row.Cells[1].Value.ToString();
+                answer = row.Cells[2].Value.ToString();
+
+                quiz = quiz.TrimEnd('*');
+                quiz = Regex.Replace(quiz, @"\r\n|\r|\n", "");
+                answer = Regex.Replace(answer, @"\r\n|\r|\n", "");
+
+                ret.Add($"{row.Cells[0].Value}\t{quiz}\t{answer}"); 
+            }
+
+            Clipboard.SetText(string.Join("\r\n", ret));
+
+            MessageBox.Show("表全体をコピー");
+        }
+
+        // 問題全体をコピー
+        private void CMS_copy_quiz_all_Click(object sender, EventArgs e)
+        {
+            string quiz;
+            List<string> ret = new List<string>();
+            int cnt = 1;
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                quiz = row.Cells[1].Value.ToString();
+
+                quiz = quiz.TrimEnd('*');
+                quiz = Regex.Replace(quiz, @"\r\n|\r|\n", "");
+
+                ret.Add($"{cnt++:D3}#{quiz}");
+            }
+
+            Clipboard.SetText(string.Join("\r\n", ret));
+
+            MessageBox.Show("問題全体をコピー");
+        }
+
+        // 答え全体をコピー
+        private void CMS_copy_answer_all_Click(object sender, EventArgs e)
+        {
+            string answer;
+            List<string> ret = new List<string>();
+
+            foreach (var rc in RespuestaCopy)
+            {
+                answer = Regex.Replace(rc.Value, @"\r\n|\r|\n", "");
+
+                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
+                if ((rc.Key & 0xffff0000) != 0)
+                {
+                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}#{answer}");
+                }
+                else
+                {
+                    ret.Add($"{rc.Key}#{answer}");
+                }
+            }
+
+            Clipboard.SetText(string.Join("\r\n", ret));
+
+            MessageBox.Show("答え全体をコピー");
+        }
+
+        // 編集
         private void CMS_edit_Click(object sender, EventArgs e)
         {
             EditDBForm edb = new EditDBForm(mf.currentFilePath, int.Parse(quizNum));
@@ -336,6 +439,7 @@ namespace MiBocaRecuerda
             if(!edb.IsDisposed) edb.ShowDialog();
         }
 
+        // クイズ非表示
         private void CMS_quiz_hide_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
@@ -359,5 +463,7 @@ namespace MiBocaRecuerda
             // 表示(非表示)した分を調整する
             Size = new Size(Size.Width + adjustWidth, Size.Height);
         }
+
+        #endregion
     }
 }

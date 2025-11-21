@@ -39,6 +39,8 @@ namespace MiBocaRecuerda
         private int preMaxChapter;
         // 現在の問題集(InitQuizで作成)
         private List<QuizContents> QuizContents = new List<QuizContents>();
+        // チャプターリスト(InitQuizで作成)
+        private List<string> ChapterList = new List<string>();
 
         private bool IsLoaded = false;
         // 待機中かどうかは解答ボタンのEnabledで判断
@@ -522,6 +524,14 @@ namespace MiBocaRecuerda
 
             OpenExcel(currentFilePath);
 
+            // チャプターリスト更新
+            int chapter = ws.LastRowUsed().RowNumber() / 10;
+
+            for (int i = 0; i < chapter; i++)
+            {
+                ChapterList.Add(ws.Cell(i * 10 + 1, 4).Value.ToString());
+            }
+
             // 新しい言語の補助入力を登録
             if (ManageLanguage_Dic.ContainsKey(langType))
             {
@@ -884,6 +894,22 @@ namespace MiBocaRecuerda
             };
 
             s.Show();
+        }
+
+        // 進捗ファイルひな形作成
+        private void CreateNewProgressFile()
+        {
+            string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
+            DateTime defaultDate = new DateTime(1970, 1, 1);
+
+            // ファイル作成 & 書き込み
+            using (StreamWriter writer = new StreamWriter(path, false)) // false = 上書き
+            {
+                foreach (string chapter in ChapterList)
+                {
+                    writer.WriteLine($"{defaultDate.ToString("yyyy/MM/dd")},000,{chapter}");
+                }
+            }
         }
 
         #endregion
@@ -1424,31 +1450,33 @@ namespace MiBocaRecuerda
                     {
                         string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
 
-                        // 進捗ファイルに書き込む
-                        if (File.Exists(path))
+                        if(File.Exists(path) == false)
                         {
-                            // チャプター毎に進捗を更新する
-                            for (int cnt = 0; cnt < chapterNum; cnt++)
+                            // 進捗ファイルがないときひな形を作成する
+                            CreateNewProgressFile();
+                        }
+
+                        // 進捗ファイルに書き込む
+
+                        // チャプター毎に進捗を更新する
+                        for (int cnt = 0; cnt < chapterNum; cnt++)
+                        {
+                            string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
+
+                            string[] sp = lines[QuizFileConfig.MinChapter - 1 + cnt].Split(',');
+                            string today = DateTime.Now.ToString("yyyy/MM/dd");
+
+                            // 同日のPruebaは記録しない
+                            // 日跨ぎのPruebaを重視するため(Ebbinghaus)
+                            if (sp[0] != today)
                             {
-                                string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
+                                sp[0] = today;
+                                sp[1] = (int.Parse(sp[1]) + 1).ToString("D3");
+                                lines[QuizFileConfig.MinChapter - 1 + cnt] = string.Join(",", sp);
 
-                                string[] sp = lines[QuizFileConfig.MinChapter - 1 + cnt].Split(',');
-                                string today = DateTime.Now.ToString("yyyy/MM/dd");
-
-                                // 同日のPruebaは記録しない
-                                // 日跨ぎのPruebaを重視するため(Ebbinghaus)
-                                if (sp[0] != today)
-                                {
-                                    sp[0] = today;
-                                    sp[1] = (int.Parse(sp[1]) + 1).ToString("D3");
-                                    lines[QuizFileConfig.MinChapter - 1 + cnt] = string.Join(",", sp);
-
-                                    File.WriteAllLines(path, lines);
-                                }
+                                File.WriteAllLines(path, lines);
                             }
                         }
-                        // POR HACER:進捗ファイルがないときと、あっても該当するチャプターがないときの処理
-                        // を入れようと思ったが、章タイトルを全取得する処理はあるからそれを使ってひな形を作る機能を入れた方がよさそう
 
                         // 練習が複数の章にわたるときは、どこからどこまでかを記録する
                         if (chapterNum > 1)
@@ -1799,6 +1827,7 @@ namespace MiBocaRecuerda
             }
         }
 
+        // チャプターリスト表示
         private void toolTSMI_chapterList_Click(object sender, EventArgs e)
         {
             if (MessageForm_chapterList.IsDisposed == false) MessageForm_chapterList.Dispose();
@@ -1809,16 +1838,7 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            int chapter = ws.LastRowUsed().RowNumber() / 10;
-
-            List<string> chapter_list = new List<string>();
-
-            for (int i = 0; i < chapter; i++)
-            {
-                chapter_list.Add($"{i + 1}:{ws.Cell(i * 10 + 1, 4).Value.ToString()}");
-            }
-
-            MessageForm_chapterList = new MessageForm(chapter_list, "Lista de capítulos", MessageForm.TipoDeUbicacion.CENTRO, this)
+            MessageForm_chapterList = new MessageForm(ChapterList, "Lista de capítulos", MessageForm.TipoDeUbicacion.CENTRO, this)
             {
                 ShowIcon = false
             };
@@ -1826,6 +1846,7 @@ namespace MiBocaRecuerda
             MessageForm_chapterList.Show();
         }
 
+        // 翻訳機能
         private void toolTSMI_translate_Click(object sender, EventArgs e)
         {
             if (MessageForm_traducir.IsDisposed == false) MessageForm_traducir.Dispose();
@@ -1846,6 +1867,7 @@ namespace MiBocaRecuerda
             MessageForm_traducir.Show();
         }
 
+        // 現在の問題を編集
         private void toolTSMI_EditQuiz_Click(object sender, EventArgs e)
         {
             if (QuizContents.Count == 0)
@@ -1859,6 +1881,7 @@ namespace MiBocaRecuerda
             if (!edb.IsDisposed) edb.ShowDialog();
         }
 
+        // 一つ前の問題を編集
         private void toolTSMI_EditQuiz2_Click(object sender, EventArgs e)
         {
             if (QuizContents.Count == 0)
@@ -1875,6 +1898,11 @@ namespace MiBocaRecuerda
             }
         }
 
+        #endregion
+
+        #region DB
+
+        // クイズDBを開く
         private void DBTSMI_QuizDB_Click(object sender, EventArgs e)
         {
             if (currentFilePath == "")
@@ -1891,8 +1919,14 @@ namespace MiBocaRecuerda
             {
                 System.Diagnostics.Process.Start(path);
             }
+            else
+            {
+                MessageBox.Show("El archivo de DB no existe.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
         }
 
+        // 進捗を開く
         private void DBTSMI_Progress_Click(object sender, EventArgs e)
         {
             if (currentFilePath == "")
@@ -1908,6 +1942,11 @@ namespace MiBocaRecuerda
             if (File.Exists(path))
             {
                 System.Diagnostics.Process.Start(path);
+            }
+            else
+            {
+                MessageBox.Show("El archivo de progreso no existe.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
             }
         }
 
