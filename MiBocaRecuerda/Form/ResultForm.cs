@@ -24,8 +24,8 @@ namespace MiBocaRecuerda
 
         private bool IsAuto = false;
 
-        // 答え全体コピー用
-        private Dictionary<int, string> RespuestaCopy = new Dictionary<int, string>();
+        // 答えを含むコピー用
+        private Dictionary<int, (string quiz, string answer)> RespuestaCopy = new Dictionary<int, (string quiz, string answer)>();
 
         public ResultForm(List<QuizResult> _qr, MainForm _mf)
         {
@@ -66,7 +66,7 @@ namespace MiBocaRecuerda
                 if(parseAnswer.Count == 1)
                 {
                     // 解答パターンが複数ない場合
-                    RespuestaCopy[cnt] = parseAnswer[0];
+                    RespuestaCopy[cnt] = (c.Quiz, parseAnswer[0]);
                 }
                 else
                 {
@@ -74,7 +74,7 @@ namespace MiBocaRecuerda
                     for (int i = 0; i < parseAnswer.Count; i++)
                     {
                         // 下位16ビットは問題番号として17ビット以降を解答パターン通番にする
-                        RespuestaCopy[cnt | ((i + 1) << 16)] = parseAnswer[i];
+                        RespuestaCopy[cnt | ((i + 1) << 16)] = (c.Quiz, parseAnswer[i]);
                     }
                 }
 
@@ -366,16 +366,20 @@ namespace MiBocaRecuerda
             string quiz, answer;
             List<string> ret = new List<string>();
 
-            foreach (DataGridViewRow row in dgv.Rows)
+            foreach (var rc in RespuestaCopy)
             {
-                quiz = row.Cells[1].Value.ToString();
-                answer = row.Cells[2].Value.ToString();
+                quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "");
+                answer = Regex.Replace(rc.Value.answer, @"\r\n|\r|\n", "");
 
-                quiz = quiz.TrimEnd('*');
-                quiz = Regex.Replace(quiz, @"\r\n|\r|\n", "");
-                answer = Regex.Replace(answer, @"\r\n|\r|\n", "");
-
-                ret.Add($"{row.Cells[0].Value}\t{quiz}\t{answer}"); 
+                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
+                if ((rc.Key & 0xffff0000) != 0)
+                {
+                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}\t{answer}");
+                }
+                else
+                {
+                    ret.Add($"{rc.Key}\t{quiz}\t{answer}");
+                }
             }
 
             Clipboard.SetText(string.Join("\r\n", ret));
@@ -397,7 +401,7 @@ namespace MiBocaRecuerda
                 quiz = quiz.TrimEnd('*');
                 quiz = Regex.Replace(quiz, @"\r\n|\r|\n", "");
 
-                ret.Add($"{cnt++:D3}#{quiz}");
+                ret.Add($"{cnt++}\t{quiz}");
             }
 
             Clipboard.SetText(string.Join("\r\n", ret));
@@ -413,16 +417,16 @@ namespace MiBocaRecuerda
 
             foreach (var rc in RespuestaCopy)
             {
-                answer = Regex.Replace(rc.Value, @"\r\n|\r|\n", "");
+                answer = Regex.Replace(rc.Value.answer, @"\r\n|\r|\n", "");
 
                 // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
                 if ((rc.Key & 0xffff0000) != 0)
                 {
-                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}#{answer}");
+                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{answer}");
                 }
                 else
                 {
-                    ret.Add($"{rc.Key}#{answer}");
+                    ret.Add($"{rc.Key}\t{answer}");
                 }
             }
 
