@@ -1,7 +1,7 @@
-﻿using ClosedXML.Excel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SQLite;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -15,7 +15,7 @@ namespace MiBocaRecuerda
 {
     public partial class MainForm : ResizableForm
     {
-        private IXLWorksheet ws;
+        private ExerciseRepository ExerRepo;
         private List<Label> label_progress = new List<Label>();
         private List<Label> label_bar = new List<Label>();
         private NumericUpDown nudProgress;
@@ -28,7 +28,7 @@ namespace MiBocaRecuerda
         private MessageForm MessageForm_respuesta = new MessageForm();
         private MessageForm MessageForm_traducir = new MessageForm();
         private MessageForm MessageForm_quizInfo = new MessageForm();
-        private MessageForm MessageForm_chapterList = new MessageForm();
+        private MessageForm MessageForm_SectionList = new MessageForm();
 
         // Resultadoに表示する為に蓄積するやつ
         private List<QuizResult> QuizResult = new List<QuizResult>();
@@ -39,21 +39,21 @@ namespace MiBocaRecuerda
         private int preMaxChapter;
         // 現在の問題集(InitQuizで作成)
         private List<QuizContents> QuizContents = new List<QuizContents>();
-        // チャプターリスト(InitQuizで作成)
-        private List<string> ChapterList = new List<string>();
+        // セクションリスト(InitQuizで作成)
+        private List<string> SectionList = new List<string>();
 
         private bool IsLoaded = false;
         // 待機中かどうかは解答ボタンのEnabledで判断
         private bool IsIdle => !btnAnswer.Enabled;
 
-        // 現在のクイズファイル
-        public static string currentQuizFile;
+        // 現在のクイズDB
+        public static string CurrentQuizDB;
         // クイズファイルの最大行(設定オーバーを対応するため)
-        private int MaxRow = 0;
+        private int QuizCountMax = 0;
         // 起動時のエラー情報
         private List<string> InitError = new List<string>();
         // 現在のクイズ言語
-        private static string langType = "";
+        private static string LangType = "";
         // 現在の問題のインデックス
         private int curProgress = -1;
 
@@ -72,7 +72,7 @@ namespace MiBocaRecuerda
         // 言語ごとの入力補助を切り替える用
         public static Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
 
-        public static IManageInput LangCtrl => ManageLanguage_Dic[langType];
+        public static IManageInput LangCtrl => ManageLanguage_Dic[LangType];
 
         //public ClassResize _form_resize;
 
@@ -96,6 +96,8 @@ namespace MiBocaRecuerda
         public MainForm()
         {
             InitializeComponent();
+
+            DBTSMI_QuizDB.Enabled = false;
 
             RegisterEvent();
 
@@ -260,27 +262,24 @@ namespace MiBocaRecuerda
         // クイズファイルの読み込み
         private void ParseFile()
         {
-            string[] QuizFiles = Directory.GetFiles(SettingManager.RomConfig.QuizFilePath, "*.xlsx");
+            string[] QuizFiles = Directory.GetFiles(PathManager.QuizDB, "*.db");
 
             QuizFiles = QuizFiles.Where(s => !Path.GetFileName(s).StartsWith('~'.ToString())).ToArray();
 
-            FileStream fs;
+            ExerciseRepository exerRepo;
             string type = "";
 
             foreach (string file in QuizFiles)
             {
                 try
                 {
-                    using (fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    exerRepo = new ExerciseRepository($"Data Source={file}");
+
+                    type = exerRepo.GetLanguage();
+
+                    if (!SettingManager.CommonConfigManager.ContainsKey(type))
                     {
-                        // クイズファイルから言語を取得する
-
-                        type = new XLWorkbook(fs).Worksheet(1).Cell(1, 1).Value.ToString();
-
-                        if (!SettingManager.CommonConfigManager.ContainsKey(type))
-                        {
-                            SettingManager.CommonConfigManager[type] = new Dictionary<string, CommonConfig>();
-                        }
+                        SettingManager.CommonConfigManager[type] = new Dictionary<string, CommonConfig>();
                     }
                 }
                 catch(Exception ex)
@@ -294,7 +293,7 @@ namespace MiBocaRecuerda
                 FileLenguaConfig lc = new FileLenguaConfig();
 
                 // クイズキャッシュがある場合に、キャッシュを設定
-                if (Directory.Exists(SettingManager.RomConfig.QuizFilePath + "\\cache\\quiz"))
+                if (Directory.Exists(SettingManager.RomConfig.ResourcePath + "\\cache\\quiz"))
                 {
                     // クイズ設定と言語設定のキャッシュを読み込んで共通設定を完成させる
                     string cacheFile_common = PathManager.QuizFileSettingCommon(fileName);
@@ -316,13 +315,13 @@ namespace MiBocaRecuerda
             }
 
             // 言語キャッシュがある場合に、キャッシュを設定
-            if (Directory.Exists(SettingManager.RomConfig.QuizFilePath + "\\cache\\language"))
+            if (Directory.Exists(SettingManager.RomConfig.ResourcePath + "\\cache\\language"))
             {
                 string[] langFiles = new string[0];
 
                 try
                 {
-                    langFiles = Directory.GetFiles(SettingManager.RomConfig.QuizFilePath + "\\cache\\language", "*.xml");
+                    langFiles = Directory.GetFiles(SettingManager.RomConfig.ResourcePath + "\\cache\\language", "*.xml");
                 }
                 catch (DirectoryNotFoundException ex)
                 {
@@ -453,7 +452,7 @@ namespace MiBocaRecuerda
                 SettingManager.RomConfig = CommonFunction.XmlRead<RomConfig>("rom.config");
             }
 
-            QuizFiles = Directory.GetFiles(SettingManager.RomConfig.QuizFilePath, "*.xlsx");
+            QuizFiles = Directory.GetFiles(PathManager.QuizDB, "*.db");
 
             toolStripQuizFile.Items.AddRange(QuizFiles
                 .Where(s => !Path.GetFileName(s).StartsWith('~'.ToString()))
@@ -476,23 +475,8 @@ namespace MiBocaRecuerda
             optionTSMI_DarkMode.Checked = SettingManager.InputCache.DarkMode;
         }
 
-        // 問題集excelを開く
-        private void OpenExcel(string filePath)
-        {
-            FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            XLWorkbook workBook = new XLWorkbook(fs);
-            ws = workBook.Worksheet(1);
-            fs.Close();
-
-            MaxRow = UtilityFunction.GetLastRowInColumn(ws, "B");
-
-            langType = ws.Cell(1, 1).Value.ToString();
-
-            QuizFileConfig = SettingManager.CommonConfigManager[langType][Path.GetFileNameWithoutExtension(filePath)].QuizFileConfig;
-        }
-
         private int preLastQuiz = -1;
-        public string currentFilePath = "";
+        public string CurrentQuizDBPath = "";
 
         // クイズ開始
         private void InitQuiz(bool manual)
@@ -511,31 +495,30 @@ namespace MiBocaRecuerda
             }
 
             // 前回の言語の補助入力を解除
-            if (ManageLanguage_Dic.ContainsKey(langType))
+            if (ManageLanguage_Dic.ContainsKey(LangType))
             {
-                txtAnswer.KeyPress -= ManageLanguage_Dic[langType].KeyPress;
+                txtAnswer.KeyPress -= ManageLanguage_Dic[LangType].KeyPress;
             }
 
             txtAnswer.Focus();
             btnAnswer.Enabled = true;
 
-            currentQuizFile = toolStripQuizFile.SelectedItem.ToString();
-            currentFilePath = $"{SettingManager.RomConfig.QuizFilePath}\\{toolStripQuizFile.SelectedItem.ToString()}.xlsx";
+            CurrentQuizDB = toolStripQuizFile.SelectedItem.ToString();
+            CurrentQuizDBPath = $"{PathManager.QuizDB}\\{CurrentQuizDB}.db";
 
-            OpenExcel(currentFilePath);
+            // 問題集DBを読み込む
+            ExerRepo = new ExerciseRepository($"Data Source={CurrentQuizDBPath}");
 
-            // チャプターリスト更新
-            int chapter = ws.LastRowUsed().RowNumber() / 10;
+            LangType = ExerRepo.GetLanguage();
+            QuizCountMax = ExerRepo.GetExerciseCount();
+            SectionList = ExerRepo.GetAllSection();
 
-            for (int i = 0; i < chapter; i++)
-            {
-                ChapterList.Add(ws.Cell(i * 10 + 1, 4).Value.ToString());
-            }
+            QuizFileConfig = SettingManager.CommonConfigManager[LangType][CurrentQuizDB].QuizFileConfig;
 
             // 新しい言語の補助入力を登録
-            if (ManageLanguage_Dic.ContainsKey(langType))
+            if (ManageLanguage_Dic.ContainsKey(LangType))
             {
-                txtAnswer.KeyPress += ManageLanguage_Dic[langType].KeyPress;
+                txtAnswer.KeyPress += ManageLanguage_Dic[LangType].KeyPress;
             }
 
             if (manual) txtConsole.Text = "";
@@ -582,27 +565,11 @@ namespace MiBocaRecuerda
         // インデックスリストから問題を取得する
         private List<QuizContents> CreateQuizContents(List<int> indexList)
         {
-            string quizTxt = "";
-            string correctAnswer = "";
-            int quizNum;
-            string chapterTitle = "";
-            string chapterExample = "";
-            string supplement = "";
-            List<string> autoNombre;
-
             List<QuizContents> quizContents = new List<QuizContents>();
 
             foreach (int index in indexList)
             {
-                quizTxt = ws.Cell(index, 2).Value.ToString();
-                correctAnswer = ws.Cell(index, 3).Value.ToString();
-                quizNum = index;
-                chapterTitle = ws.Cell((int)Math.Floor((decimal)((index - 1) / 10)) * 10 + 1, 4).Value.ToString();
-                chapterExample = ws.Cell((int)Math.Floor((decimal)((index - 1) / 10)) * 10 + 1, 5).Value.ToString();
-                supplement = ws.Cell(index, 6).Value.ToString();
-                autoNombre = ws.Cell(index, 8).Value.ToString().Split(',').ToList();
-
-                quizContents.Add(new QuizContents(quizTxt, correctAnswer, quizNum, chapterTitle, chapterExample, supplement, autoNombre));
+                quizContents.Add(new QuizContents(ExerRepo.GetByNum(index)));
             }
 
             return quizContents;
@@ -644,7 +611,7 @@ namespace MiBocaRecuerda
                 // 練習が1章だけならPRUEBA回数を表示する
                 if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
                 {
-                    string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
+                    string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
 
                     if (File.Exists(path))
                     {
@@ -694,7 +661,7 @@ namespace MiBocaRecuerda
             curProgress++;
 
             // タイトル更新
-            Text = $"{BaseTitle} {QuizContents[curProgress].ChapterTitle}";
+            Text = $"{BaseTitle} {QuizContents[curProgress].Section}";
 
             preLastQuiz = QuizContents[curProgress].QuizNum;
 
@@ -713,7 +680,7 @@ namespace MiBocaRecuerda
             }
             else
             {
-                int totalNum = QuizFileConfig.MaxQuizNum > MaxRow ? MaxRow : QuizFileConfig.MaxQuizNum;
+                int totalNum = QuizFileConfig.MaxQuizNum > QuizCountMax ? QuizCountMax : QuizFileConfig.MaxQuizNum;
                 lblNumericProgress.Text = $"{curProgress + 1}/{QuizFileConfig.QuizNum}";
             }
 
@@ -723,7 +690,7 @@ namespace MiBocaRecuerda
             {
                 // 同じ処理がTSMI_quizInfoにあるので冗長
                 List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
-                List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].ChapterTitle };
+                List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].Section };
                 List<string> quizInfo = new List<string>();
 
                 string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
@@ -835,13 +802,13 @@ namespace MiBocaRecuerda
             if (isForward)
             {
                 // 最小章がMAX数を超えていたら何もすることがない
-                if (QuizFileConfig.MinChapter + diff > MaxRow / 10) return;
+                if (QuizFileConfig.MinChapter + diff > QuizCountMax / 10) return;
 
-                if (QuizFileConfig.MaxChapter + diff > MaxRow / 10)
+                if (QuizFileConfig.MaxChapter + diff > QuizCountMax / 10)
                 {
                     // 最大章がMAX数を超えていたら最大章をMAX数にする
                     QuizFileConfig.MinChapter += diff;
-                    QuizFileConfig.MaxChapter = MaxRow / 10;
+                    QuizFileConfig.MaxChapter = QuizCountMax / 10;
                 }
                 else
                 {
@@ -884,7 +851,17 @@ namespace MiBocaRecuerda
 
             List<string> tmp = new List<string>();
 
-            tmp.Add(QuizContents[quizNum].CorrectAnswer);
+            string answer = "";
+
+            foreach (KeyValuePair<string, List<Answer>> kvp in QuizContents[quizNum].CorrectAnswer)
+            {
+                foreach (Answer ans in kvp.Value)
+                {
+                    answer += $"{kvp.Key}:{ans.Sentence}\n";
+                }
+            }
+
+            tmp.Add(answer);
             tmp.Add("───────");
             tmp.Add(respuestas[quizNum]);
 
@@ -899,13 +876,13 @@ namespace MiBocaRecuerda
         // 進捗ファイルひな形作成
         private void CreateNewProgressFile()
         {
-            string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
+            string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
             DateTime defaultDate = new DateTime(1970, 1, 1);
 
             // ファイル作成 & 書き込み
             using (StreamWriter writer = new StreamWriter(path, false)) // false = 上書き
             {
-                foreach (string chapter in ChapterList)
+                foreach (string chapter in SectionList)
                 {
                     writer.WriteLine($"{defaultDate.ToString("yyyy/MM/dd")},000,{chapter}");
                 }
@@ -972,7 +949,7 @@ namespace MiBocaRecuerda
                         if (e.Shift)
                         {
                             // 言語ごとの補助入力
-                            insertText = SettingManager.LanguageConfigManager[langType].InputSupport[num];
+                            insertText = SettingManager.LanguageConfigManager[LangType].InputSupport[num];
                         }
                         else
                         {
@@ -1004,7 +981,17 @@ namespace MiBocaRecuerda
 
             List<string> tmp = new List<string>();
 
-            tmp.Add(QuizContents[quizNum].CorrectAnswer);
+            string answer = "";
+
+            foreach (KeyValuePair<string, List<Answer>> kvp in QuizContents[quizNum].CorrectAnswer)
+            {
+                foreach (Answer ans in kvp.Value)
+                {
+                    answer += $"{kvp.Key}:{ans.Sentence}\n";
+                }
+            }
+
+            tmp.Add(answer);
             tmp.Add("───────");
             tmp.Add(respuestas[quizNum]);
 
@@ -1336,13 +1323,16 @@ namespace MiBocaRecuerda
         // 解答ボタンクリック(responder)
         private void btnAnswer_Click(object sender, EventArgs e)
         {
-            if (ws == null) return;
+            if (ExerRepo == null) return;
 
             cts.Cancel();
 
             txtConsole.Text = "";
 
-            bool isCorrect = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].CorrectAnswer);
+            bool isCorrect = false;
+
+            // POR HACER:20260106:region指定でやるモードも検討
+            isCorrect = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].Answers().ToList());
 
 #if DEBUG
             if (chboxDebug.Checked) isCorrect = true;
@@ -1426,7 +1416,7 @@ namespace MiBocaRecuerda
             int endQuizNum = optionTSMI_progresoVisual.Checked ? QuizFileConfig.QuizNum - 1 : QuizFileConfig.MaxQuizNum - 1;
 
             // クイズ終了？
-            if (curProgress == endQuizNum || curProgress == MaxRow - 1)
+            if (curProgress == endQuizNum || curProgress == QuizCountMax - 1)
             {
                 //tokenSource.Cancel();
 
@@ -1448,7 +1438,7 @@ namespace MiBocaRecuerda
                     // チャプター数と、それに対応するクイズ数が一致しているときは進捗を記録する
                     if (chapterNum * 10 == QuizFileConfig.QuizNum)
                     {
-                        string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_p.csv";
+                        string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
 
                         if(File.Exists(path) == false)
                         {
@@ -1481,7 +1471,7 @@ namespace MiBocaRecuerda
                         // 練習が複数の章にわたるときは、どこからどこまでかを記録する
                         if (chapterNum > 1)
                         {
-                            string path_i = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{currentQuizFile}_intercontinental.txt";
+                            string path_i = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_intercontinental.txt";
                             string write_text = $"{QuizFileConfig.MinChapter}~{QuizFileConfig.MaxChapter}";
 
                             if (File.Exists(path_i))
@@ -1530,9 +1520,60 @@ namespace MiBocaRecuerda
         private void btnShowAnswer_Click(object sender, EventArgs e)
         {
             if (MessageForm_respuesta.IsDisposed == false) MessageForm_respuesta.Dispose();
-            if (ws == null) return;
+            if (ExerRepo == null) return;
 
-            List<string> processedAnswer = CoreProcess.ParseAnswer(QuizContents[curProgress].CorrectAnswer);
+            List<string> processedAnswer = new List<string>();
+            // 出力加工用
+            Dictionary<string, List<string>> workAnswer = new Dictionary<string, List<string>>();
+
+            // 答えをすべて集める
+            foreach (KeyValuePair<string, List<Answer>> kvp in QuizContents[curProgress].CorrectAnswer)
+            {
+                foreach (Answer ans in kvp.Value)
+                {
+                    if (workAnswer.ContainsKey(kvp.Key))
+                    {
+                        workAnswer[kvp.Key] = workAnswer[kvp.Key].Concat(CoreProcess.ParseAnswer(ans.Sentence)).ToList();
+                    }
+                    else
+                    {
+                        workAnswer[kvp.Key] = CoreProcess.ParseAnswer(ans.Sentence);
+                    }
+                }
+            }
+
+            // 集めた答えの数に応じて出力形式を切り替える
+            foreach (KeyValuePair<string, List<string>> ans in workAnswer)
+            {
+                int cnt = 1;
+
+                foreach (string sentence in ans.Value)
+                {
+                    if (workAnswer.Keys.Count > 1)
+                    {
+                        if(ans.Value.Count > 1)
+                        {
+                            processedAnswer.Add($"{ans.Key}:{cnt++}:{sentence}");
+                        }
+                        else
+                        {
+                            processedAnswer.Add($"{ans.Key}:{sentence}");
+                        }
+                    }
+                    else
+                    {
+                        if (ans.Value.Count > 1)
+                        {
+                            processedAnswer.Add($"{cnt++}:{sentence}");
+                        }
+                        else
+                        {
+                            processedAnswer.Add($"{sentence}");
+                        }
+
+                    }
+                }
+            }
 
             MessageForm_respuesta = new MessageForm(processedAnswer, "RESPUESTA", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
@@ -1564,7 +1605,7 @@ namespace MiBocaRecuerda
 
         private void optionTSMI_SettingLanguage_Click(object sender, EventArgs e)
         {
-            SettingLanguageForm s = new SettingLanguageForm(langType)
+            SettingLanguageForm s = new SettingLanguageForm(LangType)
             {
                 ShowInTaskbar = false,
                 ShowIcon = false
@@ -1581,14 +1622,14 @@ namespace MiBocaRecuerda
         {
             if (MessageForm_quizInfo.IsDisposed == false) MessageForm_quizInfo.Dispose();
 
-            if (ws == null)
+            if (ExerRepo == null)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
-            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].ChapterTitle };
+            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].Section };
             List<string> quizInfo = new List<string>();
 
             string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
@@ -1801,7 +1842,7 @@ namespace MiBocaRecuerda
             if (cacheDesde == -1) cacheDesde = cacheIsIndex ? QuizFileConfig.MinChapterToIndex : QuizFileConfig.MinChapter;
             if (cacheHasta == -1) cacheHasta = cacheIsIndex ? QuizFileConfig.MaxChapterToIndex : QuizFileConfig.MaxChapter;
 
-            InputDialog id = new InputDialog(cacheDesde, cacheHasta, MaxRow, cacheIsIndex);
+            InputDialog id = new InputDialog(cacheDesde, cacheHasta, QuizCountMax, cacheIsIndex);
 
             // 問題インデックスを入力する画面
             if (id.ShowDialog() == DialogResult.OK)
@@ -1812,7 +1853,7 @@ namespace MiBocaRecuerda
 
                 int desde = cacheIsIndex ? cacheDesde : cacheDesde * 10 - 9;
                 int hasta = cacheIsIndex ? cacheHasta : cacheHasta * 10;
-                hasta = hasta > MaxRow ? MaxRow : hasta;
+                hasta = hasta > QuizCountMax ? QuizCountMax : hasta;
 
                 List<int> sequence = Enumerable.Range(desde, hasta - desde + 1).ToList();
                 List<QuizContents> quizContents = CreateQuizContents(sequence);
@@ -1830,30 +1871,33 @@ namespace MiBocaRecuerda
         // チャプターリスト表示
         private void toolTSMI_chapterList_Click(object sender, EventArgs e)
         {
-            if (MessageForm_chapterList.IsDisposed == false) MessageForm_chapterList.Dispose();
+            if (MessageForm_SectionList.IsDisposed == false) MessageForm_SectionList.Dispose();
 
-            if (ws == null)
+            if (ExerRepo == null)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            MessageForm_chapterList = new MessageForm(ChapterList, "Lista de capítulos", MessageForm.TipoDeUbicacion.CENTRO, this)
+            MessageForm_SectionList = new MessageForm(SectionList, "Lista de sección", MessageForm.TipoDeUbicacion.CENTRO, this)
             {
                 ShowIcon = false
             };
 
-            MessageForm_chapterList.Show();
+            MessageForm_SectionList.Show();
         }
 
         // 翻訳機能
         private void toolTSMI_translate_Click(object sender, EventArgs e)
         {
             if (MessageForm_traducir.IsDisposed == false) MessageForm_traducir.Dispose();
-            if (langType == "") return;
-            if (txtAnswer.Text == "") return;
+            if (LangType == "" || txtAnswer.Text == "")
+            {
+                MessageBox.Show("Fallo en la traducción", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
-            string traduccion = Translate.DoTransrate(txtAnswer.Text, langType);
+            string traduccion = Translate.DoTransrate(txtAnswer.Text, LangType);
 
             List<string> mostrar = new List<string>();
 
@@ -1876,7 +1920,7 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            EditDBForm edb = new EditDBForm(currentFilePath, QuizContents[curProgress].QuizNum);
+            EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress].QuizNum, QuizFileConfig.PriorityRegion);
 
             if (!edb.IsDisposed) edb.ShowDialog();
         }
@@ -1892,7 +1936,7 @@ namespace MiBocaRecuerda
 
             if(curProgress - 1 >= 0)
             {
-                EditDBForm edb = new EditDBForm(currentFilePath, QuizContents[curProgress - 1].QuizNum);
+                EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress - 1].QuizNum, QuizFileConfig.PriorityRegion);
 
                 if (!edb.IsDisposed) edb.ShowDialog();
             }
@@ -1905,15 +1949,15 @@ namespace MiBocaRecuerda
         // クイズDBを開く
         private void DBTSMI_QuizDB_Click(object sender, EventArgs e)
         {
-            if (currentFilePath == "")
+            if (CurrentQuizDBPath == "")
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string fileName = Path.GetFileNameWithoutExtension(currentFilePath);
+            string fileName = Path.GetFileNameWithoutExtension(CurrentQuizDBPath);
 
-            string path = $"{SettingManager.RomConfig.QuizFilePath}\\{fileName}.xlsx";
+            string path = $"{PathManager.QuizDB}\\{fileName}.db";
 
             if (File.Exists(path))
             {
@@ -1929,15 +1973,15 @@ namespace MiBocaRecuerda
         // 進捗を開く
         private void DBTSMI_Progress_Click(object sender, EventArgs e)
         {
-            if (currentFilePath == "")
+            if (CurrentQuizDBPath == "")
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string fileName = Path.GetFileNameWithoutExtension(currentFilePath);
+            string fileName = Path.GetFileNameWithoutExtension(CurrentQuizDBPath);
 
-            string path = $"{SettingManager.RomConfig.QuizFilePath}\\progreso\\{fileName}_p.csv";
+            string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{fileName}_p.csv";
 
             if (File.Exists(path))
             {

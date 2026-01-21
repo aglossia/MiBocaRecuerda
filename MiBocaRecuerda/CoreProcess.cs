@@ -11,12 +11,18 @@ namespace MiBocaRecuerda
     {
         public static string adopt_str = "";
 
-        public static bool CheckAnswer(string user_input, string correct_answer)
+        public static bool CheckAnswer(string user_input, List<string> correct_answer)
         {
             string s1 = MainForm.LangCtrl.Comparelize(user_input);
 
+            List<string> _correct = new List<string>();
+
+            foreach (string ans in correct_answer)
+            {
+                _correct = _correct.Concat(ParseAnswer(ans)).ToList();
+            }
             // _correctは成形前
-            List<string> _correct = ParseAnswer(correct_answer);
+            //List<string> _correct = ParseAnswer(correct_answer);
 
             List<string> buffer = new List<string>();
 

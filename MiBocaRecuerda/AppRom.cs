@@ -13,16 +13,12 @@ namespace MiBocaRecuerda
             CurrentQuiz,
         }
 
-        public enum DBColmun
+        public enum SqlOperation
         {
-            Header = 1,
-            Quiestion,
-            Answer,
-            ChapterTitle,
-            ChapterExample,
-            Supplement,
-            Date,
-            Auxiliary
+            None,
+            Update,
+            Insert,
+            Delete,
         }
 
         public static Dictionary<string, int> LenguaIndex = new Dictionary<string, int> { { "es", 0 }, { "en", 1 } };

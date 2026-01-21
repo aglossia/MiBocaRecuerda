@@ -30,15 +30,15 @@
         {
             this.btnApply = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabLanguage = new System.Windows.Forms.TabControl();
             this.tabPageSpanish = new System.Windows.Forms.TabPage();
-            this.settingSpanish1 = new MiBocaRecuerda.SettingElement.SettingSpanish();
             this.tabPageEnglish = new System.Windows.Forms.TabPage();
-            this.settingEnglish1 = new MiBocaRecuerda.SettingElement.SettingEnglish();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnAyudar = new System.Windows.Forms.Button();
-            this.tabControl1.SuspendLayout();
+            this.settingSpanish1 = new MiBocaRecuerda.SettingElement.SettingSpanish();
+            this.settingEnglish1 = new MiBocaRecuerda.SettingElement.SettingEnglish();
+            this.tabLanguage.SuspendLayout();
             this.tabPageSpanish.SuspendLayout();
             this.tabPageEnglish.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -70,16 +70,16 @@
             this.btnCancel.Text = "Cancelar";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // tabControl1
+            // tabLanguage
             // 
-            this.tabControl1.Controls.Add(this.tabPageSpanish);
-            this.tabControl1.Controls.Add(this.tabPageEnglish);
-            this.tabControl1.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(349, 346);
-            this.tabControl1.TabIndex = 6;
+            this.tabLanguage.Controls.Add(this.tabPageSpanish);
+            this.tabLanguage.Controls.Add(this.tabPageEnglish);
+            this.tabLanguage.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.tabLanguage.Location = new System.Drawing.Point(0, 0);
+            this.tabLanguage.Name = "tabLanguage";
+            this.tabLanguage.SelectedIndex = 0;
+            this.tabLanguage.Size = new System.Drawing.Size(349, 346);
+            this.tabLanguage.TabIndex = 6;
             // 
             // tabPageSpanish
             // 
@@ -92,14 +92,6 @@
             this.tabPageSpanish.Text = "Español";
             this.tabPageSpanish.UseVisualStyleBackColor = true;
             // 
-            // settingSpanish1
-            // 
-            this.settingSpanish1.LanguageName = "es";
-            this.settingSpanish1.Location = new System.Drawing.Point(8, 6);
-            this.settingSpanish1.Name = "settingSpanish1";
-            this.settingSpanish1.Size = new System.Drawing.Size(327, 303);
-            this.settingSpanish1.TabIndex = 0;
-            // 
             // tabPageEnglish
             // 
             this.tabPageEnglish.Controls.Add(this.settingEnglish1);
@@ -111,17 +103,9 @@
             this.tabPageEnglish.Text = "English";
             this.tabPageEnglish.UseVisualStyleBackColor = true;
             // 
-            // settingEnglish1
-            // 
-            this.settingEnglish1.LanguageName = "en";
-            this.settingEnglish1.Location = new System.Drawing.Point(8, 6);
-            this.settingEnglish1.Name = "settingEnglish1";
-            this.settingEnglish1.Size = new System.Drawing.Size(327, 303);
-            this.settingEnglish1.TabIndex = 0;
-            // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.tabControl1);
+            this.panel1.Controls.Add(this.tabLanguage);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
@@ -151,6 +135,22 @@
             this.btnAyudar.UseVisualStyleBackColor = true;
             this.btnAyudar.Click += new System.EventHandler(this.btnAyudar_Click);
             // 
+            // settingSpanish1
+            // 
+            this.settingSpanish1.LanguageName = "es";
+            this.settingSpanish1.Location = new System.Drawing.Point(8, 6);
+            this.settingSpanish1.Name = "settingSpanish1";
+            this.settingSpanish1.Size = new System.Drawing.Size(327, 303);
+            this.settingSpanish1.TabIndex = 0;
+            // 
+            // settingEnglish1
+            // 
+            this.settingEnglish1.LanguageName = "en";
+            this.settingEnglish1.Location = new System.Drawing.Point(8, 6);
+            this.settingEnglish1.Name = "settingEnglish1";
+            this.settingEnglish1.Size = new System.Drawing.Size(327, 303);
+            this.settingEnglish1.TabIndex = 0;
+            // 
             // SettingForm
             // 
             this.AcceptButton = this.btnApply;
@@ -162,7 +162,7 @@
             this.Controls.Add(this.panel1);
             this.Name = "SettingForm";
             this.Text = "Setting";
-            this.tabControl1.ResumeLayout(false);
+            this.tabLanguage.ResumeLayout(false);
             this.tabPageSpanish.ResumeLayout(false);
             this.tabPageEnglish.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
@@ -175,7 +175,7 @@
 
         private System.Windows.Forms.Button btnApply;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabControl tabLanguage;
         private System.Windows.Forms.TabPage tabPageSpanish;
         private System.Windows.Forms.TabPage tabPageEnglish;
         private System.Windows.Forms.Panel panel1;

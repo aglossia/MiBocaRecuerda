@@ -40,6 +40,7 @@ namespace MiBocaRecuerda
             nudErrorAllow.Value = lang.ErrorAllowCnt;
             chboxErrorAllowAll.Checked = lang.ErrorAllowAll;
             chboxErrorReset.Checked = lang.ErrorReset;
+            cmbRegion.SelectedItem = lang.PriorityRegion;
         }
 
         public virtual void LoadConfig(string currentFile)
@@ -61,10 +62,16 @@ namespace MiBocaRecuerda
                 QuizNum = (int)nudQuizNum.Value,
                 ErrorAllowCnt = (int)nudErrorAllow.Value,
                 ErrorAllowAll = chboxErrorAllowAll.Checked,
-                ErrorReset = chboxErrorReset.Checked
+                ErrorReset = chboxErrorReset.Checked,
+                PriorityRegion = cmbRegion.SelectedItem.ToString()
             };
 
             return lang;
+        }
+
+        protected void SetRegion(string[] region)
+        {
+            cmbRegion.Items.AddRange(region);
         }
 
         // LenguaConfigは継承先で設定するため、このメソッドは継承先で必ず実装すること

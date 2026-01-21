@@ -40,19 +40,23 @@
             this.nudErrorAllow = new System.Windows.Forms.NumericUpDown();
             this.chboxErrorAllowAll = new System.Windows.Forms.CheckBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPageQuiz = new System.Windows.Forms.TabPage();
             this.btnQuizMax = new System.Windows.Forms.Button();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tabPageMiss = new System.Windows.Forms.TabPage();
             this.lblErrorReset = new System.Windows.Forms.Label();
             this.lblErrorAll = new System.Windows.Forms.Label();
             this.chboxErrorReset = new System.Windows.Forms.CheckBox();
+            this.tabPageLanguage = new System.Windows.Forms.TabPage();
+            this.label5 = new System.Windows.Forms.Label();
+            this.cmbRegion = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudErrorAllow)).BeginInit();
             this.tabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
+            this.tabPageQuiz.SuspendLayout();
+            this.tabPageMiss.SuspendLayout();
+            this.tabPageLanguage.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -202,31 +206,32 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPageQuiz);
+            this.tabControl1.Controls.Add(this.tabPageMiss);
+            this.tabControl1.Controls.Add(this.tabPageLanguage);
             this.tabControl1.Location = new System.Drawing.Point(7, 61);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(300, 163);
             this.tabControl1.TabIndex = 5;
             // 
-            // tabPage1
+            // tabPageQuiz
             // 
-            this.tabPage1.Controls.Add(this.btnQuizMax);
-            this.tabPage1.Controls.Add(this.label1);
-            this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.nudQuizNum);
-            this.tabPage1.Controls.Add(this.nudMinChapter);
-            this.tabPage1.Controls.Add(this.nudMaxChapter);
-            this.tabPage1.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(292, 137);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Quiz";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabPageQuiz.Controls.Add(this.btnQuizMax);
+            this.tabPageQuiz.Controls.Add(this.label1);
+            this.tabPageQuiz.Controls.Add(this.label2);
+            this.tabPageQuiz.Controls.Add(this.label3);
+            this.tabPageQuiz.Controls.Add(this.nudQuizNum);
+            this.tabPageQuiz.Controls.Add(this.nudMinChapter);
+            this.tabPageQuiz.Controls.Add(this.nudMaxChapter);
+            this.tabPageQuiz.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.tabPageQuiz.Location = new System.Drawing.Point(4, 22);
+            this.tabPageQuiz.Name = "tabPageQuiz";
+            this.tabPageQuiz.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageQuiz.Size = new System.Drawing.Size(292, 137);
+            this.tabPageQuiz.TabIndex = 0;
+            this.tabPageQuiz.Text = "Quiz";
+            this.tabPageQuiz.UseVisualStyleBackColor = true;
             // 
             // btnQuizMax
             // 
@@ -238,22 +243,22 @@
             this.btnQuizMax.UseVisualStyleBackColor = true;
             this.btnQuizMax.Click += new System.EventHandler(this.btnQuizMax_Click);
             // 
-            // tabPage2
+            // tabPageMiss
             // 
-            this.tabPage2.Controls.Add(this.lblErrorReset);
-            this.tabPage2.Controls.Add(this.lblErrorAll);
-            this.tabPage2.Controls.Add(this.chboxErrorReset);
-            this.tabPage2.Controls.Add(this.label4);
-            this.tabPage2.Controls.Add(this.nudErrorAllow);
-            this.tabPage2.Controls.Add(this.chboxErrorAllowAll);
-            this.tabPage2.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(292, 137);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Other";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.tabPageMiss.Controls.Add(this.lblErrorReset);
+            this.tabPageMiss.Controls.Add(this.lblErrorAll);
+            this.tabPageMiss.Controls.Add(this.chboxErrorReset);
+            this.tabPageMiss.Controls.Add(this.label4);
+            this.tabPageMiss.Controls.Add(this.nudErrorAllow);
+            this.tabPageMiss.Controls.Add(this.chboxErrorAllowAll);
+            this.tabPageMiss.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.tabPageMiss.Location = new System.Drawing.Point(4, 22);
+            this.tabPageMiss.Name = "tabPageMiss";
+            this.tabPageMiss.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageMiss.Size = new System.Drawing.Size(292, 137);
+            this.tabPageMiss.TabIndex = 1;
+            this.tabPageMiss.Text = "Miss";
+            this.tabPageMiss.UseVisualStyleBackColor = true;
             // 
             // lblErrorReset
             // 
@@ -284,6 +289,35 @@
             this.chboxErrorReset.UseVisualStyleBackColor = true;
             this.chboxErrorReset.CheckedChanged += new System.EventHandler(this.chboxErrorReset_CheckedChanged);
             // 
+            // tabPageLanguage
+            // 
+            this.tabPageLanguage.Controls.Add(this.cmbRegion);
+            this.tabPageLanguage.Controls.Add(this.label5);
+            this.tabPageLanguage.Location = new System.Drawing.Point(4, 22);
+            this.tabPageLanguage.Name = "tabPageLanguage";
+            this.tabPageLanguage.Size = new System.Drawing.Size(292, 137);
+            this.tabPageLanguage.TabIndex = 2;
+            this.tabPageLanguage.Text = "Language";
+            this.tabPageLanguage.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(23, 16);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(77, 12);
+            this.label5.TabIndex = 0;
+            this.label5.Text = "Priority region";
+            // 
+            // cmbRegion
+            // 
+            this.cmbRegion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbRegion.FormattingEnabled = true;
+            this.cmbRegion.Location = new System.Drawing.Point(116, 13);
+            this.cmbRegion.Name = "cmbRegion";
+            this.cmbRegion.Size = new System.Drawing.Size(47, 20);
+            this.cmbRegion.TabIndex = 1;
+            // 
             // SettingBase
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -298,10 +332,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudErrorAllow)).EndInit();
             this.tabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
+            this.tabPageQuiz.ResumeLayout(false);
+            this.tabPageQuiz.PerformLayout();
+            this.tabPageMiss.ResumeLayout(false);
+            this.tabPageMiss.PerformLayout();
+            this.tabPageLanguage.ResumeLayout(false);
+            this.tabPageLanguage.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -321,11 +357,14 @@
         private System.Windows.Forms.NumericUpDown nudErrorAllow;
         private System.Windows.Forms.CheckBox chboxErrorAllowAll;
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPageQuiz;
+        private System.Windows.Forms.TabPage tabPageMiss;
         private System.Windows.Forms.CheckBox chboxErrorReset;
         private System.Windows.Forms.Button btnQuizMax;
         private System.Windows.Forms.Label lblErrorReset;
         private System.Windows.Forms.Label lblErrorAll;
+        private System.Windows.Forms.TabPage tabPageLanguage;
+        private System.Windows.Forms.ComboBox cmbRegion;
+        private System.Windows.Forms.Label label5;
     }
 }

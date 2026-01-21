@@ -11,6 +11,8 @@ namespace MiBocaRecuerda.SettingElement
         {
             InitializeComponent();
 
+            SetRegion(new string[] { "us" });
+
             _cmbboxFileName.SelectedIndexChanged += (o, e) =>
             {
                 SetValue(lengua[_cmbboxFileName.SelectedIndex]);

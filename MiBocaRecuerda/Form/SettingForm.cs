@@ -11,6 +11,10 @@ namespace MiBocaRecuerda
         string CurrentFile;
         bool close_permition = true;
         List<SettingBase> settingBases = new List<SettingBase>();
+        Dictionary<string, bool> ValidLanguage = new Dictionary<string, bool>() { { "es", false }, { "en", false } };
+        Dictionary<string, SettingBase> settings = new Dictionary<string, SettingBase>();
+
+        Dictionary<string, string> CodeToLanguage = new Dictionary<string, string>() { { "es", "Spanish" }, { "en", "English" } };
 
         public SettingForm(string currentFile)
         {
@@ -23,8 +27,31 @@ namespace MiBocaRecuerda
 
             CurrentFile = currentFile;
 
-            settingBases.Add(settingSpanish1);
-            settingBases.Add(settingEnglish1);
+            tabPageSpanish.Tag = settingSpanish1;
+            tabPageEnglish.Tag = settingEnglish1;
+
+            settings["es"] = settingSpanish1;
+            settings["en"] = settingEnglish1;
+
+            foreach (string lang in settings.Keys)
+            {
+                if (SettingManager.CommonConfigManager.ContainsKey(lang))
+                {
+                    settingBases.Add(settings[lang]);
+                    ValidLanguage[lang] = true;
+                }
+                else
+                {
+                    var page = tabLanguage.TabPages[$"tabPage{CodeToLanguage[lang]}"];
+                    tabLanguage.TabPages.Remove(page);
+                }
+            }
+
+            if(tabLanguage.TabPages.Count < 1)
+            {
+                MessageBox.Show("有効な設定対象がありません");
+                btnApply.Enabled = false;
+            }
 
             Load += (o, e) =>
             {
@@ -39,6 +66,13 @@ namespace MiBocaRecuerda
                     close_permition = true;
                     e.Cancel = true;
                 }
+            };
+
+            tabLanguage.SelectedIndexChanged += (o, e) =>
+            {
+                string lang = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
+
+                btnApply.Enabled = ValidLanguage[lang];
             };
         }
 
@@ -63,7 +97,7 @@ namespace MiBocaRecuerda
             }
 
             // 指定ファイルの言語のタブに切り替える
-            if(select_lang != "") tabControl1.SelectedIndex = AppRom.LenguaIndex[select_lang];
+            if(select_lang != "") tabLanguage.SelectedIndex = AppRom.LenguaIndex[select_lang];
         }
 
         private bool SaveConfig()
@@ -72,7 +106,7 @@ namespace MiBocaRecuerda
             QuizFileConfig common = new QuizFileConfig();
             FileLenguaConfig lengua = new FileLenguaConfig();
 
-            int index = tabControl1.SelectedIndex;
+            int index = tabLanguage.SelectedIndex;
 
             cacheFile = settingBases[index].SelectedFileName;
             common = settingBases[index].GetCommon();

@@ -58,7 +58,7 @@
             this.toolTSMI_prueba_Order = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_prueba_QuizOrder = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_prueba_Select = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolTSMI_chapterList = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_SectionList = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_translate = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -286,7 +286,7 @@
             // 
             this.toolTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolTSMI_pruebaLista,
-            this.toolTSMI_chapterList,
+            this.toolTSMI_SectionList,
             this.toolTSMI_translate,
             this.toolTSMI_EditQuiz});
             this.toolTSMI.Name = "toolTSMI";
@@ -306,30 +306,30 @@
             // toolTSMI_prueba_Order
             // 
             this.toolTSMI_prueba_Order.Name = "toolTSMI_prueba_Order";
-            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(139, 22);
+            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(180, 22);
             this.toolTSMI_prueba_Order.Text = "index順表示";
             this.toolTSMI_prueba_Order.Click += new System.EventHandler(this.toolTSMI_prueba_Order_Click);
             // 
             // toolTSMI_prueba_QuizOrder
             // 
             this.toolTSMI_prueba_QuizOrder.Name = "toolTSMI_prueba_QuizOrder";
-            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(139, 22);
+            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(180, 22);
             this.toolTSMI_prueba_QuizOrder.Text = "出題順表示";
             this.toolTSMI_prueba_QuizOrder.Click += new System.EventHandler(this.toolTSMI_prueba_QuizOrder_Click);
             // 
             // toolTSMI_prueba_Select
             // 
             this.toolTSMI_prueba_Select.Name = "toolTSMI_prueba_Select";
-            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(139, 22);
+            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(180, 22);
             this.toolTSMI_prueba_Select.Text = "指定表示";
             this.toolTSMI_prueba_Select.Click += new System.EventHandler(this.toolTSMI_prueba_Select_Click);
             // 
-            // toolTSMI_chapterList
+            // toolTSMI_SectionList
             // 
-            this.toolTSMI_chapterList.Name = "toolTSMI_chapterList";
-            this.toolTSMI_chapterList.Size = new System.Drawing.Size(203, 22);
-            this.toolTSMI_chapterList.Text = "Chapter list";
-            this.toolTSMI_chapterList.Click += new System.EventHandler(this.toolTSMI_chapterList_Click);
+            this.toolTSMI_SectionList.Name = "toolTSMI_SectionList";
+            this.toolTSMI_SectionList.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_SectionList.Text = "Section list";
+            this.toolTSMI_SectionList.Click += new System.EventHandler(this.toolTSMI_chapterList_Click);
             // 
             // toolTSMI_translate
             // 
@@ -470,7 +470,7 @@
         private System.Windows.Forms.ToolStripMenuItem operationTSMI_start;
         private System.Windows.Forms.ToolStripMenuItem operationTSMI_siguiente;
         private System.Windows.Forms.ToolStripMenuItem operationTSMI_anterior;
-        private System.Windows.Forms.ToolStripMenuItem toolTSMI_chapterList;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_SectionList;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_pruebaLista;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_DarkMode;

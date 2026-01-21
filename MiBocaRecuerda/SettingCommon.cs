@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace MiBocaRecuerda
 {
@@ -14,7 +15,7 @@ namespace MiBocaRecuerda
 
         public static FileLenguaConfig currentLengua(string type)
         {
-            return CommonConfigManager[type][MainForm.currentQuizFile].LenguaConfig;
+            return CommonConfigManager[type][MainForm.CurrentQuizDB].LenguaConfig;
         }
     }
 
@@ -67,6 +68,7 @@ namespace MiBocaRecuerda
         public bool ErrorAllowAll { get; set; } = false;
         // エラー数が満了したときにエラー数をリセットするか(ErrorAlloAllが有効のときに有効な設定)
         public bool ErrorReset { get; set; } = false;
+        public string PriorityRegion { get; set; } = "";
         public int MaxQuizNum => (MaxChapter - MinChapter + 1) * 10;
         public bool Validation()
         {
@@ -123,51 +125,93 @@ namespace MiBocaRecuerda
 
     public class RomConfig
     {
-        public string QuizFilePath { get; set; }
+        public string ResourcePath { get; set; }
 
         public RomConfig() { }
     }
 
-    // クイズ内容
-    public class QuizContents
+    public class QuizInfo
     {
         public string Quiz { get; set; }
-        public string CorrectAnswer { get; set; }
+        public Dictionary<string, List<Answer>> CorrectAnswer { get; set; }
         public int QuizNum { get; set; }
-        public string ChapterTitle { get; set; }
-        public string ChapterExample { get; set; }
         public string Supplement { get; set; }
-        public List<string> AutoNombre { get; set; }
 
-        public QuizContents(string quiz, string ca, int qn, string ct, string ce, string s, List<string> an)
+        public IEnumerable<string> Answers(string region)
+        {
+            if(!CorrectAnswer.TryGetValue(region, out var list))
+            {
+                list = CorrectAnswer.FirstOrDefault().Value;
+            }
+
+            foreach (Answer ans in list)
+            {
+                yield return ans.Sentence;
+            }
+        }
+
+        public IEnumerable<string> Answers()
+        {
+            foreach (KeyValuePair<string, List<Answer>> kvp in CorrectAnswer)
+            {
+                foreach (Answer ans in kvp.Value)
+                {
+                    yield return ans.Sentence;
+                }
+            }
+        }
+
+        public QuizInfo(string quiz, Dictionary<string, List<Answer>> ca, int quizNum, string s)
         {
             Quiz = quiz;
             CorrectAnswer = ca;
-            QuizNum = qn;
-            ChapterTitle = ct;
-            ChapterExample = ce;
+            QuizNum = quizNum;
             Supplement = s;
+        }
+
+        public QuizInfo(ExerciseDB edb)
+        {
+            Quiz = edb.Problem;
+            CorrectAnswer = edb.Answer;
+            QuizNum = edb.Num;
+            Supplement = edb.Supplement;
+        }
+    }
+
+    // クイズ内容
+    public class QuizContents : QuizInfo
+    {
+        public string Section { get; set; }
+        public List<string> AutoNombre { get; set; }
+
+        public QuizContents(string quiz, Dictionary<string, List<Answer>> ca, int qn, string c, string s, List<string> an) : base(quiz, ca, qn, s)
+        {
+            Section = c;
             AutoNombre = an;
+        }
+
+        public QuizContents(ExerciseDB edb) : base(edb)
+        {
+            Section = edb.Section;
+            AutoNombre = edb.Auxiliary;
         }
     }
 
     // クイズ結果
-    public class QuizResult
+    public class QuizResult : QuizInfo
     {
-        public string Quiz { get; set; }
-        public string CorrectAnswer { get; set; }
         public string Input { get; set; }
-        public int QuizNum { get; set; }
-        public string Supplement { get; set; }
         public bool Result { get; set; }
 
-        public QuizResult(string quiz, string ca, string input, int quizNum, string s, bool result = false)
+        public QuizResult(string quiz, Dictionary<string, List<Answer>> ca, string input, int qn, string s, bool result = false) : base(quiz, ca, qn, s)
         {
-            Quiz = quiz;
-            CorrectAnswer = ca;
             Input = input;
-            QuizNum = quizNum;
-            Supplement = s;
+            Result = result;
+        }
+
+        public QuizResult(ExerciseDB edb, string input, bool result) : base(edb)
+        {
+            Input = input;
             Result = result;
         }
     }

@@ -1,5 +1,4 @@
-﻿using ClosedXML.Excel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,23 +51,6 @@ namespace MiBocaRecuerda
                 }
             }
             return count;
-        }
-
-        public static int GetLastRowInColumn(IXLWorksheet worksheet, string columnName)
-        {
-            int lastRow = worksheet.LastRowUsed().RowNumber() + 1;
-
-            // 特定の列の最終行を求める
-            foreach (IXLRangeRow row in worksheet.Range($"{columnName}1:{columnName}{lastRow}").Rows())
-            {
-                //Console.WriteLine(row.Cell(1).Value);
-                if (row.Cell(1).IsEmpty())
-                {
-                    return row.RowNumber() - 1;
-                }
-            }
-
-            return 0; // 見つからない場合は0を返す
         }
 
         public static int Suelo(int n, int _base)

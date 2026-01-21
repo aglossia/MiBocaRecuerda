@@ -15,8 +15,8 @@ namespace MiBocaRecuerda
 
         private ClassResize _form_resize;
 
-        private List<QuizResult> qr = new List<QuizResult>();
-        private MainForm mf;
+        private List<QuizResult> QuizResults = new List<QuizResult>();
+        private MainForm MainForm;
 
         private DataGridViewTextBoxColumn col_num;
         private DataGridViewTextBoxColumn col_quiz;
@@ -25,16 +25,45 @@ namespace MiBocaRecuerda
         private bool IsAuto = false;
 
         // 答えを含むコピー用
-        private Dictionary<int, (string quiz, string answer)> RespuestaCopy = new Dictionary<int, (string quiz, string answer)>();
+        private Dictionary<int, (string quiz, Answer answer)> RespuestaCopy = new Dictionary<int, (string quiz, Answer answer)>();
 
-        public ResultForm(List<QuizResult> _qr, MainForm _mf)
+        private string PrioridadRegion;
+
+        private void Init()
+        {
+            dgv.RowPrePaint += dataGridView1_RowPrePaint;
+
+            //dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
+
+        }
+
+        private void dataGridView1_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
+        {
+            var row = dgv.Rows[e.RowIndex];
+            int preferred = row.GetPreferredHeight(e.RowIndex, DataGridViewAutoSizeRowMode.AllCells, true);
+
+            // 余白を追加
+            int padding = 10;
+
+            if (row.Height != preferred + padding)
+            {
+                row.Height = preferred + padding;
+            }
+        }
+
+        public ResultForm(List<QuizResult> qr, MainForm mf)
         {
             InitializeComponent();
 
-            qr = _qr;
-            mf = _mf;
+            Init();
 
-            foreach (QuizResult r in qr)
+            PrioridadRegion = MainForm.QuizFileConfig.PriorityRegion;
+
+            QuizResults = qr;
+            MainForm = mf;
+
+            foreach (QuizResult r in QuizResults)
             {
                 Supplement.Add(r.QuizNum, r.Supplement);
             }
@@ -45,25 +74,52 @@ namespace MiBocaRecuerda
         }
 
         // QuizContentsから表を作る用(つまり結果ではなく、答えの一覧)
-        public ResultForm(List<QuizContents> qc, MainForm _mf, bool isOrder)
+        public ResultForm(List<QuizContents> qc, MainForm mf, bool isOrder)
         {
             InitializeComponent();
 
-            mf = _mf;
+            Init();
+
+            MainForm = mf;
+
+            PrioridadRegion = MainForm.QuizFileConfig.PriorityRegion;
 
             int cnt = 0;
-            List<string> parseAnswer = new List<string>();
+            List<Answer> parseAnswer = new List<Answer>();
 
             if (isOrder) qc = qc.OrderBy(q => q.QuizNum).ToList();
+
+            List<string> region = new List<string>();
+
+            // regionの種類を集める
+            region = qc.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
+            //region = qc.SelectMany(q => q.GetRegion()).Distinct().ToList();
 
             foreach (QuizContents c in qc)
             {
                 cnt++;
 
-                parseAnswer = CoreProcess.ParseAnswer(c.CorrectAnswer);
+                parseAnswer.Clear();
+
+                // パース後のanswerを作る
+                foreach (KeyValuePair<string, List<Answer>> kvp in c.CorrectAnswer)
+                {
+                    List<Answer> tmp = new List<Answer>();
+
+                    foreach (Answer ans in kvp.Value)
+                    {
+                        // ここまではDic<region, answers>の数通りだが、ここで分裂する可能性がある
+                        foreach (string a in CoreProcess.ParseAnswer(ans.Sentence))
+                        {
+                            tmp.Add(new Answer(ans.ID, a));
+                        }
+
+                        parseAnswer = parseAnswer.Concat(tmp).ToList();
+                    }
+                }
 
                 // 答え全体コピー用を生成する(「答え」は複数パターンある場合があるのでDGVの表示をそのまま使えない)
-                if(parseAnswer.Count == 1)
+                if (parseAnswer.Count == 1)
                 {
                     // 解答パターンが複数ない場合
                     RespuestaCopy[cnt] = (c.Quiz, parseAnswer[0]);
@@ -78,15 +134,35 @@ namespace MiBocaRecuerda
                     }
                 }
 
-                qr.Add(new QuizResult(c.Quiz, string.Join("\n", parseAnswer), "", c.QuizNum, c.Supplement));
+                QuizResults.Add(new QuizResult(c.Quiz, c.CorrectAnswer, "", c.QuizNum, c.Supplement));
             }
 
-            foreach (QuizResult r in qr)
+            if(region.Count == 1)
+            {
+                // regionが一つしかないときは表示しない
+                Controls.Remove(menuStrip1);
+            }
+            else
+            {
+                // regionが複数あるときはregionを列挙する
+                TS_cmbRegion.Items.AddRange(region.ToArray());
+                TS_cmbRegion.SelectedItem = PrioridadRegion;
+            }
+
+            TS_cmbRegion.SelectedIndexChanged += (o, e) =>
+            {
+                // 優先を選択したregionに変えてデータをセットしなおす
+                PrioridadRegion = (o as ToolStripComboBox).SelectedItem.ToString();
+                SetTableData();
+            };
+
+            foreach (QuizResult r in QuizResults)
             {
                 Supplement.Add(r.QuizNum, r.Supplement);
             }
 
             CreateControls();
+            SetTableData();
 
             RegisterEvent();
         }
@@ -134,18 +210,45 @@ namespace MiBocaRecuerda
             dgv.Columns.Add(col_quiz);
             dgv.Columns.Add(col_correct);
 
-            for (int cnt = 0; cnt < qr.Count; cnt++)
+            for (int cnt = 0; cnt < QuizResults.Count; cnt++)
             {
                 dgv.Rows.Add();
-                dgv.Rows[cnt].Cells["num"].Value = qr[cnt].QuizNum;
-                dgv.Rows[cnt].Cells["quiz"].Value = qr[cnt].Quiz;
-                dgv.Rows[cnt].Cells["correct"].Value = qr[cnt].CorrectAnswer;
-                if (qr[cnt].Result == false)
+            }
+        }
+
+        private void SetTableData()
+        {
+            // DGVにデータを設定する
+            for (int cnt = 0; cnt < QuizResults.Count; cnt++)
+            {
+                dgv.Rows[cnt].Cells["num"].Value = QuizResults[cnt].QuizNum;
+                dgv.Rows[cnt].Cells["quiz"].Value = QuizResults[cnt].Quiz;
+
+                List<string> parsedAnswers = new List<string>();
+
+                // パースした解答を集める
+                foreach (string ans in QuizResults[cnt].Answers(PrioridadRegion))
+                {
+                    parsedAnswers = parsedAnswers.Concat(CoreProcess.ParseAnswer(ans)).ToList();
+                }
+
+                // 集めた解答が複数あれば連番をつける
+                if(parsedAnswers.Count > 1)
+                {
+                    parsedAnswers = parsedAnswers
+                        .Select((value, index) => $"{index + 1}:{value}")
+                        .ToList();
+                }
+
+                dgv.Rows[cnt].Cells["correct"].Value = string.Join("\n", parsedAnswers);
+
+                if (QuizResults[cnt].Result == false)
                 {
                     dgv.Rows[cnt].DefaultCellStyle.BackColor = Color.AliceBlue;
                 }
+
                 // 補足があるやつは補足の目印をつける
-                if (qr[cnt].Supplement != "")
+                if (QuizResults[cnt].Supplement != "")
                 {
                     dgv.Rows[cnt].Cells["quiz"].Value += " *";
                 }
@@ -168,20 +271,20 @@ namespace MiBocaRecuerda
 
                 BaseAreaInfo baseArea = UtilityFunction.GetBaseArea();
 
-                int move_right = mf.Location.X + mf.Width + Width;
-                int move_left = mf.Location.X - Width;
+                int move_right = MainForm.Location.X + MainForm.Width + Width;
+                int move_left = MainForm.Location.X - Width;
 
-                Console.WriteLine($"{baseArea.MaxX}, {mf.Location.X + mf.Width + Width}");
+                Console.WriteLine($"{baseArea.MaxX}, {MainForm.Location.X + MainForm.Width + Width}");
 
                 if (move_right < baseArea.MaxX)
                 {
                     // 右に表示する余地があるとき
-                    Location = new Point(move_right - Width, mf.Location.Y);
+                    Location = new Point(move_right - Width, MainForm.Location.Y);
                 }
                 else if (move_left > baseArea.MinX)
                 {
                     // 左に表示する余地があるとき
-                    Location = new Point(move_left, mf.Location.Y);
+                    Location = new Point(move_left, MainForm.Location.Y);
                 }
                 // 右にも左にも表示できないときはデフォルト位置
             };
@@ -308,7 +411,7 @@ namespace MiBocaRecuerda
         {
             foreach (DataGridViewRow row in dgv.Rows)
             {
-                row.Height += 10;
+                //row.Height += 10;
             }
         }
 
@@ -368,17 +471,27 @@ namespace MiBocaRecuerda
 
             foreach (var rc in RespuestaCopy)
             {
+                // コピー用に集めたやつの問題番号が一致するやつのregion種類を数える
+                int reg_cnt = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).Distinct().Count();
+
+                string region = "";
+
+                if(reg_cnt > 1)
+                {
+                    region = $":({rc.Value.answer.ID_ind().reg})";
+                }
+
                 quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "");
-                answer = Regex.Replace(rc.Value.answer, @"\r\n|\r|\n", "");
+                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
 
                 // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
                 if ((rc.Key & 0xffff0000) != 0)
                 {
-                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}\t{answer}");
+                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{quiz}\t{answer}");
                 }
                 else
                 {
-                    ret.Add($"{rc.Key}\t{quiz}\t{answer}");
+                    ret.Add($"{rc.Key}{region}\t{quiz}\t{answer}");
                 }
             }
 
@@ -417,16 +530,26 @@ namespace MiBocaRecuerda
 
             foreach (var rc in RespuestaCopy)
             {
-                answer = Regex.Replace(rc.Value.answer, @"\r\n|\r|\n", "");
+                // コピー用に集めたやつの問題番号が一致するやつのregion種類を数える
+                int reg_cnt = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).Distinct().Count();
+
+                string region = "";
+
+                if (reg_cnt > 1)
+                {
+                    region = $":({rc.Value.answer.ID_ind().reg})";
+                }
+
+                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
 
                 // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
                 if ((rc.Key & 0xffff0000) != 0)
                 {
-                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{answer}");
+                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{answer}");
                 }
                 else
                 {
-                    ret.Add($"{rc.Key}\t{answer}");
+                    ret.Add($"{rc.Key}{region}\t{answer}");
                 }
             }
 
@@ -438,7 +561,7 @@ namespace MiBocaRecuerda
         // 編集
         private void CMS_edit_Click(object sender, EventArgs e)
         {
-            EditDBForm edb = new EditDBForm(mf.currentFilePath, int.Parse(quizNum));
+            EditDBForm edb = new EditDBForm(MainForm.CurrentQuizDBPath, int.Parse(quizNum), MainForm.QuizFileConfig.PriorityRegion);
 
             if(!edb.IsDisposed) edb.ShowDialog();
         }
