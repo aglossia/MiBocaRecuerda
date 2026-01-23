@@ -29,7 +29,7 @@ namespace MiBocaRecuerda
             desde = (int)nudDesde.Value;
             hasta = (int)nudHasta.Value;
 
-            if(desde > hasta)
+            if (desde > hasta)
             {
                 MessageBox.Show("有効な数値を入力してください。", "入力エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;

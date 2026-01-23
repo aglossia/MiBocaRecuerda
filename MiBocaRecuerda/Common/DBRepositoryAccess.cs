@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 
 namespace MiBocaRecuerda
@@ -130,6 +131,8 @@ namespace MiBocaRecuerda
                     command.Parameters.AddWithValue("@num", num);
                     using (var reader = command.ExecuteReader())
                     {
+                        if (reader.StepCount < 1) return null;
+
                         while (reader.Read())
                         {
                             id = reader.GetString(0);
@@ -141,7 +144,7 @@ namespace MiBocaRecuerda
                             exerciseDB.Problem = problem;
                             exerciseDB.Section = section;
 
-                            if(!exerciseDB.Answer.TryGetValue(region, out var list))
+                            if (!exerciseDB.Answer.TryGetValue(region, out var list))
                             {
                                 list = new List<Answer>();
                                 exerciseDB.Answer[region] = list;
@@ -154,21 +157,19 @@ namespace MiBocaRecuerda
                 }
 
                 sql = @"
-                        select distinct a.num, au.aux
-                        from answer as a
-                        inner join auxiliary as au
-                        on a.num = au.num
-                        where a.num = @num
+                        select str
+                        from auxiliary
+                        where id like @pattern
                         ";
 
                 using (var command = new SQLiteCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@num", num);
+                    command.Parameters.AddWithValue("@pattern", $"{num}-%");
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            exerciseDB.Auxiliary.Add(reader.GetString(1));
+                            exerciseDB.Auxiliary.Add(reader.GetString(0));
                         }
                     }
                 }
@@ -235,9 +236,9 @@ namespace MiBocaRecuerda
                 {
                     try
                     {
-                        using(var cmd = conn.CreateCommand())
+                        using (var cmd = conn.CreateCommand())
                         {
-                            if(problem != null)
+                            if (problem != null)
                             {
                                 cmd.CommandText = "UPDATE exercise SET problem = @problem WHERE num = @num";
                                 cmd.Parameters.AddWithValue("@num", num);
@@ -245,25 +246,35 @@ namespace MiBocaRecuerda
                                 cmd.ExecuteNonQuery();
                             }
 
-                            if(supplement != null)
+                            if (supplement != null)
                             {
-
+                                cmd.CommandText = "UPDATE exercise SET supplement = @supplement WHERE num = @num";
+                                cmd.Parameters.AddWithValue("@num", num);
+                                cmd.Parameters.AddWithValue("@supplement", supplement);
+                                cmd.ExecuteNonQuery();
                             }
 
-                            if(auxs != null)
+                            if (auxs != null)
                             {
+                                int cnt = 1;
+
                                 foreach (string aux in auxs)
                                 {
-                                    cmd.CommandText = "UPDATE auxiliary SET aux = @aux WHERE num = @num";
-                                    cmd.Parameters.AddWithValue("@num", num);
-                                    cmd.Parameters.AddWithValue("@aux", aux);
+                                    cmd.CommandText = @"INSERT INTO auxiliary VALUES(@id, @str)
+                                                        ON CONFLICT(id)
+                                                        DO UPDATE SET str = @str";
+                                    cmd.Parameters.AddWithValue("@id", $"{num}-{cnt++}");
+                                    cmd.Parameters.AddWithValue("@str", aux);
                                     cmd.ExecuteNonQuery();
                                 }
                             }
 
-                            if(date != null)
+                            if (date != null)
                             {
-
+                                cmd.CommandText = "INSERT INTO _update VALUES(@num, @date)";
+                                cmd.Parameters.AddWithValue("@num", num);
+                                cmd.Parameters.AddWithValue("@date", date);
+                                cmd.ExecuteNonQuery();
                             }
 
                             foreach (KeyValuePair<string, List<EditAnswer>> kvp in answers)

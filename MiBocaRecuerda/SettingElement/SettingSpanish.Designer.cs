@@ -37,9 +37,9 @@
             this.chboxCapital.AutoSize = true;
             this.chboxCapital.Location = new System.Drawing.Point(30, 240);
             this.chboxCapital.Name = "chboxCapital";
-            this.chboxCapital.Size = new System.Drawing.Size(117, 16);
+            this.chboxCapital.Size = new System.Drawing.Size(164, 16);
             this.chboxCapital.TabIndex = 6;
-            this.chboxCapital.Text = "Capital distinction";
+            this.chboxCapital.Text = "大文字・小文字を区別しない";
             this.chboxCapital.UseVisualStyleBackColor = true;
             // 
             // chboxComaPunto
@@ -47,9 +47,9 @@
             this.chboxComaPunto.AutoSize = true;
             this.chboxComaPunto.Location = new System.Drawing.Point(30, 276);
             this.chboxComaPunto.Name = "chboxComaPunto";
-            this.chboxComaPunto.Size = new System.Drawing.Size(96, 16);
+            this.chboxComaPunto.Size = new System.Drawing.Size(152, 16);
             this.chboxComaPunto.TabIndex = 6;
-            this.chboxComaPunto.Text = "Coma y Punto";
+            this.chboxComaPunto.Text = "コンマ・ピリオドを要求しない";
             this.chboxComaPunto.UseVisualStyleBackColor = true;
             // 
             // SettingSpanish

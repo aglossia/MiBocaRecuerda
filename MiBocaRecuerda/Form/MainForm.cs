@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -282,7 +281,7 @@ namespace MiBocaRecuerda
                         SettingManager.CommonConfigManager[type] = new Dictionary<string, CommonConfig>();
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     InitError.Add($"{ex.GetType().Name};{ex.Message};{file}");
                 }
@@ -488,7 +487,7 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            if(toolStripQuizFile.SelectedItem == null)
+            if (toolStripQuizFile.SelectedItem == null)
             {
                 MessageBox.Show("Seleccione un archivo.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -569,7 +568,11 @@ namespace MiBocaRecuerda
 
             foreach (int index in indexList)
             {
-                quizContents.Add(new QuizContents(ExerRepo.GetByNum(index)));
+                // DBが取得できなかった場合は設定しない
+                if (ExerRepo.GetByNum(index) is ExerciseDB edb)
+                {
+                    quizContents.Add(new QuizContents(edb));
+                }
             }
 
             return quizContents;
@@ -603,7 +606,7 @@ namespace MiBocaRecuerda
             // pruebaモードのとき
             if (optionTSMI_prueba.Checked)
             {
-                if(QuizFileConfig.ErrorAllowCnt > 0)
+                if (QuizFileConfig.ErrorAllowCnt > 0)
                 {
                     lbl_ErrorAllowCount.Visible = true;
                 }
@@ -962,7 +965,7 @@ namespace MiBocaRecuerda
                         break;
                 }
 
-                if(insertText != "")
+                if (insertText != "")
                 {
                     txtAnswer.Text = txtAnswer.Text.Insert(selectionStart, insertText);
                     txtAnswer.SelectionStart = selectionStart + insertText.Length;
@@ -1354,11 +1357,11 @@ namespace MiBocaRecuerda
                 {
                     // pruebaモード
 
-                    if(QuizFileConfig.ErrorAllowCnt > 0)
+                    if (QuizFileConfig.ErrorAllowCnt > 0)
                     {
                         // ミス許容が設定されているとき
 
-                        if(ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllowCnt)
+                        if (ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllowCnt)
                         {
                             // ミス許容未満のあいだはミス数を加算してやり直し
                             ErrorAllowCount.Cnt++;
@@ -1424,7 +1427,6 @@ namespace MiBocaRecuerda
 
                 // 問題数と正解問題数が同じでpruebaモードのとき
                 if ((endQuizNum + 1 == correctAnswerNum) && optionTSMI_prueba.Checked)
-                //if(true)
                 {
                     DisplayResult("PERFECTO!", 5000);
 
@@ -1440,7 +1442,7 @@ namespace MiBocaRecuerda
                     {
                         string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
 
-                        if(File.Exists(path) == false)
+                        if (File.Exists(path) == false)
                         {
                             // 進捗ファイルがないときひな形を作成する
                             CreateNewProgressFile();
@@ -1551,7 +1553,7 @@ namespace MiBocaRecuerda
                 {
                     if (workAnswer.Keys.Count > 1)
                     {
-                        if(ans.Value.Count > 1)
+                        if (ans.Value.Count > 1)
                         {
                             processedAnswer.Add($"{ans.Key}:{cnt++}:{sentence}");
                         }
@@ -1757,7 +1759,7 @@ namespace MiBocaRecuerda
                         if (ErrorAllowCount.Cnt == 0)
                         {
                             // ミス数が0でミス許容リセットが1以上はミス許容リセットを-1
-                            if(ErrorResetCount.Cnt > 0)
+                            if (ErrorResetCount.Cnt > 0)
                             {
                                 ErrorResetCount.Cnt--;
                             }
@@ -1920,7 +1922,9 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress].QuizNum, QuizFileConfig.PriorityRegion);
+            List<int> quizSequence = QuizContents.Select(q => q.QuizNum).ToList();
+
+            EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
 
             if (!edb.IsDisposed) edb.ShowDialog();
         }
@@ -1934,9 +1938,11 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            if(curProgress - 1 >= 0)
+            if (curProgress - 1 >= 0)
             {
-                EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress - 1].QuizNum, QuizFileConfig.PriorityRegion);
+                List<int> quizSequence = QuizContents.Select(q => q.QuizNum).ToList();
+
+                EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress - 1].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
 
                 if (!edb.IsDisposed) edb.ShowDialog();
             }

@@ -60,7 +60,7 @@ namespace MiBocaRecuerda
                 int newLineCount = txtMensaje.Text.Where(c => c == '\n').Count() + 1;
 
                 // 41行までは伸ばして表示、それ以上はスクロルバ
-                if(newLineCount <= 41)
+                if (newLineCount <= 41)
                 {
                     // barra de título:40 + 行数*16 + 余白:10
                     Size = new Size(maxWidth, 50 + newLineCount * 16 + 10);
@@ -79,7 +79,7 @@ namespace MiBocaRecuerda
 
                 //_form_resize = new ClassResize(this);
 
-                if(_form is ResizableForm)
+                if (_form is ResizableForm)
                 {
                     _form_resize._resize(true, (_form as ResizableForm)._form_resize.WidthRate, (_form as ResizableForm)._form_resize.HeightRate);
                 }
@@ -110,7 +110,7 @@ namespace MiBocaRecuerda
                         break;
                 }
 
-                if(Location.X + Size.Width > baseArea.MaxX)
+                if (Location.X + Size.Width > baseArea.MaxX)
                 {
                     double ratio = (double)baseArea.MaxX / (Location.X + Size.Width);
 
@@ -128,7 +128,7 @@ namespace MiBocaRecuerda
 
                 //_form_resize._resize(true, (_mf as MainForm)._form_resize.WidthRate, (_mf as MainForm)._form_resize.HeightRate);
 
-                if(!NotResize) SizeChanged += _Resize;
+                if (!NotResize) SizeChanged += _Resize;
             };
 
             //SizeChanged += _Resize;
@@ -144,7 +144,7 @@ namespace MiBocaRecuerda
                 bool ctrlPressed = (ModifierKeys & (Keys.Control | Keys.Alt)) != 0;
                 bool designatedKeyPressed = (e.KeyCode & Keys.C) == Keys.C;
 
-                if(ctrlPressed)
+                if (ctrlPressed)
                 {
                     IsKeyDown = true;
                     return;

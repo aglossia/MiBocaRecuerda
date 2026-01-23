@@ -8,7 +8,37 @@ namespace MiBocaRecuerda
 {
     public partial class EditDBForm : Form
     {
+        private class EditDBElement
+        {
+            public string problem;
+            public string supplement;
+            public List<string> auxs = new List<string>();
+            public string date;
+            public Dictionary<string, List<EditAnswer>> InputAnswer;
+            public bool IsAnswerEdited => !InputAnswer.SelectMany(i => i.Value).All(i => i.SqlOperation == AppRom.SqlOperation.None);
+            public bool IsEdited => IsAnswerEdited || (problem != null) || (supplement != null) || (auxs != null);
+
+            public EditDBElement(ExerciseDB edb, string p, string s, List<string> aux, Dictionary<string, List<EditAnswer>> inputAnswer)
+            {
+                problem = edb.Problem != p ? p : null;
+                supplement = edb.Supplement != s ? s : null;
+                auxs = !edb.Auxiliary.SequenceEqual(aux) ? aux : null;
+                InputAnswer = inputAnswer;
+
+                date = DateTime.Today.ToShortDateString();
+
+                // 今日が入っていたら追記しない
+                if (!edb.Update.Contains(date))
+                {
+                    date = null;
+                }
+            }
+        }
+
+        private string CurrentFilePath;
         private int QuizNum;
+        private List<int> QuizSequence;
+        private int QuizIndex;
         private ExerciseRepository ExerRepo;
         private string CurrentRegion;
         // DB取得時のDB
@@ -29,12 +59,20 @@ namespace MiBocaRecuerda
         // 現在編集中の解答
         private EditAnswer CurrentAnswer => InputAnswer[CurrentRegion][CurrentIndex];
 
-        public EditDBForm(string currentFilePath, int quizNum, string prioridad_region)
+        private EditDBElement CurrentEdbe => new EditDBElement(ExerdbInit, txtProblem.Text, txtSupplement.Text,
+                                                dgvAuxiliary.Rows
+                                                            .Cast<DataGridViewRow>()
+                                                            .Where(r => !r.IsNewRow && r.Cells[1].Value != null)
+                                                            .Select(r => r.Cells[1].Value.ToString())
+                                                            .ToList(),
+                                                            InputAnswer);
+
+        public EditDBForm(string currentFilePath, int quizNum, string prioridad_region, List<int> quizSequence)
         {
             InitializeComponent();
 
 #if !DEBUG
-            label4.Visible = false;
+            lbl_ID.Visible = false;
 #endif
 
             //FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -43,10 +81,11 @@ namespace MiBocaRecuerda
             tabAnswer.ItemSize = new Size(40, tabAnswer.ItemSize.Height);
             cmbAnswer.Visible = false;
 
-            Text = $"Edit - {quizNum}";
-
-            QuizNum = quizNum;
+            CurrentFilePath = currentFilePath;
             CurrentRegion = prioridad_region;
+            QuizSequence = quizSequence;
+
+            RegisterEvent();
 
             #region dgvAuxiliary
 
@@ -90,6 +129,115 @@ namespace MiBocaRecuerda
                 dgvAuxiliary.Rows[cnt].Cells["num"].Value = (cnt + 1);
             }
 
+            #endregion
+
+            AdjustRowHeightToFillGrid();
+
+            Init(quizNum);
+
+            ActiveControl = null;
+        }
+
+        private void Init(int quizNum)
+        {
+            InputAnswer.Clear();
+
+            QuizNum = quizNum;
+
+            Text = $"Edit - {quizNum}";
+
+            ExerRepo = new ExerciseRepository($"Data Source={CurrentFilePath}");
+            ExerdbInit = ExerRepo.GetByNum(quizNum);
+
+            foreach (DataGridViewRow row in dgvAuxiliary.Rows)
+            {
+                if (!row.IsNewRow)
+                {
+                    row.Cells[1].Value = null;
+                }
+            }
+
+            // Auxiliaryに設定
+            for (int cnt = 0; cnt < ExerdbInit.Auxiliary.Count; cnt++)
+            {
+                dgvAuxiliary.Rows[cnt].Cells[1].Value = ExerdbInit.Auxiliary[cnt];
+            }
+
+            // AnswerたちからEditAnswerに変換する(何かいい方法ない？)
+            foreach (KeyValuePair<string, List<Answer>> kvp in ExerdbInit.Answer)
+            {
+                foreach (Answer ans in kvp.Value)
+                {
+                    if (!InputAnswer.TryGetValue(kvp.Key, out var list))
+                    {
+                        list = new List<EditAnswer>();
+                        InputAnswer[kvp.Key] = list;
+                    }
+                    list.Add(new EditAnswer(ans.ID, ans.Sentence));
+                }
+            }
+
+            // AnswerからregionごとのID通番を取得する
+            ID_list = ExerdbInit.Answer.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value.Select(s => s.ID_ind().id2).ToList()
+                );
+
+            // 優先regionがない場合は先頭のregionにする
+            if (!ExerdbInit.Answer.ContainsKey(CurrentRegion))
+            {
+                CurrentRegion = ExerdbInit.Answer.FirstOrDefault().Key;
+            }
+
+            // 優先regionの解答が複数ある場合
+            if (ExerdbInit.Answer[CurrentRegion].Count > 1)
+            {
+                cmbAnswer.Visible = true;
+                AddNumbersToComboBox(ExerdbInit.Answer[CurrentRegion].Count);
+                // POR HACER:起動時は0でいい？
+                cmbAnswer.SelectedIndex = 0;
+            }
+            else
+            {
+                cmbAnswer.Visible = false;
+            }
+
+            tabAnswer.SelectedIndexChanged -= _SelectedIndexChanged;
+            tabAnswer.TabPages.Clear();
+            tabAnswer.SelectedIndexChanged += _SelectedIndexChanged;
+
+            // regionに応じてタブページを作成
+            foreach (KeyValuePair<string, List<Answer>> ans in ExerdbInit.Answer)
+            {
+                AddAnswerPage(ans.Key, ans.Value[0].Sentence, false);
+            }
+
+            txtProblem.Text = ExerdbInit.Problem;
+            txtSupplement.Text = ExerdbInit.Supplement;
+
+#if DEBUG
+            lbl_ID.Text = InputAnswer[CurrentRegion][0].ID;
+#endif
+
+            btnBefore.Enabled = true;
+            btnNext.Enabled = true;
+
+            QuizIndex = QuizSequence.IndexOf(quizNum);
+
+            if (QuizIndex == 0)
+            {
+                btnBefore.Enabled = false;
+                btnNext.Focus();
+            }
+            else if (QuizIndex == QuizSequence.Count - 1)
+            {
+                btnNext.Enabled = false;
+                btnBefore.Focus();
+            }
+        }
+
+        private void RegisterEvent()
+        {
             // 特定の列を選択できないように見せかける
             dgvAuxiliary.SelectionChanged += (o, e) =>
             {
@@ -107,91 +255,13 @@ namespace MiBocaRecuerda
                 AdjustRowHeightToFillGrid();
             };
 
-            #endregion
-
             txtSupplement.TextChanged += (o, e) =>
             {
                 btnPreview.Enabled = txtSupplement.Text != "";
             };
 
-            AdjustRowHeightToFillGrid();
-
-            ExerRepo = new ExerciseRepository($"Data Source={currentFilePath}");
-
-            ExerdbInit = ExerRepo.GetByNum(QuizNum);
-
-            txtProblem.Text = ExerdbInit.Problem;
-            txtSupplement.Text = ExerdbInit.Supplement;
-
-            // AnswerたちからEditAnswerに変換する(何かいい方法ない？)
-            foreach (KeyValuePair<string, List<Answer>> kvp in ExerdbInit.Answer)
-            {
-                foreach (Answer ans in kvp.Value)
-                {
-                    if (!InputAnswer.TryGetValue(kvp.Key, out var list))
-                    {
-                        list = new List<EditAnswer>();
-                        InputAnswer[kvp.Key] = list;
-                    }
-                    list.Add(new EditAnswer(ans.ID, ans.Sentence));
-                }
-            }
-
-            // AnswerからregionごとのID通番を取得する
-            foreach (KeyValuePair<string, List<Answer>> kvp in ExerdbInit.Answer)
-            {
-                foreach (Answer ans in kvp.Value)
-                {
-                    if (!ID_list.TryGetValue(kvp.Key, out var list))
-                    {
-                        list = new List<int>();
-                        ID_list[kvp.Key] = list;
-                    }
-                    list.Add(ans.ID_ind().id2);
-                }
-            }
-
-            // 優先regionがない場合は先頭のregionにする
-            if (!ExerdbInit.Answer.ContainsKey(CurrentRegion))
-            {
-                CurrentRegion = ExerdbInit.Answer.FirstOrDefault().Key;
-            }
-
-            // 優先regionの解答が複数ある場合
-            if (ExerdbInit.Answer[CurrentRegion].Count > 1)
-            {
-                cmbAnswer.Visible = true;
-                AddNumbersToComboBox(ExerdbInit.Answer[CurrentRegion].Count);
-                // POR HACER:起動時は0でいい？
-                cmbAnswer.SelectedIndex = 0;
-            }
-
-            // regionに応じてタブページを作成
-            foreach (KeyValuePair<string, List<Answer>> ans in ExerdbInit.Answer)
-            {
-                AddAnswerPage(ans.Key, ans.Value[0].Sentence, false);
-            }
-
             // 解答regionタブ遷移イベント
-            tabAnswer.SelectedIndexChanged += (o, e) =>
-            {
-                // タブを変える＝regionを変更
-                CurrentRegion = tabAnswer.SelectedTab.Text;
-
-                ChangeCmbAnswerState();
-#if DEBUG
-                label4.Text = InputAnswer[CurrentRegion][AnswerCache[CurrentRegion]].ID;
-#endif
-                // 削除対象判定
-                if (CurrentAnswer.SqlOperation == AppRom.SqlOperation.Delete)
-                {
-                    CurrentTB.BackColor = Color.LightPink;
-                }
-                else
-                {
-                    CurrentTB.BackColor = SystemColors.Window;
-                }
-            };
+            tabAnswer.SelectedIndexChanged += _SelectedIndexChanged;
 
             // 解答コンボボックス変更イベント
             cmbAnswer.SelectedIndexChanged += (o, e) =>
@@ -203,7 +273,7 @@ namespace MiBocaRecuerda
                 CurrentTB.Text = InputAnswer[CurrentRegion][index].Sentence;
                 CurrentTB.TextChanged += _TextChanged;
 #if DEBUG
-                label4.Text = InputAnswer[CurrentRegion][index].ID;
+                lbl_ID.Text = InputAnswer[CurrentRegion][index].ID;
 #endif
 
                 AnswerCache[CurrentRegion] = index;
@@ -219,12 +289,6 @@ namespace MiBocaRecuerda
                 }
             };
 
-            // Auxiliaryに設定
-            for (int cnt = 0; cnt < ExerdbInit.Auxiliary.Count; cnt++)
-            {
-                dgvAuxiliary.Rows[cnt].Cells[1].Value = ExerdbInit.Auxiliary[cnt];
-            }
-
             Shown += (o, e) =>
             {
                 if (InitPage != null)
@@ -235,12 +299,6 @@ namespace MiBocaRecuerda
                 }
                 btnNO.Focus();
             };
-
-#if DEBUG
-            label4.Text = InputAnswer[CurrentRegion][0].ID;
-#endif
-
-            ActiveControl = null;
         }
 
         // コンボボックスに指定数までの連番を入れる
@@ -289,12 +347,33 @@ namespace MiBocaRecuerda
             {
                 ID_list[region].Add(ID_list[region].Max() + 1);
 
-                if(!InputAnswer.TryGetValue(region, out var list))
+                if (!InputAnswer.TryGetValue(region, out var list))
                 {
                     list = new List<EditAnswer>();
                     InputAnswer[region] = list;
                 }
                 list.Add(new EditAnswer($"{QuizNum}-{region}-{ID_list[region].Max()}", "", AppRom.SqlOperation.Insert));
+            }
+        }
+
+        // 解答regionタブ遷移イベント
+        private void _SelectedIndexChanged(object o, EventArgs e)
+        {
+            // タブを変える＝regionを変更
+            CurrentRegion = tabAnswer.SelectedTab.Text;
+
+            ChangeCmbAnswerState();
+#if DEBUG
+            lbl_ID.Text = InputAnswer[CurrentRegion][AnswerCache[CurrentRegion]].ID;
+#endif
+            // 削除対象判定
+            if (CurrentAnswer.SqlOperation == AppRom.SqlOperation.Delete)
+            {
+                CurrentTB.BackColor = Color.LightPink;
+            }
+            else
+            {
+                CurrentTB.BackColor = SystemColors.Window;
             }
         }
 
@@ -387,42 +466,23 @@ namespace MiBocaRecuerda
                                         MessageBoxIcon.Exclamation,
                                         MessageBoxDefaultButton.Button2);
 
-            if(result == DialogResult.No)
+            if (result == DialogResult.No)
             {
                 return;
             }
 
-            // DGVからAUXを集める
-            List<string> auxs = new List<string>();
-
-            foreach (DataGridViewRow row in dgvAuxiliary.Rows)
-            {
-                object cellValue = row.Cells[1].Value;
-
-                if (cellValue != null)
-                {
-                    auxs.Add(cellValue.ToString());
-                }
-            }
-
-            string problem = ExerdbInit.Problem != txtProblem.Text ? txtProblem.Text : null;
-            string _supplement = ExerdbInit.Supplement != txtSupplement.Text ? txtSupplement.Text : null;
-            List<string> _aux = !ExerdbInit.Auxiliary.SequenceEqual(auxs) ? auxs : null;
-
-            string today = DateTime.Today.ToShortDateString();
-
-            // 今日が入っていたら追記しない
-            if (!ExerdbInit.Update.Contains(today))
-            {
-                // 編集日付を入れる
-                today = null;
-            }
-
             try
             {
-                ExerRepo.EditDB(QuizNum, problem, _supplement, _aux, today, InputAnswer);
-
-                MessageBox.Show("書込完了");
+                if (CurrentEdbe.IsEdited)
+                {
+                    ExerRepo.EditDB(QuizNum, CurrentEdbe.problem, CurrentEdbe.supplement, CurrentEdbe.auxs, CurrentEdbe.date, InputAnswer);
+                    MessageBox.Show("書込完了");
+                }
+                else
+                {
+                    MessageBox.Show("変更なし");
+                    return;
+                }
             }
             catch (Exception ex)
             {
@@ -453,7 +513,7 @@ namespace MiBocaRecuerda
             // 新しいregionのページを追加
             AddAnswerPage(region, "", true);
 
-            tabAnswer.SelectedIndex = tabAnswer.TabCount-1;
+            tabAnswer.SelectedIndex = tabAnswer.TabCount - 1;
         }
 
         private void btnAddAlter_Click(object sender, EventArgs e)
@@ -472,7 +532,7 @@ namespace MiBocaRecuerda
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if(CurrentAnswer.SqlOperation == AppRom.SqlOperation.Delete)
+            if (CurrentAnswer.SqlOperation == AppRom.SqlOperation.Delete)
             {
                 CurrentAnswer.SqlOperation = AppRom.SqlOperation.None;
                 CurrentTB.BackColor = SystemColors.Window;
@@ -482,6 +542,60 @@ namespace MiBocaRecuerda
                 CurrentAnswer.SqlOperation = AppRom.SqlOperation.Delete;
                 CurrentTB.BackColor = Color.LightPink;
             }
+
+            bool allDelete = InputAnswer.Values
+                .SelectMany(list => list)
+                .All(s => s.SqlOperation == AppRom.SqlOperation.Delete);
+
+            if (allDelete)
+            {
+                MessageBox.Show("少なくとも一つ解答は残す必要があります。");
+                CurrentAnswer.SqlOperation = AppRom.SqlOperation.None;
+                CurrentTB.BackColor = SystemColors.Window;
+                return;
+            }
+        }
+
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            if (CurrentEdbe.IsEdited)
+            {
+                //メッセージボックスを表示する
+                DialogResult result = MessageBox.Show("編集中の項目があります。遷移しますか？\n編集はリセットされます。",
+                    "編集中",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button2);
+
+                if (result == DialogResult.No)
+                {
+                    return;
+                }
+            }
+
+            Init(QuizSequence[QuizIndex + 1]);
+            btnNext.Focus();
+        }
+
+        private void btnBefore_Click(object sender, EventArgs e)
+        {
+            if (CurrentEdbe.IsEdited)
+            {
+                //メッセージボックスを表示する
+                DialogResult result = MessageBox.Show("編集中の項目があります。遷移しますか？\n編集はリセットされます。",
+                    "編集中",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Exclamation,
+                    MessageBoxDefaultButton.Button2);
+
+                if (result == DialogResult.No)
+                {
+                    return;
+                }
+            }
+
+            Init(QuizSequence[QuizIndex - 1]);
+            btnBefore.Focus();
         }
     }
 }

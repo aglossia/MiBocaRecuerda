@@ -137,7 +137,7 @@ namespace MiBocaRecuerda
                 QuizResults.Add(new QuizResult(c.Quiz, c.CorrectAnswer, "", c.QuizNum, c.Supplement));
             }
 
-            if(region.Count == 1)
+            if (region.Count == 1)
             {
                 // regionが一つしかないときは表示しない
                 Controls.Remove(menuStrip1);
@@ -233,7 +233,7 @@ namespace MiBocaRecuerda
                 }
 
                 // 集めた解答が複数あれば連番をつける
-                if(parsedAnswers.Count > 1)
+                if (parsedAnswers.Count > 1)
                 {
                     parsedAnswers = parsedAnswers
                         .Select((value, index) => $"{index + 1}:{value}")
@@ -476,7 +476,7 @@ namespace MiBocaRecuerda
 
                 string region = "";
 
-                if(reg_cnt > 1)
+                if (reg_cnt > 1)
                 {
                     region = $":({rc.Value.answer.ID_ind().reg})";
                 }
@@ -561,9 +561,15 @@ namespace MiBocaRecuerda
         // 編集
         private void CMS_edit_Click(object sender, EventArgs e)
         {
-            EditDBForm edb = new EditDBForm(MainForm.CurrentQuizDBPath, int.Parse(quizNum), MainForm.QuizFileConfig.PriorityRegion);
+            List<int> quizSequence = dgv.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow)
+                .Select(r => Convert.ToInt32(r.Cells[0].Value))
+                .ToList();
 
-            if(!edb.IsDisposed) edb.ShowDialog();
+            EditDBForm edb = new EditDBForm(MainForm.CurrentQuizDBPath, int.Parse(quizNum), MainForm.QuizFileConfig.PriorityRegion, quizSequence);
+
+            if (!edb.IsDisposed) edb.ShowDialog();
         }
 
         // クイズ非表示

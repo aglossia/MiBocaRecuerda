@@ -111,7 +111,7 @@ namespace MiBocaRecuerda
 
                         start.Add(i);
 
-                        if(start.Count == 1 && plane_idx != -1)
+                        if (start.Count == 1 && plane_idx != -1)
                         {
                             // (が始まるときに、強制文字列があればそれを保存
                             must.Add(sp_res.Count);
@@ -124,7 +124,7 @@ namespace MiBocaRecuerda
                         end.Add(i);
 
                         // ()形式が行儀よくあるときしか想定していないからこの条件式はたぶん役に立たない
-                        if(start.Count == end.Count)
+                        if (start.Count == end.Count)
                         {
                             // ()の中身ほ保存、次に移るために作業スペースをクリア
                             sp_res.Add(cadena.Substring(start[0] + 1, i - (start[0] + 1)));
@@ -136,9 +136,9 @@ namespace MiBocaRecuerda
                         break;
 
                     default:
-                        
+
                         // 強制文字列の始まり位置を保存
-                        if(plane_idx == -1)
+                        if (plane_idx == -1)
                         {
                             plane_idx = i;
                         }
@@ -148,7 +148,7 @@ namespace MiBocaRecuerda
             }
 
             // 強制文字列で終わっていたらそれを保存
-            if(plane_idx != -1)
+            if (plane_idx != -1)
             {
                 must.Add(sp_res.Count);
                 sp_res.Add(cadena.Substring(plane_idx));
@@ -166,7 +166,7 @@ namespace MiBocaRecuerda
             for (int n = 0; n < Math.Pow(2, sp_res.Count); n++)
             {
                 // 強制文字列があるやつだけを対象にする
-                if((n & rom) == rom)
+                if ((n & rom) == rom)
                 {
                     // nのbitが立っているところが表示する文字列
                     // (n & rom)でフィルタしてるから強制文字列は絶対に表示される
@@ -175,7 +175,7 @@ namespace MiBocaRecuerda
 
                     for (int m = 0; m < sp_res.Count; m++)
                     {
-                        if((n & (0x1 << m)) != 0)
+                        if ((n & (0x1 << m)) != 0)
                         {
                             // onのbitに対応する文字列を追加していく
                             s += sp_res[m];

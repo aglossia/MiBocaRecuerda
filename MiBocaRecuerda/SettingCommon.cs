@@ -49,7 +49,7 @@ namespace MiBocaRecuerda
             {
                 // クイズ数が最大クイズ数をこえていた場合は最大クイズ数にする
                 // シフトで次の問題に移動した時に端に来た時に調整されてズレがでたときを想定
-                if(_quizNum > MaxQuizNum)
+                if (_quizNum > MaxQuizNum)
                 {
                     return MaxQuizNum;
                 }
@@ -139,7 +139,7 @@ namespace MiBocaRecuerda
 
         public IEnumerable<string> Answers(string region)
         {
-            if(!CorrectAnswer.TryGetValue(region, out var list))
+            if (!CorrectAnswer.TryGetValue(region, out var list))
             {
                 list = CorrectAnswer.FirstOrDefault().Value;
             }

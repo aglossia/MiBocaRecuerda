@@ -47,7 +47,7 @@ namespace MiBocaRecuerda
                 }
             }
 
-            if(tabLanguage.TabPages.Count < 1)
+            if (tabLanguage.TabPages.Count < 1)
             {
                 MessageBox.Show("有効な設定対象がありません");
                 btnApply.Enabled = false;
@@ -89,7 +89,7 @@ namespace MiBocaRecuerda
                 foreach (string file in kvp.Value.Keys)
                 {
                     // ファイルパスにひっかかった言語を抽出
-                    if(Path.GetFileNameWithoutExtension(file) == CurrentFile)
+                    if (Path.GetFileNameWithoutExtension(file) == CurrentFile)
                     {
                         select_lang = kvp.Key;
                     }
@@ -97,7 +97,7 @@ namespace MiBocaRecuerda
             }
 
             // 指定ファイルの言語のタブに切り替える
-            if(select_lang != "") tabLanguage.SelectedIndex = AppRom.LenguaIndex[select_lang];
+            if (select_lang != "") tabLanguage.SelectedIndex = AppRom.LenguaIndex[select_lang];
         }
 
         private bool SaveConfig()
@@ -125,7 +125,7 @@ namespace MiBocaRecuerda
 
         private void btnApply_Click(object sender, EventArgs e)
         {
-            if(SaveConfig() == false)
+            if (SaveConfig() == false)
             {
                 MessageBox.Show("Hay una entrada no válida", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 close_permition = false;

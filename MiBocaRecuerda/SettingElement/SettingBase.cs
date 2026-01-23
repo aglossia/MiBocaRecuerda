@@ -48,7 +48,7 @@ namespace MiBocaRecuerda
             Dictionary<string, CommonConfig> cc = SettingManager.CommonConfigManager[LanguageName];
 
             qfc = cc.Values.Select(s => s.QuizFileConfig).ToList();
-            cmbboxFileName.Items.AddRange(cc.Select(p =>Path.GetFileNameWithoutExtension(p.Key)).ToArray());
+            cmbboxFileName.Items.AddRange(cc.Select(p => Path.GetFileNameWithoutExtension(p.Key)).ToArray());
 
             cmbboxFileName.SelectedItem = currentFile;
         }
@@ -104,7 +104,7 @@ namespace MiBocaRecuerda
             bool check_er = chboxErrorReset.Checked;
             int error_cnt = (int)nudErrorAllow.Value;
 
-            if(error_cnt > 0)
+            if (error_cnt > 0)
             {
                 lblErrorAll.Text = $"ミス許容範囲：{(check_eaa ? "セッション" : "問題")}";
                 lblErrorReset.Text = $"ミス満了リセット：{(check_er ? "はい" : "いいえ")}";
