@@ -112,13 +112,13 @@ namespace MiBocaRecuerda
     public class InputCache
     {
         // 完答
-        public bool Complete { get; set; }
+        public bool Complete { get; set; } = false;
         // Ejercicioの種類
-        public bool Exercise { get; set; }
+        public bool Exercise { get; set; } = false;
         // Resultado表示設定
-        public bool Result { get; set; }
-        public string QuizFileName { get; set; }
-        public bool DarkMode { get; set; }
+        public bool Result { get; set; } = false;
+        public string QuizFileName { get; set; } = string.Empty;
+        public bool DarkMode { get; set; } = false;
 
         public InputCache() { }
     }

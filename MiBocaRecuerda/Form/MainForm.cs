@@ -1155,7 +1155,7 @@ namespace MiBocaRecuerda
                 SettingManager.InputCache.Complete = optionTSMI_prueba.Checked;
                 SettingManager.InputCache.Exercise = optionTSMI_progresoVisual.Checked;
                 SettingManager.InputCache.Result = optionTSMI_resultados.Checked;
-                SettingManager.InputCache.QuizFileName = toolStripQuizFile.SelectedItem.ToString();
+                SettingManager.InputCache.QuizFileName = toolStripQuizFile.SelectedItem?.ToString();
                 SettingManager.InputCache.DarkMode = optionTSMI_DarkMode.Checked;
 
                 CommonFunction.XmlWrite(SettingManager.InputCache, "cache.xml");
