@@ -28,6 +28,7 @@ namespace MiBocaRecuerda
         private Dictionary<int, (string quiz, Answer answer)> RespuestaCopy = new Dictionary<int, (string quiz, Answer answer)>();
 
         private string PrioridadRegion;
+        List<string> RegionList = new List<string>();
 
         private void Init()
         {
@@ -89,11 +90,8 @@ namespace MiBocaRecuerda
 
             if (isOrder) qc = qc.OrderBy(q => q.QuizNum).ToList();
 
-            List<string> region = new List<string>();
-
             // regionの種類を集める
-            region = qc.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
-            //region = qc.SelectMany(q => q.GetRegion()).Distinct().ToList();
+            RegionList = qc.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
 
             foreach (QuizContents c in qc)
             {
@@ -113,9 +111,9 @@ namespace MiBocaRecuerda
                         {
                             tmp.Add(new Answer(ans.ID, a));
                         }
-
-                        parseAnswer = parseAnswer.Concat(tmp).ToList();
                     }
+
+                    parseAnswer = parseAnswer.Concat(tmp).ToList();
                 }
 
                 // 答え全体コピー用を生成する(「答え」は複数パターンある場合があるのでDGVの表示をそのまま使えない)
@@ -137,7 +135,7 @@ namespace MiBocaRecuerda
                 QuizResults.Add(new QuizResult(c.Quiz, c.CorrectAnswer, "", c.QuizNum, c.Supplement));
             }
 
-            if (region.Count == 1)
+            if (RegionList.Count == 1)
             {
                 // regionが一つしかないときは表示しない
                 Controls.Remove(menuStrip1);
@@ -145,7 +143,7 @@ namespace MiBocaRecuerda
             else
             {
                 // regionが複数あるときはregionを列挙する
-                TS_cmbRegion.Items.AddRange(region.ToArray());
+                TS_cmbRegion.Items.AddRange(RegionList.ToArray());
                 TS_cmbRegion.SelectedItem = PrioridadRegion;
             }
 
@@ -339,6 +337,27 @@ namespace MiBocaRecuerda
                     }
                 }
             };
+
+            // コピーのコンテキストメニューを開くとき
+            CMS_copy.DropDownOpening += (o, e) =>
+            {
+                CMS_copy_all.DropDownItems.Clear();
+                CMS_copy_answer_all.DropDownItems.Clear();
+
+                if(RegionList.Count > 1)
+                {
+                    CMS_copy_all.Click -= AllCopy_Region_all;
+
+                    CMS_copy_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
+                    CMS_copy_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
+                    CMS_copy_answer_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
+                    CMS_copy_answer_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
+                }
+                else
+                {
+                    CMS_copy_all.Click += AllCopy_Region_all;
+                }
+            };
         }
 
         private string cellValue = "";
@@ -463,8 +482,41 @@ namespace MiBocaRecuerda
             }
         }
 
+        // 指定リージョンをコピー
+        private void AllCopy_Region_selected(object o, EventArgs e)
+        {
+            string quiz, answer;
+            List<string> ret = new List<string>();
+
+            foreach (var rc in RespuestaCopy)
+            {
+                // コピー用に集めたやつの問題番号が一致するやつのregion種類を数える
+                int reg_cnt = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).Distinct().Count();
+
+                quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "");
+                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
+
+                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
+                if ((rc.Key & 0xffff0000) != 0)
+                {
+                    if (rc.Value.answer.ID_ind().reg == PrioridadRegion)
+                    {
+                        ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}\t{answer}");
+                    }
+                }
+                else
+                {
+                    ret.Add($"{rc.Key}\t{quiz}\t{answer}");
+                }
+            }
+
+            Clipboard.SetText(string.Join("\r\n", ret));
+
+            MessageBox.Show($"表全体をコピー");
+        }
+
         // 表全体をコピー
-        private void CMS_copy_all_Click(object sender, EventArgs e)
+        private void AllCopy_Region_all(object o, EventArgs e)
         {
             string quiz, answer;
             List<string> ret = new List<string>();
