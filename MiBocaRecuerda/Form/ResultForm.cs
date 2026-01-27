@@ -347,15 +347,21 @@ namespace MiBocaRecuerda
                 if(RegionList.Count > 1)
                 {
                     CMS_copy_all.Click -= AllCopy_Region_all;
+                    CMS_copy_answer_all.Click -= AllCopy_Region_all;
 
-                    CMS_copy_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
-                    CMS_copy_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
-                    CMS_copy_answer_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
-                    CMS_copy_answer_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
+                    var a = CMS_copy_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
+                    a.Tag = "all";
+                    var b = CMS_copy_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
+                    b.Tag = "all";
+                    var c = CMS_copy_answer_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
+                    c.Tag = "answer_all";
+                    var d = CMS_copy_answer_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
+                    d.Tag = "answer_all";
                 }
                 else
                 {
                     CMS_copy_all.Click += AllCopy_Region_all;
+                    CMS_copy_answer_all.Click += AllCopy_Region_all;
                 }
             };
         }
@@ -485,28 +491,52 @@ namespace MiBocaRecuerda
         // 指定リージョンをコピー
         private void AllCopy_Region_selected(object o, EventArgs e)
         {
-            string quiz, answer;
+            string quiz = "", answer;
             List<string> ret = new List<string>();
+            string tagName = (o as ToolStripItem).Tag as string;
 
             foreach (var rc in RespuestaCopy)
             {
                 // コピー用に集めたやつの問題番号が一致するやつのregion種類を数える
-                int reg_cnt = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).Distinct().Count();
+                List<string> regions = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).ToList();
+                int reg_cnt = regions.Distinct().Count();
 
-                quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "");
+                // 表全ての時のみ問題をつける
+                if (tagName == "all")
+                {
+                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                }
                 answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
 
                 // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
                 if ((rc.Key & 0xffff0000) != 0)
                 {
-                    if (rc.Value.answer.ID_ind().reg == PrioridadRegion)
+                    if (reg_cnt > 1)
                     {
-                        ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}\t{answer}");
+                        if (!regions.Contains(PrioridadRegion))
+                        {
+                            // Regeionが複数あるけど優先Regionの表現が存在しないときはすべて出す
+                            ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{quiz}{answer}");
+                        }
+                        else
+                        {
+                            // 優先Regionが存在する場合はそれだけを出す
+                            if (rc.Value.answer.ID_ind().reg == PrioridadRegion)
+                            {
+                                ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Regionが一つだけのときは無条件に出す
+                        ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
                     }
                 }
                 else
                 {
-                    ret.Add($"{rc.Key}\t{quiz}\t{answer}");
+                    // 解答パターンが複数ないとき
+                    ret.Add($"{rc.Key}\t{quiz}{answer}");
                 }
             }
 
@@ -518,8 +548,9 @@ namespace MiBocaRecuerda
         // 表全体をコピー
         private void AllCopy_Region_all(object o, EventArgs e)
         {
-            string quiz, answer;
+            string quiz = "", answer;
             List<string> ret = new List<string>();
+            string tagName = (o as ToolStripItem).Tag as string;
 
             foreach (var rc in RespuestaCopy)
             {
@@ -533,17 +564,21 @@ namespace MiBocaRecuerda
                     region = $":({rc.Value.answer.ID_ind().reg})";
                 }
 
-                quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "");
+                // 表全ての時のみ問題をつける
+                if (tagName == "all")
+                {
+                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                }
                 answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
 
                 // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
                 if ((rc.Key & 0xffff0000) != 0)
                 {
-                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{quiz}\t{answer}");
+                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{quiz}{answer}");
                 }
                 else
                 {
-                    ret.Add($"{rc.Key}{region}\t{quiz}\t{answer}");
+                    ret.Add($"{rc.Key}{region}\t{quiz}{answer}");
                 }
             }
 

@@ -51,14 +51,14 @@
             // CMS_supl
             // 
             this.CMS_supl.Name = "CMS_supl";
-            this.CMS_supl.Size = new System.Drawing.Size(180, 22);
+            this.CMS_supl.Size = new System.Drawing.Size(137, 22);
             this.CMS_supl.Text = "補足を表示";
             this.CMS_supl.Click += new System.EventHandler(this.CMS_supl_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(134, 6);
             // 
             // CMS_copy
             // 
@@ -68,7 +68,7 @@
             this.CMS_copy_quiz_all,
             this.CMS_copy_answer_all});
             this.CMS_copy.Name = "CMS_copy";
-            this.CMS_copy.Size = new System.Drawing.Size(180, 22);
+            this.CMS_copy.Size = new System.Drawing.Size(137, 22);
             this.CMS_copy.Text = "コピー";
             // 
             // CMS_copy_designate
@@ -96,24 +96,23 @@
             this.CMS_copy_answer_all.Name = "CMS_copy_answer_all";
             this.CMS_copy_answer_all.Size = new System.Drawing.Size(180, 22);
             this.CMS_copy_answer_all.Text = "答え全体をコピー";
-            this.CMS_copy_answer_all.Click += new System.EventHandler(this.CMS_copy_answer_all_Click);
             // 
             // CMS_edit
             // 
             this.CMS_edit.Name = "CMS_edit";
-            this.CMS_edit.Size = new System.Drawing.Size(180, 22);
+            this.CMS_edit.Size = new System.Drawing.Size(137, 22);
             this.CMS_edit.Text = "編集";
             this.CMS_edit.Click += new System.EventHandler(this.CMS_edit_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(134, 6);
             // 
             // CMS_quiz_hide
             // 
             this.CMS_quiz_hide.Name = "CMS_quiz_hide";
-            this.CMS_quiz_hide.Size = new System.Drawing.Size(180, 22);
+            this.CMS_quiz_hide.Size = new System.Drawing.Size(137, 22);
             this.CMS_quiz_hide.Text = "クイズ非表示";
             this.CMS_quiz_hide.Click += new System.EventHandler(this.CMS_quiz_hide_Click);
             // 
@@ -127,7 +126,7 @@
             this.toolStripMenuItem2,
             this.CMS_quiz_hide});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 126);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(138, 104);
             // 
             // TS_cmbRegion
             // 
