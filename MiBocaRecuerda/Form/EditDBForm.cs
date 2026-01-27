@@ -194,8 +194,6 @@ namespace MiBocaRecuerda
             {
                 cmbAnswer.Visible = true;
                 AddNumbersToComboBox(ExerdbInit.Answer[CurrentRegion].Count);
-                // POR HACER:起動時は0でいい？
-                cmbAnswer.SelectedIndex = 0;
             }
             else
             {
@@ -414,7 +412,7 @@ namespace MiBocaRecuerda
                 cmbAnswer.Visible = true;
                 // region分の連番をいれる
                 AddNumbersToComboBox(InputAnswer[CurrentRegion].Count);
-                // POR HACER:ここは前の状態を記憶した方がいい
+                // 前回のRegionのインデックス
                 cmbAnswer.SelectedIndex = AnswerCache[CurrentRegion];
             }
             else
