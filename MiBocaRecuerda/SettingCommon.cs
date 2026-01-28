@@ -137,7 +137,7 @@ namespace MiBocaRecuerda
         public int QuizNum { get; set; }
         public string Supplement { get; set; }
 
-        public IEnumerable<string> Answers(string region)
+        public IEnumerable<Answer> Answers(string region)
         {
             if (!CorrectAnswer.TryGetValue(region, out var list))
             {
@@ -146,17 +146,17 @@ namespace MiBocaRecuerda
 
             foreach (Answer ans in list)
             {
-                yield return ans.Sentence;
+                yield return ans;
             }
         }
 
-        public IEnumerable<string> Answers()
+        public IEnumerable<Answer> Answers()
         {
             foreach (KeyValuePair<string, List<Answer>> kvp in CorrectAnswer)
             {
                 foreach (Answer ans in kvp.Value)
                 {
-                    yield return ans.Sentence;
+                    yield return ans;
                 }
             }
         }

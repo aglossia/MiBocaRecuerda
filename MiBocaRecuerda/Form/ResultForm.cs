@@ -225,9 +225,9 @@ namespace MiBocaRecuerda
                 List<string> parsedAnswers = new List<string>();
 
                 // パースした解答を集める
-                foreach (string ans in QuizResults[cnt].Answers(PrioridadRegion))
+                foreach (Answer ans in QuizResults[cnt].Answers(PrioridadRegion))
                 {
-                    parsedAnswers = parsedAnswers.Concat(CoreProcess.ParseAnswer(ans)).ToList();
+                    parsedAnswers = parsedAnswers.Concat(CoreProcess.ParseAnswer(ans.Sentence)).ToList();
                 }
 
                 // 集めた解答が複数あれば連番をつける

@@ -1212,7 +1212,7 @@ namespace MiBocaRecuerda
                     BackColor = baseColor;
 
                     foreach (Control ctrl in Controls)
-                    {
+                {
                         if (ctrl.GetType() == typeof(Button))
                         {
                             ctrl.BackColor = Color.Gray;
@@ -1264,11 +1264,11 @@ namespace MiBocaRecuerda
                             ctrl.BackColor = baseColor;
                         }
                     }
-                }
-                else
-                {
-                    txtAnswer.GotFocus -= _CaretWidthChange;
-                    txtAnswer.FontChanged -= _CaretWidthChange;
+                    }
+                    else
+                    {
+                        txtAnswer.GotFocus -= _CaretWidthChange;
+                        txtAnswer.FontChanged -= _CaretWidthChange;
 
                     BackColor = SystemColors.Control;
 
@@ -1299,8 +1299,8 @@ namespace MiBocaRecuerda
                             }
                         }
                     }
-                }
-            };
+                    }
+                };
 
             operationTSMI.MouseDown += (o, e) =>
             {
@@ -1332,22 +1332,20 @@ namespace MiBocaRecuerda
 
             txtConsole.Text = "";
 
-            bool isCorrect = false;
-
             // POR HACER:20260106:region指定でやるモードも検討
-            isCorrect = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].Answers().ToList());
+            var check = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].Answers().ToList());
 
 #if DEBUG
-            if (chboxDebug.Checked) isCorrect = true;
+            if (chboxDebug.Checked) check.isCorrect = true;
 #endif
 
-            DisplayResult(isCorrect ? "¡Sí!" : "¡No!", 1000);
+            DisplayResult(check.isCorrect ? "¡Sí!" : "¡No!", 1000);
 
-            txtConsole.Text = CoreProcess.adopt_str;
+            txtConsole.Text = check.adopt_str;
 
             IsFirstMistake = false;
 
-            if (isCorrect)
+            if (check.isCorrect)
             {
                 correctAnswerNum++;
             }
@@ -1404,16 +1402,16 @@ namespace MiBocaRecuerda
 
             if (optionTSMI_progresoVisual.Checked)
             {
-                label_progress[curProgress % 10].Text = isCorrect ? AppRom.ProgressStateCharacter_Correct : AppRom.ProgressStateCharacter_Incorrect;
+                label_progress[curProgress % 10].Text = check.isCorrect ? AppRom.ProgressStateCharacter_Correct : AppRom.ProgressStateCharacter_Incorrect;
                 //label_progress[curProgress % 10].ForeColor = colorOffProgress;
-                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
+                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = check.isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
             }
 
             // 解答を保存
             respuestas.Add(txtAnswer.Text == "" ? "NONE" : txtAnswer.Text);
             txtAnswer.Text = "";
 
-            QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, isCorrect));
+            QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, check.isCorrect));
 
 
             int endQuizNum = optionTSMI_progresoVisual.Checked ? QuizFileConfig.QuizNum - 1 : QuizFileConfig.MaxQuizNum - 1;

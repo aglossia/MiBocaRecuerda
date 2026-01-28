@@ -9,63 +9,119 @@ namespace MiBocaRecuerda
 
     public static class CoreProcess
     {
-        public static string adopt_str = "";
-
-        public static bool CheckAnswer(string user_input, List<string> correct_answer)
+        public static (bool isCorrect, string adopt_str) CheckAnswer(string user_input, List<Answer> correct_answer)
         {
+            // 入力文字列(比較用)
             string s1 = MainForm.LangCtrl.Comparelize(user_input);
-
-            List<string> _correct = new List<string>();
-
-            foreach (string ans in correct_answer)
+            
+            // [^]、()形式の解答を分解する
+            List<Answer> parsedAnswer = new List<Answer>();
+            List<Answer> tmp = new List<Answer>();
+            foreach (Answer ans in correct_answer)
             {
-                _correct = _correct.Concat(ParseAnswer(ans)).ToList();
+                tmp = new List<Answer>();
+
+                foreach (string s in ParseAnswer(ans.Sentence))
+                {
+                    tmp.Add(new Answer(ans.ID, s));
+                }
+
+                parsedAnswer = parsedAnswer.Concat(tmp).ToList();
             }
-            // _correctは成形前
-            //List<string> _correct = ParseAnswer(correct_answer);
 
-            List<string> buffer = new List<string>();
+            tmp.Clear();
 
-            foreach (string str in _correct)
+            // 数の表現を追加
+            foreach (Answer ans in parsedAnswer)
             {
-                buffer.Add(ArabicSpanish.ConvertSpanishNumbers(str));
+                tmp.Add(new Answer(ans.ID, ArabicSpanish.ConvertSpanishNumbers(ans.Sentence)));
             }
 
-            _correct = _correct.Union(buffer).ToList();
+            parsedAnswer = parsedAnswer.Union(tmp).ToList();
+
+            // 正式用に比較用文字列整形前のものを置いておく
+            List<Answer> parsedAnswer_raw = parsedAnswer.Select(x => (Answer)x.Clone()).ToList();
 
             // 比較用に成形する
-            List<string> correct = _correct.Select(s => MainForm.LangCtrl.Comparelize(s)).ToList();
+            parsedAnswer.ForEach(s => s.Sentence = MainForm.LangCtrl.Comparelize(s.Sentence));
 
-            float max_sim = 1;
-            float res = 0;
-
-            adopt_str = "";
-
+            float sim_rate_max = 1;
+            float sim_rate = 0;
+             
             int index = 0;
-            string _adopt_str = correct[0];
 
-            foreach (string str in correct)
+            // 比較用の採用文字列
+            string _adopt_str = parsedAnswer[0].Sentence;
+            // 正式の採用文字列
+            string adopt_str = "";
+
+            foreach (Answer str in parsedAnswer)
             {
                 // 入力文字列と似てる方を比較として採用する
                 // 0~1で0が完全一致、1がまったく違う
-                res = CommonFunction.LevenshteinRate(s1, str);
-                if (max_sim > res)
+                sim_rate = CommonFunction.LevenshteinRate(s1, str.Sentence);
+                if (sim_rate_max > sim_rate)
                 {
-                    _adopt_str = str;
-                    adopt_str = _correct[index];
-                    max_sim = res;
+                    _adopt_str = str.Sentence;
+                    adopt_str = parsedAnswer_raw[index].Sentence;
+                    sim_rate_max = sim_rate;
                 }
                 index++;
             }
 
+            // 各候補の部分一致をみる
+            // 入力部分まですべて一致していたらその中で優先Regionのものを抜き出す
+            var imperfect = parsedAnswer
+                .Select(candidate => new
+                {
+                    answer = candidate,
+                    partially_correct = AtLeastInputCorrect(s1, candidate.Sentence),
+                })
+                // 部分一致しているもの
+                .Where(s => s.partially_correct == true)
+                // 優先Regionのもの
+                .Where(s => s.answer.ID_ind().reg == MainForm.QuizFileConfig.PriorityRegion)
+                .ToList();
+
+            // 入力部分まですべて一致していたらLevenstein距離では対応しきれないので優先Regionの方を採用する
+            // 完答も含めてしまうはずだがその場合でも問題ないはず
+            if (imperfect.Count != 0)
+            {
+                _adopt_str = imperfect.FirstOrDefault().answer.Sentence;
+            }
+
+            // 相違確認
             string distinction = MainForm.LangCtrl.GetDistinction(s1, _adopt_str);
 
             if (distinction != "")
             {
+                // 相違があった場合は、相違の箇所を設定する
                 adopt_str = distinction;
 
-                return false;
+                return (false, adopt_str);
             }
+
+            // 入力と一致すれば採用したパターンを設定
+            return (true, adopt_str);
+        }
+
+        private static bool AtLeastInputCorrect(string input, string candidate)
+        {
+            // 入力の方が大きいときは確認しない
+            if (input.Length > candidate.Length) return false;
+
+            int score = 0;
+
+            for (int cnt = 0; cnt < input.Length; cnt++)
+            {
+                if (input[cnt] == candidate[cnt])
+                {
+                    score++;
+                }
+            }
+
+            // 入力が部分一致していない場合
+            if (score != input.Length) return false;
 
             return true;
         }

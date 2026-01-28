@@ -4,11 +4,34 @@ using System.Text.RegularExpressions;
 
 namespace MiBocaRecuerda
 {
-    public class Answer
+    public class Answer : IEquatable<Answer>, ICloneable
     {
         // 問題番号-Region-通番
         public string ID { get; set; }
         public string Sentence { get; set; }
+
+        public bool Equals(Answer other)
+        {
+            if (other is null) return false;
+            return ID == other.ID && Sentence == other.Sentence;
+        }
+
+        public override bool Equals(object obj) => Equals(obj as Answer);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 23 + ID.GetHashCode();
+                hash = hash * 23 + (Sentence?.GetHashCode() ?? 0);
+                return hash;
+            }
+        }
+
+        public object Clone()
+        {
+            return new Answer(ID, Sentence);
+        }
 
         // 問題番号-Region-通番を個別に取得
         public (int id1, string reg, int id2) ID_ind()
