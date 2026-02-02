@@ -85,8 +85,6 @@ namespace MiBocaRecuerda
             CurrentRegion = prioridad_region;
             QuizSequence = quizSequence;
 
-            RegisterEvent();
-
             #region dgvAuxiliary
 
             dgvAuxiliary.Font = new Font("MeiryoKe_Console", 10F, FontStyle.Regular, GraphicsUnit.Point, 128);
@@ -134,6 +132,8 @@ namespace MiBocaRecuerda
             AdjustRowHeightToFillGrid();
 
             Init(quizNum);
+
+            RegisterEvent();
 
             ActiveControl = null;
         }
@@ -194,6 +194,7 @@ namespace MiBocaRecuerda
             {
                 cmbAnswer.Visible = true;
                 AddNumbersToComboBox(ExerdbInit.Answer[CurrentRegion].Count);
+                cmbAnswer.SelectedIndex = 0;
             }
             else
             {
@@ -262,30 +263,7 @@ namespace MiBocaRecuerda
             tabAnswer.SelectedIndexChanged += _SelectedIndexChanged;
 
             // 解答コンボボックス変更イベント
-            cmbAnswer.SelectedIndexChanged += (o, e) =>
-            {
-                int index = (o as ComboBox).SelectedIndex;
-
-                CurrentTB.TextChanged -= _TextChanged;
-                // 別解を変えた時は編集中であればそれを保持したものに切り替える
-                CurrentTB.Text = InputAnswer[CurrentRegion][index].Sentence;
-                CurrentTB.TextChanged += _TextChanged;
-#if DEBUG
-                lbl_ID.Text = InputAnswer[CurrentRegion][index].ID;
-#endif
-
-                AnswerCache[CurrentRegion] = index;
-
-                // 削除対象判定
-                if (CurrentAnswer.SqlOperation == AppRom.SqlOperation.Delete)
-                {
-                    CurrentTB.BackColor = Color.LightPink;
-                }
-                else
-                {
-                    CurrentTB.BackColor = SystemColors.Window;
-                }
-            };
+            cmbAnswer.SelectedIndexChanged += CmbAnswerSelectedIndexChanged;
 
             Shown += (o, e) =>
             {
@@ -351,6 +329,32 @@ namespace MiBocaRecuerda
                     InputAnswer[region] = list;
                 }
                 list.Add(new EditAnswer($"{QuizNum}-{region}-{ID_list[region].Max()}", "", AppRom.SqlOperation.Insert));
+            }
+        }
+
+        // 解答コンボボックス変更イベント
+        private void CmbAnswerSelectedIndexChanged(object o, EventArgs e)
+        {
+            int index = (o as ComboBox).SelectedIndex;
+
+            CurrentTB.TextChanged -= _TextChanged;
+            // 別解を変えた時は編集中であればそれを保持したものに切り替える
+            CurrentTB.Text = InputAnswer[CurrentRegion][index].Sentence;
+            CurrentTB.TextChanged += _TextChanged;
+#if DEBUG
+            lbl_ID.Text = InputAnswer[CurrentRegion][index].ID;
+#endif
+
+            AnswerCache[CurrentRegion] = index;
+
+            // 削除対象判定
+            if (CurrentAnswer.SqlOperation == AppRom.SqlOperation.Delete)
+            {
+                CurrentTB.BackColor = Color.LightPink;
+            }
+            else
+            {
+                CurrentTB.BackColor = SystemColors.Window;
             }
         }
 
