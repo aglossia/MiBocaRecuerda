@@ -57,9 +57,16 @@ namespace MiBocaRecuerda
 
             foreach (Answer str in parsedAnswer)
             {
-                // 入力文字列と似てる方を比較として採用する
-                // 0~1で0が完全一致、1がまったく違う
-                sim_rate = CommonFunction.LevenshteinRate(s1, str.Sentence);
+                if (str.Sentence.StartsWith(s1))
+                {
+                    sim_rate = 0;
+                }
+                else
+                {
+                    // 入力文字列と似てる方を比較として採用する
+                    // 0~1で0が完全一致、1がまったく違う
+                    sim_rate = CommonFunction.LevenshteinRate(s1, str.Sentence);
+                }
                 if (sim_rate_max > sim_rate)
                 {
                     _adopt_str = str.Sentence;

@@ -29,6 +29,11 @@ namespace MiBocaRecuerda
                 s2 = s2.Replace(",", "");
             }
 
+            if (SettingManager.currentLengua("es").Capital)
+            {
+                s2 = s2.ToLower();
+            }
+
             s2 = UtilityFunction.ReplaceConsecutiveSpaces(s2);
 
             s2 = (new Regex(" $")).Replace(s2, "");

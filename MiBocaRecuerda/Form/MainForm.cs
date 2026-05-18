@@ -113,13 +113,12 @@ namespace MiBocaRecuerda
                     //Text = "―",
                     Size = new Size(labelSize, labelSize / 3),
                     Font = new Font("MeiryoKe_Console", 7F, FontStyle.Regular, GraphicsUnit.Point, 128),
-                    Name = $"progress_group_label{i}"
+                    Name = $"progress_group_label{i}",
+                    //l.BorderStyle = BorderStyle.FixedSingle;
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    BackColor = AppRom.ColorNeutral,
+                    Visible = false
                 };
-
-                //l.BorderStyle = BorderStyle.FixedSingle;
-                l.TextAlign = ContentAlignment.MiddleCenter;
-                l.BackColor = AppRom.ColorNeutral;
-                l.Visible = false;
 
                 l.Click += Label_bar_Click;
                 l.MouseHover += Label_hover;
@@ -138,11 +137,10 @@ namespace MiBocaRecuerda
                     //Text = progressStateCharacter_Neutral,
                     Size = new Size(labelSize, labelSize),
                     Font = new Font("MeiryoKe_Console", 9F, FontStyle.Regular, GraphicsUnit.Point, 128),
-                    Name = $"progress_label{i}"
+                    Name = $"progress_label{i}",
+                    //l.BorderStyle = BorderStyle.FixedSingle;
+                    TextAlign = ContentAlignment.MiddleCenter
                 };
-
-                //l.BorderStyle = BorderStyle.FixedSingle;
-                l.TextAlign = ContentAlignment.MiddleCenter;
 
                 l.Click += LabelClick;
                 l.Visible = false;
@@ -163,13 +161,14 @@ namespace MiBocaRecuerda
 
             Controls.Add(lblNumericProgress);
 
-            nudProgress = new NumericUpDown();
-
-            nudProgress.Location = new Point(label_bar[9].Location.X + 50, label_bar[9].Location.Y);
-            nudProgress.Size = new Size(40, 20);
-            nudProgress.Name = "hyper_group";
-            nudProgress.Minimum = 0;
-            nudProgress.Visible = false;
+            nudProgress = new NumericUpDown
+            {
+                Location = new Point(label_bar[9].Location.X + 50, label_bar[9].Location.Y),
+                Size = new Size(40, 20),
+                Name = "hyper_group",
+                Minimum = 0,
+                Visible = false
+            };
 
             nudProgress.ValueChanged += nud_ValueChanged;
 
@@ -621,7 +620,7 @@ namespace MiBocaRecuerda
                         string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
 
                         // prueba回数
-                        baseTitle += $" [PR {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1]).ToString()}]";
+                        baseTitle += $" [PR {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1])}]";
                         // 最近のprueba日
                         baseTitle += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0].Substring(2)}";
                     }
@@ -683,7 +682,7 @@ namespace MiBocaRecuerda
             }
             else
             {
-                int totalNum = QuizFileConfig.MaxQuizNum > QuizCountMax ? QuizCountMax : QuizFileConfig.MaxQuizNum;
+                _ = QuizFileConfig.MaxQuizNum > QuizCountMax ? QuizCountMax : QuizFileConfig.MaxQuizNum;
                 lblNumericProgress.Text = $"{curProgress + 1}/{QuizFileConfig.QuizNum}";
             }
 
@@ -718,7 +717,7 @@ namespace MiBocaRecuerda
                 int nudSize = UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1, 100);
 
                 nudProgress.Maximum = nudSize;
-                nudProgress.Visible = nudSize == 0 ? false : true;
+                nudProgress.Visible = nudSize != 0;
 
                 progress_state = new List<List<AppRom.ProgressState>>(
                         new List<int>[UtilityFunction.Techo(QuizFileConfig.QuizNum, 10)]
@@ -887,7 +886,7 @@ namespace MiBocaRecuerda
             {
                 foreach (string chapter in SectionList)
                 {
-                    writer.WriteLine($"{defaultDate.ToString("yyyy/MM/dd")},000,{chapter}");
+                    writer.WriteLine($"{defaultDate:yyyy/MM/dd},000,{chapter}");
                 }
             }
         }
@@ -1333,19 +1332,19 @@ namespace MiBocaRecuerda
             txtConsole.Text = "";
 
             // POR HACER:20260106:region指定でやるモードも検討
-            var check = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].Answers().ToList());
+            var (isCorrect, adopt_str) = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].Answers().ToList());
 
 #if DEBUG
-            if (chboxDebug.Checked) check.isCorrect = true;
+            if (chboxDebug.Checked) isCorrect = true;
 #endif
 
-            DisplayResult(check.isCorrect ? "¡Sí!" : "¡No!", 1000);
+            DisplayResult(isCorrect ? "¡Sí!" : "¡No!", 1000);
 
-            txtConsole.Text = check.adopt_str;
+            txtConsole.Text = adopt_str;
 
             IsFirstMistake = false;
 
-            if (check.isCorrect)
+            if (isCorrect)
             {
                 correctAnswerNum++;
             }
@@ -1402,16 +1401,16 @@ namespace MiBocaRecuerda
 
             if (optionTSMI_progresoVisual.Checked)
             {
-                label_progress[curProgress % 10].Text = check.isCorrect ? AppRom.ProgressStateCharacter_Correct : AppRom.ProgressStateCharacter_Incorrect;
+                label_progress[curProgress % 10].Text = isCorrect ? AppRom.ProgressStateCharacter_Correct : AppRom.ProgressStateCharacter_Incorrect;
                 //label_progress[curProgress % 10].ForeColor = colorOffProgress;
-                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = check.isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
+                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
             }
 
             // 解答を保存
             respuestas.Add(txtAnswer.Text == "" ? "NONE" : txtAnswer.Text);
             txtAnswer.Text = "";
 
-            QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, check.isCorrect));
+            QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, isCorrect));
 
 
             int endQuizNum = optionTSMI_progresoVisual.Checked ? QuizFileConfig.QuizNum - 1 : QuizFileConfig.MaxQuizNum - 1;
@@ -1478,14 +1477,14 @@ namespace MiBocaRecuerda
                             {
                                 using (StreamWriter sw = File.AppendText(path_i))
                                 {
-                                    sw.WriteLine($"{DateTime.Now.ToString("yyyy/MM/dd")}:{write_text}");
+                                    sw.WriteLine($"{DateTime.Now:yyyy/MM/dd}:{write_text}");
                                 }
                             }
                             else
                             {
                                 using (StreamWriter sw = File.CreateText(path_i))
                                 {
-                                    sw.WriteLine($"{DateTime.Now.ToString("yyyy/MM/dd")}:{write_text}");
+                                    sw.WriteLine($"{DateTime.Now:yyyy/MM/dd}:{write_text}");
                                 }
                             }
                         }
@@ -1924,7 +1923,7 @@ namespace MiBocaRecuerda
 
             EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
 
-            if (!edb.IsDisposed) edb.ShowDialog();
+            if (!edb.IsDisposed) edb.Show();
         }
 
         // 一つ前の問題を編集
@@ -1942,7 +1941,7 @@ namespace MiBocaRecuerda
 
                 EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress - 1].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
 
-                if (!edb.IsDisposed) edb.ShowDialog();
+                if (!edb.IsDisposed) edb.Show();
             }
         }
 
