@@ -9,6 +9,7 @@ namespace MiBocaRecuerda
     public partial class SettingForm : Form
     {
         string CurrentFile;
+        ExerciseRepository ExerRepo;
         bool close_permition = true;
         List<SettingBase> settingBases = new List<SettingBase>();
         Dictionary<string, bool> ValidLanguage = new Dictionary<string, bool>() { { "es", false }, { "en", false } };
@@ -26,6 +27,7 @@ namespace MiBocaRecuerda
             MinimizeBox = false;
 
             CurrentFile = currentFile;
+            ExerRepo = new ExerciseRepository($"Data Source={$"{PathManager.QuizDB}\\{CurrentFile}.db"}");
 
             tabPageSpanish.Tag = settingSpanish1;
             tabPageEnglish.Tag = settingEnglish1;
@@ -115,7 +117,21 @@ namespace MiBocaRecuerda
             if (cacheFile == null) return false;
 
             // 不可な設定検証
-            if (common.Validation() == false) return false;
+            switch (common.Validation(ExerRepo.GetExerciseCount()))
+            {
+                case 1:
+                    MessageBox.Show("チャプタ構成に不整合があります", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return false;
+                case 2:
+                    // 問題数が超過していた場合は最大数に収める処理が入ってるからここにはこない
+                    MessageBox.Show("チャプタ構成に関して、問題数が超過しています", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return false;
+                case 3:
+                    MessageBox.Show("問題最大数を超過しています", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return false;
+                default:
+                    break;
+            }
 
             CommonFunction.XmlWrite(common, PathManager.QuizFileSettingCommon(cacheFile));
             CommonFunction.XmlWrite(lengua, PathManager.QuizFileSettingLang(cacheFile));
@@ -127,7 +143,6 @@ namespace MiBocaRecuerda
         {
             if (SaveConfig() == false)
             {
-                MessageBox.Show("Hay una entrada no válida", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 close_permition = false;
 
                 return;

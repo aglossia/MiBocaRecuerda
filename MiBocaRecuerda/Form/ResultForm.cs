@@ -656,7 +656,7 @@ namespace MiBocaRecuerda
 
             EditDBForm edb = new EditDBForm(MainForm.CurrentQuizDBPath, int.Parse(quizNum), MainForm.QuizFileConfig.PriorityRegion, quizSequence);
 
-            if (!edb.IsDisposed) edb.Show();
+            if (!edb.IsDisposed) edb.Show(this);
         }
 
         // クイズ非表示

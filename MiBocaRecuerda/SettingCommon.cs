@@ -70,13 +70,15 @@ namespace MiBocaRecuerda
         public bool ErrorReset { get; set; } = false;
         public string PriorityRegion { get; set; } = "";
         public int MaxQuizNum => (MaxChapter - MinChapter + 1) * 10;
-        public bool Validation()
+        public int Validation(int quizCountMax)
         {
-            if (MinChapter > MaxChapter) return false;
+            if (MinChapter > MaxChapter) return 1;
 
-            if ((MaxChapter - MinChapter + 1) * 10 < QuizNum) return false;
+            if ((MaxChapter - MinChapter + 1) * 10 < QuizNum) return 2;
 
-            return true;
+            if ((MinChapter * 10 - quizCountMax) > 10) return 3;
+
+            return 0;
         }
 
         public void Copy(QuizFileConfig qfc)

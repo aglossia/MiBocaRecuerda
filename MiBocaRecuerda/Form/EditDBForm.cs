@@ -275,6 +275,11 @@ namespace MiBocaRecuerda
                 }
                 btnNO.Focus();
             };
+
+            Load += (o, e) =>
+            {
+                Location = new Point(Owner.Location.X + ((Owner.Width - Width) / 2), Owner.Location.Y + ((Owner.Height - Height) / 2));
+            };
         }
 
         // コンボボックスに指定数までの連番を入れる
@@ -361,6 +366,8 @@ namespace MiBocaRecuerda
         // 解答regionタブ遷移イベント
         private void _SelectedIndexChanged(object o, EventArgs e)
         {
+            if (tabAnswer.SelectedTab == null) return;
+
             // タブを変える＝regionを変更
             CurrentRegion = tabAnswer.SelectedTab.Text;
 

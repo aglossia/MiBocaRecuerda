@@ -61,7 +61,9 @@
             this.toolTSMI_SectionList = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_translate = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolTSMI_EditQuiz2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_EditQuiz_Current = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_EditQuiz_Antes = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_EditQuiz_Number = new System.Windows.Forms.ToolStripMenuItem();
             this.DBTSMI = new System.Windows.Forms.ToolStripMenuItem();
             this.DBTSMI_QuizDB = new System.Windows.Forms.ToolStripMenuItem();
             this.DBTSMI_Progress = new System.Windows.Forms.ToolStripMenuItem();
@@ -306,21 +308,21 @@
             // toolTSMI_prueba_Order
             // 
             this.toolTSMI_prueba_Order.Name = "toolTSMI_prueba_Order";
-            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_Order.Text = "index順表示";
             this.toolTSMI_prueba_Order.Click += new System.EventHandler(this.toolTSMI_prueba_Order_Click);
             // 
             // toolTSMI_prueba_QuizOrder
             // 
             this.toolTSMI_prueba_QuizOrder.Name = "toolTSMI_prueba_QuizOrder";
-            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_QuizOrder.Text = "出題順表示";
             this.toolTSMI_prueba_QuizOrder.Click += new System.EventHandler(this.toolTSMI_prueba_QuizOrder_Click);
             // 
             // toolTSMI_prueba_Select
             // 
             this.toolTSMI_prueba_Select.Name = "toolTSMI_prueba_Select";
-            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_Select.Text = "指定表示";
             this.toolTSMI_prueba_Select.Click += new System.EventHandler(this.toolTSMI_prueba_Select_Click);
             // 
@@ -341,18 +343,33 @@
             // toolTSMI_EditQuiz
             // 
             this.toolTSMI_EditQuiz.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolTSMI_EditQuiz2});
+            this.toolTSMI_EditQuiz_Current,
+            this.toolTSMI_EditQuiz_Antes,
+            this.toolTSMI_EditQuiz_Number});
             this.toolTSMI_EditQuiz.Name = "toolTSMI_EditQuiz";
             this.toolTSMI_EditQuiz.Size = new System.Drawing.Size(203, 22);
-            this.toolTSMI_EditQuiz.Text = "この問題を編集";
-            this.toolTSMI_EditQuiz.Click += new System.EventHandler(this.toolTSMI_EditQuiz_Click);
+            this.toolTSMI_EditQuiz.Text = "問題を編集";
             // 
-            // toolTSMI_EditQuiz2
+            // toolTSMI_EditQuiz_Current
             // 
-            this.toolTSMI_EditQuiz2.Name = "toolTSMI_EditQuiz2";
-            this.toolTSMI_EditQuiz2.Size = new System.Drawing.Size(181, 22);
-            this.toolTSMI_EditQuiz2.Text = "ひとつ前の問題を編集";
-            this.toolTSMI_EditQuiz2.Click += new System.EventHandler(this.toolTSMI_EditQuiz2_Click);
+            this.toolTSMI_EditQuiz_Current.Name = "toolTSMI_EditQuiz_Current";
+            this.toolTSMI_EditQuiz_Current.Size = new System.Drawing.Size(181, 22);
+            this.toolTSMI_EditQuiz_Current.Text = "現在の問題を編集";
+            this.toolTSMI_EditQuiz_Current.Click += new System.EventHandler(this.toolTSMI_EditQuiz_Current_Click);
+            // 
+            // toolTSMI_EditQuiz_Antes
+            // 
+            this.toolTSMI_EditQuiz_Antes.Name = "toolTSMI_EditQuiz_Antes";
+            this.toolTSMI_EditQuiz_Antes.Size = new System.Drawing.Size(181, 22);
+            this.toolTSMI_EditQuiz_Antes.Text = "ひとつ前の問題を編集";
+            this.toolTSMI_EditQuiz_Antes.Click += new System.EventHandler(this.toolTSMI_EditQuiz_Antes_Click);
+            // 
+            // toolTSMI_EditQuiz_Number
+            // 
+            this.toolTSMI_EditQuiz_Number.Name = "toolTSMI_EditQuiz_Number";
+            this.toolTSMI_EditQuiz_Number.Size = new System.Drawing.Size(181, 22);
+            this.toolTSMI_EditQuiz_Number.Text = "番号を指定して編集";
+            this.toolTSMI_EditQuiz_Number.Click += new System.EventHandler(this.toolTSMI_EditQuiz_Number_Click);
             // 
             // DBTSMI
             // 
@@ -482,11 +499,13 @@
         private System.Windows.Forms.CheckBox chboxDebug;
         private System.Windows.Forms.ToolStripMenuItem operationTSMI_Undo_e;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz;
-        private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz2;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz_Antes;
         private System.Windows.Forms.ToolStripMenuItem DBTSMI;
         private System.Windows.Forms.ToolStripMenuItem DBTSMI_QuizDB;
         private System.Windows.Forms.ToolStripMenuItem DBTSMI_Progress;
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_SettingLanguage;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz_Current;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz_Number;
     }
 }
 

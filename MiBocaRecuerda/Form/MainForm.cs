@@ -513,6 +513,12 @@ namespace MiBocaRecuerda
 
             QuizFileConfig = SettingManager.CommonConfigManager[LangType][CurrentQuizDB].QuizFileConfig;
 
+            if (QuizCountMax < QuizFileConfig.MinChapterToIndex)
+            {
+                MessageBox.Show("問題最大数を超過しています", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             // 新しい言語の補助入力を登録
             if (ManageLanguage_Dic.ContainsKey(LangType))
             {
@@ -804,13 +810,30 @@ namespace MiBocaRecuerda
             if (isForward)
             {
                 // 最小章がMAX数を超えていたら何もすることがない
-                if (QuizFileConfig.MinChapter + diff > QuizCountMax / 10) return;
+                if (QuizFileConfig.MinChapter + diff > QuizCountMax / 10)
+                {
+                    // 最小章が17だとて問題最大数が165だとしたら、最大出題は170まで対応してて
+                    // 最大出題-問題最大数が1~10であれば対応できる
+                    if(((QuizFileConfig.MinChapter + diff) * 10) - QuizCountMax > 10)
+                    {
+                        return;
+                    }
+                }
 
                 if (QuizFileConfig.MaxChapter + diff > QuizCountMax / 10)
                 {
-                    // 最大章がMAX数を超えていたら最大章をMAX数にする
-                    QuizFileConfig.MinChapter += diff;
-                    QuizFileConfig.MaxChapter = QuizCountMax / 10;
+                    if (((QuizFileConfig.MinChapter + diff) * 10) - QuizCountMax > 10)
+                    {
+                        // 最大章がMAX数を超えていたら最大章をMAX数にする
+                        QuizFileConfig.MinChapter += diff;
+                        QuizFileConfig.MaxChapter = QuizCountMax / 10;
+                    }
+                    else
+                    {
+                        // 基準の差分分を順シフトする
+                        QuizFileConfig.MinChapter += diff;
+                        QuizFileConfig.MaxChapter += diff;
+                    }
                 }
                 else
                 {
@@ -1911,7 +1934,7 @@ namespace MiBocaRecuerda
         }
 
         // 現在の問題を編集
-        private void toolTSMI_EditQuiz_Click(object sender, EventArgs e)
+        private void toolTSMI_EditQuiz_Current_Click(object sender, EventArgs e)
         {
             if (QuizContents.Count == 0)
             {
@@ -1923,11 +1946,11 @@ namespace MiBocaRecuerda
 
             EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
 
-            if (!edb.IsDisposed) edb.Show();
+            if (!edb.IsDisposed) edb.Show(this);
         }
 
         // 一つ前の問題を編集
-        private void toolTSMI_EditQuiz2_Click(object sender, EventArgs e)
+        private void toolTSMI_EditQuiz_Antes_Click(object sender, EventArgs e)
         {
             if (QuizContents.Count == 0)
             {
@@ -1941,7 +1964,70 @@ namespace MiBocaRecuerda
 
                 EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress - 1].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
 
-                if (!edb.IsDisposed) edb.Show();
+                if (!edb.IsDisposed) edb.Show(this);
+            }
+        }
+
+        // 番号を指定して編集
+        private void toolTSMI_EditQuiz_Number_Click(object sender, EventArgs e)
+        {
+            if (QuizContents.Count == 0)
+            {
+                MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (Form dialog = new Form())
+            {
+                dialog.Text = "問題番号を入力";
+                dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialog.StartPosition = FormStartPosition.CenterParent;
+                dialog.ClientSize = new Size(250, 100);
+                dialog.MinimizeBox = false;
+                dialog.MaximizeBox = false;
+
+                Label label = new Label() { Left = 10, Top = 10, Text = "番号：" , Width=50};
+                TextBox textBox = new TextBox() { Left = 60, Top = 8, Width = 150 };
+
+                Button okButton = new Button()
+                {
+                    Text = "OK",
+                    Left = 60,
+                    Width = 60,
+                    Top = 40,
+                    DialogResult = DialogResult.OK
+                };
+                Button cancelButton = new Button()
+                {
+                    Text = "キャンセル",
+                    Left = 130,
+                    Width = 80,
+                    Top = 40,
+                    DialogResult = DialogResult.Cancel
+                };
+
+                dialog.Controls.Add(label);
+                dialog.Controls.Add(textBox);
+                dialog.Controls.Add(okButton);
+                dialog.Controls.Add(cancelButton);
+
+                dialog.AcceptButton = okButton;
+                dialog.CancelButton = cancelButton;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    if (!int.TryParse(textBox.Text, out int number))
+                    {
+                        MessageBox.Show("数値を入力してください");
+                        return;
+                    }
+
+                    List<int> quizSequence = Enumerable.Range(1, QuizCountMax).ToList();
+
+                    EditDBForm edb = new EditDBForm(CurrentQuizDBPath, number, QuizFileConfig.PriorityRegion, quizSequence);
+
+                    if (!edb.IsDisposed) edb.Show(this);
+                }
             }
         }
 
