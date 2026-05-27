@@ -79,6 +79,34 @@ namespace MiBocaRecuerda
         private Dictionary<string, Color> preControlBackColor = new Dictionary<string, Color>();
         private Dictionary<string, Color> preControlForeColor = new Dictionary<string, Color>();
 
+        public class DarkRenderer : ToolStripProfessionalRenderer
+        {
+            public DarkRenderer() : base(new DarkColorTable()) { }
+
+            protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
+            {
+                // 矢印の色を白にする
+                e.ArrowColor = Color.White;
+                base.OnRenderArrow(e);
+            }
+        }
+
+        public class DarkColorTable : ProfessionalColorTable
+        {
+            public override Color MenuItemSelected => Color.FromArgb(60, 60, 60);
+            public override Color MenuItemBorder => Color.FromArgb(80, 80, 80);
+            public override Color ToolStripDropDownBackground => Color.FromArgb(45, 45, 45);
+            public override Color ImageMarginGradientBegin => Color.FromArgb(45, 45, 45);
+            public override Color ImageMarginGradientMiddle => Color.FromArgb(45, 45, 45);
+            public override Color ImageMarginGradientEnd => Color.FromArgb(45, 45, 45);
+            public override Color MenuItemSelectedGradientBegin => Color.FromArgb(70, 70, 70);
+            public override Color MenuItemSelectedGradientEnd => Color.FromArgb(70, 70, 70);
+            public override Color MenuItemPressedGradientBegin => Color.FromArgb(50, 50, 50);
+            public override Color MenuItemPressedGradientEnd => Color.FromArgb(50, 50, 50);
+        }
+
+        ToolStripRenderer DefaultRenderer;
+
         #region DLL Import
 
         [DllImport("user32.dll")]
@@ -95,6 +123,10 @@ namespace MiBocaRecuerda
         public MainForm()
         {
             InitializeComponent();
+
+            DefaultRenderer = menuStrip1.Renderer;
+
+            //menuStrip1.Renderer = new DarkRenderer();
 
             DBTSMI_QuizDB.Enabled = false;
 
@@ -1228,13 +1260,21 @@ namespace MiBocaRecuerda
 
                 if (ch)
                 {
+                    // Dark
+                    menuStrip1.Renderer = new DarkRenderer();
+
+                    foreach (ToolStripItem item in menuStrip1.Items)
+                    {
+                        SetMenuForeColorRecursive(item, Color.White);
+                    }
+
                     txtAnswer.GotFocus += _CaretWidthChange;
                     txtAnswer.FontChanged += _CaretWidthChange;
 
                     BackColor = baseColor;
 
                     foreach (Control ctrl in Controls)
-                {
+                    {
                         if (ctrl.GetType() == typeof(Button))
                         {
                             ctrl.BackColor = Color.Gray;
@@ -1286,11 +1326,19 @@ namespace MiBocaRecuerda
                             ctrl.BackColor = baseColor;
                         }
                     }
-                    }
-                    else
+                }
+                else
+                {
+                    // Default
+                    menuStrip1.Renderer = DefaultRenderer;
+
+                    foreach (ToolStripItem item in menuStrip1.Items)
                     {
-                        txtAnswer.GotFocus -= _CaretWidthChange;
-                        txtAnswer.FontChanged -= _CaretWidthChange;
+                        SetMenuForeColorRecursive(item, Color.Black);
+                    }
+
+                    txtAnswer.GotFocus -= _CaretWidthChange;
+                    txtAnswer.FontChanged -= _CaretWidthChange;
 
                     BackColor = SystemColors.Control;
 
@@ -1321,8 +1369,8 @@ namespace MiBocaRecuerda
                             }
                         }
                     }
-                    }
-                };
+                }
+            };
 
             operationTSMI.MouseDown += (o, e) =>
             {
@@ -1333,6 +1381,19 @@ namespace MiBocaRecuerda
             };
 
             #endregion
+        }
+
+        private void SetMenuForeColorRecursive(ToolStripItem item, Color color)
+        {
+            item.ForeColor = color;
+
+            if (item is ToolStripMenuItem menuItem)
+            {
+                foreach (ToolStripItem sub in menuItem.DropDownItems)
+                {
+                    SetMenuForeColorRecursive(sub, color);
+                }
+            }
         }
 
         #endregion
@@ -1977,17 +2038,20 @@ namespace MiBocaRecuerda
                 return;
             }
 
+            int maxQuizNum = ExerRepo.GetExerciseCount();
+
             using (Form dialog = new Form())
             {
-                dialog.Text = "問題番号を入力";
+                dialog.Text = $"問題番号を入力(1~{maxQuizNum})";
+                dialog.Font = Font = new Font("メイリオ", 9F);
                 dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
                 dialog.StartPosition = FormStartPosition.CenterParent;
                 dialog.ClientSize = new Size(250, 100);
                 dialog.MinimizeBox = false;
                 dialog.MaximizeBox = false;
 
-                Label label = new Label() { Left = 10, Top = 10, Text = "番号：" , Width=50};
-                TextBox textBox = new TextBox() { Left = 60, Top = 8, Width = 150 };
+                Label label = new Label() { Left = 10, Top = 10, Text = "番号：", Width = 50, Font = new Font("メイリオ", 9F) };
+                TextBox textBox = new TextBox() { Left = 60, Top = 8, Width = 150, Font = new Font("メイリオ", 9F) };
 
                 Button okButton = new Button()
                 {
@@ -1995,7 +2059,8 @@ namespace MiBocaRecuerda
                     Left = 60,
                     Width = 60,
                     Top = 40,
-                    DialogResult = DialogResult.OK
+                    DialogResult = DialogResult.OK,
+                    Font = new Font("メイリオ", 9F)
                 };
                 Button cancelButton = new Button()
                 {
@@ -2003,7 +2068,8 @@ namespace MiBocaRecuerda
                     Left = 130,
                     Width = 80,
                     Top = 40,
-                    DialogResult = DialogResult.Cancel
+                    DialogResult = DialogResult.Cancel,
+                    Font = new Font("メイリオ", 9F)
                 };
 
                 dialog.Controls.Add(label);
@@ -2019,6 +2085,12 @@ namespace MiBocaRecuerda
                     if (!int.TryParse(textBox.Text, out int number))
                     {
                         MessageBox.Show("数値を入力してください");
+                        return;
+                    }
+
+                    if((number > maxQuizNum) || (number < 1))
+                    {
+                        MessageBox.Show($"1~{maxQuizNum}で入力してください");
                         return;
                     }
 

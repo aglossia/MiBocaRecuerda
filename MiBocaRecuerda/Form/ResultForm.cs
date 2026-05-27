@@ -453,7 +453,7 @@ namespace MiBocaRecuerda
             float maxWidth = 0;
             for (int i = 0; i < rowsCount; i++)
             {
-                string text = grid[column, i].Value.ToString();
+                string text = grid[column, i].Value?.ToString();
                 //text = text.Replace("\n", "");
                 //maxWidth = Math.Max(g.MeasureString(text, grid.Font, 10000, sf).Width, maxWidth);
                 maxWidth = Math.Max(TextRenderer.MeasureText(text, grid.Font).Width, maxWidth);
