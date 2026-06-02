@@ -97,7 +97,7 @@
             // 
             // btnAnswer
             // 
-            this.btnAnswer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAnswer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAnswer.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnAnswer.Location = new System.Drawing.Point(329, 247);
             this.btnAnswer.Name = "btnAnswer";
@@ -109,6 +109,7 @@
             // 
             // btnShowAnswer
             // 
+            this.btnShowAnswer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnShowAnswer.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.btnShowAnswer.Location = new System.Drawing.Point(12, 247);
             this.btnShowAnswer.Name = "btnShowAnswer";
@@ -396,6 +397,7 @@
             // 
             // lbl_PruebaChallengeCount
             // 
+            this.lbl_PruebaChallengeCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lbl_PruebaChallengeCount.AutoSize = true;
             this.lbl_PruebaChallengeCount.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.lbl_PruebaChallengeCount.Location = new System.Drawing.Point(268, 252);
@@ -415,6 +417,7 @@
             // 
             // lbl_ErrorAllowCount
             // 
+            this.lbl_ErrorAllowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lbl_ErrorAllowCount.AutoSize = true;
             this.lbl_ErrorAllowCount.Font = new System.Drawing.Font("MeiryoKe_Console", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.lbl_ErrorAllowCount.Location = new System.Drawing.Point(150, 252);
@@ -425,6 +428,7 @@
             // 
             // chboxDebug
             // 
+            this.chboxDebug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chboxDebug.Appearance = System.Windows.Forms.Appearance.Button;
             this.chboxDebug.Location = new System.Drawing.Point(113, 247);
             this.chboxDebug.Name = "chboxDebug";

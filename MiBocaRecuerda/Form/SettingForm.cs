@@ -193,8 +193,12 @@ namespace MiBocaRecuerda
             // リビジョンはその日の00:00:00からの経過秒数/2
             string date = ConvertToDateTime(version.Build, version.Revision).ToString("yyyy/MM/dd HH:mm:ss");
 
+            System.Diagnostics.FileVersionInfo fileVer =
+                System.Diagnostics.FileVersionInfo.GetVersionInfo(
+                System.Reflection.Assembly.GetExecutingAssembly().Location);
+
             mensaje_de_ayuda.Add("───────");
-            mensaje_de_ayuda.Add($"Version    : {version.Major}.{version.Minor}");
+            mensaje_de_ayuda.Add($"Version    : {fileVer.FileVersion}");
             mensaje_de_ayuda.Add($"Build time : {date}");
 
             MessageForm s = new MessageForm(mensaje_de_ayuda, "AYUDA", MessageForm.TipoDeUbicacion.CENTRO, this, true)

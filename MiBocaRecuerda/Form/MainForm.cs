@@ -1238,6 +1238,40 @@ namespace MiBocaRecuerda
 
             #region TSMI
 
+            optionTSMI.DropDownOpened += (o, e) =>
+            {
+                bool isEnabled = QuizContents.Count != 0;
+
+                optionTSMI_quizInfo.Enabled = isEnabled;
+            };
+
+            operationTSMI.DropDownOpened += (o, e) =>
+            {
+                bool isEnabled = QuizContents.Count != 0;
+
+                operationTSMI_siguiente.Enabled = isEnabled;
+                operationTSMI_anterior.Enabled = isEnabled;
+                operationTSMI_Undo_p.Enabled = isEnabled;
+                operationTSMI_Undo_e.Enabled = isEnabled;
+            };
+
+            toolTSMI.DropDownOpened += (o, e) =>
+            {
+                bool isEnabled = QuizContents.Count != 0;
+
+                toolTSMI_pruebaLista.Enabled = isEnabled;
+                toolTSMI_SectionList.Enabled = isEnabled;
+                toolTSMI_EditQuiz.Enabled = isEnabled;
+                toolTSMI_translate.Enabled = LangType != "";
+            };
+
+            DBTSMI.DropDownOpened += (o, e) =>
+            {
+                bool isEnabled = QuizContents.Count != 0;
+
+                DBTSMI_Progress.Enabled = isEnabled;
+            };
+
             optionTSMI_prueba.CheckedChanged += (o, e) =>
             {
                 if (!IsLoaded) return;
