@@ -12,7 +12,7 @@ namespace MiBocaRecuerda
         public static (bool isCorrect, string adopt_str) CheckAnswer(string user_input, List<Answer> correct_answer)
         {
             // 入力文字列(比較用)
-            string s1 = MainForm.LangCtrl.Comparelize(user_input);
+            string s1 = SettingManager.LangCtrl?.Comparelize(user_input);
             
             // [^]、()形式の解答を分解する
             List<Answer> parsedAnswer = new List<Answer>();
@@ -43,7 +43,7 @@ namespace MiBocaRecuerda
             List<Answer> parsedAnswer_raw = parsedAnswer.Select(x => (Answer)x.Clone()).ToList();
 
             // 比較用に成形する
-            parsedAnswer.ForEach(s => s.Sentence = MainForm.LangCtrl.Comparelize(s.Sentence));
+            parsedAnswer.ForEach(s => s.Sentence = SettingManager.LangCtrl?.Comparelize(s.Sentence));
 
             float sim_rate_max = 1;
             float sim_rate = 0;
@@ -98,7 +98,7 @@ namespace MiBocaRecuerda
             }
 
             // 相違確認
-            string distinction = MainForm.LangCtrl.GetDistinction(s1, _adopt_str);
+            string distinction = SettingManager.LangCtrl?.GetDistinction(s1, _adopt_str);
 
             if (distinction != "")
             {

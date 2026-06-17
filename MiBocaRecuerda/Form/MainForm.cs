@@ -51,8 +51,6 @@ namespace MiBocaRecuerda
         private int QuizCountMax = 0;
         // 起動時のエラー情報
         private List<string> InitError = new List<string>();
-        // 現在のクイズ言語
-        private static string LangType = "";
         // 現在の問題のインデックス
         private int curProgress = -1;
 
@@ -67,11 +65,6 @@ namespace MiBocaRecuerda
 
         // タイトルバーのベースとなる文字列
         private string BaseTitle = "";
-
-        // 言語ごとの入力補助を切り替える用
-        public static Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>();
-
-        public static IManageInput LangCtrl => ManageLanguage_Dic[LangType];
 
         //public ClassResize _form_resize;
 
@@ -252,8 +245,6 @@ namespace MiBocaRecuerda
             txtConsole.KeyDown += TextBoxKeyDown_AvoidBeep;
 
             #endregion
-
-            ManageLanguage_Dic["es"] = new Spanish();
 
             //_form_resize = new ClassResize(this);
 
@@ -525,9 +516,9 @@ namespace MiBocaRecuerda
             }
 
             // 前回の言語の補助入力を解除
-            if (ManageLanguage_Dic.ContainsKey(LangType))
+            if(SettingManager.LangCtrl != null)
             {
-                txtAnswer.KeyPress -= ManageLanguage_Dic[LangType].KeyPress;
+                txtAnswer.KeyPress -= SettingManager.LangCtrl.KeyPress;
             }
 
             txtAnswer.Focus();
@@ -539,11 +530,11 @@ namespace MiBocaRecuerda
             // 問題集DBを読み込む
             ExerRepo = new ExerciseRepository($"Data Source={CurrentQuizDBPath}");
 
-            LangType = ExerRepo.GetLanguage();
+            SettingManager.LangType = ExerRepo.GetLanguage();
             QuizCountMax = ExerRepo.GetExerciseCount();
             SectionList = ExerRepo.GetAllSection();
 
-            QuizFileConfig = SettingManager.CommonConfigManager[LangType][CurrentQuizDB].QuizFileConfig;
+            QuizFileConfig = SettingManager.CommonConfigManager[SettingManager.LangType][CurrentQuizDB].QuizFileConfig;
 
             if (QuizCountMax < QuizFileConfig.MinChapterToIndex)
             {
@@ -552,10 +543,7 @@ namespace MiBocaRecuerda
             }
 
             // 新しい言語の補助入力を登録
-            if (ManageLanguage_Dic.ContainsKey(LangType))
-            {
-                txtAnswer.KeyPress += ManageLanguage_Dic[LangType].KeyPress;
-            }
+            txtAnswer.KeyPress += SettingManager.LangCtrl.KeyPress;
 
             if (manual) txtConsole.Text = "";
             curProgress = -1;
@@ -1006,7 +994,7 @@ namespace MiBocaRecuerda
                         if (e.Shift)
                         {
                             // 言語ごとの補助入力
-                            insertText = SettingManager.LanguageConfigManager[LangType].InputSupport[num];
+                            insertText = SettingManager.LanguageConfigManager[SettingManager.LangType].InputSupport[num];
                         }
                         else
                         {
@@ -1262,7 +1250,7 @@ namespace MiBocaRecuerda
                 toolTSMI_pruebaLista.Enabled = isEnabled;
                 toolTSMI_SectionList.Enabled = isEnabled;
                 toolTSMI_EditQuiz.Enabled = isEnabled;
-                toolTSMI_translate.Enabled = LangType != "";
+                toolTSMI_translate.Enabled = SettingManager.LangType != "";
             };
 
             DBTSMI.DropDownOpened += (o, e) =>
@@ -1722,7 +1710,7 @@ namespace MiBocaRecuerda
 
         private void optionTSMI_SettingLanguage_Click(object sender, EventArgs e)
         {
-            SettingLanguageForm s = new SettingLanguageForm(LangType)
+            SettingLanguageForm s = new SettingLanguageForm(SettingManager.LangType)
             {
                 ShowInTaskbar = false,
                 ShowIcon = false
@@ -2008,13 +1996,13 @@ namespace MiBocaRecuerda
         private void toolTSMI_translate_Click(object sender, EventArgs e)
         {
             if (MessageForm_traducir.IsDisposed == false) MessageForm_traducir.Dispose();
-            if (LangType == "" || txtAnswer.Text == "")
+            if (SettingManager.LangType == "" || txtAnswer.Text == "")
             {
                 MessageBox.Show("Fallo en la traducción", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string traduccion = Translate.DoTransrate(txtAnswer.Text, LangType);
+            string traduccion = Translate.DoTransrate(txtAnswer.Text, SettingManager.LangType);
 
             List<string> mostrar = new List<string>();
 

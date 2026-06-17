@@ -304,6 +304,7 @@ namespace MiBocaRecuerda
             };
 
             textBox.TextChanged += _TextChanged;
+            textBox.KeyPress += SettingManager.LangCtrl.KeyPress;
 
             TabPage tabPage = new TabPage
             {

@@ -13,6 +13,20 @@ namespace MiBocaRecuerda
         public static InputCache InputCache = new InputCache();
         public static RomConfig RomConfig = new RomConfig();
 
+        // 現在のクイズ言語
+        public static string LangType = "";
+        public static IManageInput LangCtrl
+        {
+            get
+            {
+                if (AppRom.ManageLanguage_Dic.TryGetValue(LangType, out var lang))
+                {
+                    return lang;
+                }
+                return null;
+            }
+        }
+
         public static FileLenguaConfig currentLengua(string type)
         {
             return CommonConfigManager[type][MainForm.CurrentQuizDB].LenguaConfig;

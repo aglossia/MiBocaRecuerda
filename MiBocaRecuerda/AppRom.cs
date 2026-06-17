@@ -23,6 +23,8 @@ namespace MiBocaRecuerda
 
         public static Dictionary<string, int> LenguaIndex = new Dictionary<string, int> { { "es", 0 }, { "en", 1 } };
         public static Dictionary<string, string> EnglishToCode = new Dictionary<string, string> { { "Spanish", "es" }, { "English", "en" } };
+        // 言語ごとの入力補助を切り替える用
+        public static Dictionary<string, IManageInput> ManageLanguage_Dic = new Dictionary<string, IManageInput>() { { "es", new Spanish() } };
 
         public static readonly string ProgressStateCharacter_Neutral = "○";
         public static readonly string ProgressStateCharacter_Correct = "■";
