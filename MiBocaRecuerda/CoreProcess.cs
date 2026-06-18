@@ -12,7 +12,7 @@ namespace MiBocaRecuerda
         public static (bool isCorrect, string adopt_str) CheckAnswer(string user_input, List<Answer> correct_answer)
         {
             // 入力文字列(比較用)
-            string s1 = SettingManager.LangCtrl?.Comparelize(user_input);
+            string input = SettingManager.LangCtrl?.Comparelize(user_input);
             
             // [^]、()形式の解答を分解する
             List<Answer> parsedAnswer = new List<Answer>();
@@ -57,16 +57,18 @@ namespace MiBocaRecuerda
 
             foreach (Answer str in parsedAnswer)
             {
-                if (str.Sentence.StartsWith(s1))
+                if (str.Sentence.StartsWith(input))
                 {
+                    // 空入力もここ
                     sim_rate = 0;
                 }
                 else
                 {
                     // 入力文字列と似てる方を比較として採用する
                     // 0~1で0が完全一致、1がまったく違う
-                    sim_rate = CommonFunction.LevenshteinRate(s1, str.Sentence);
+                    sim_rate = CommonFunction.LevenshteinRate(input, str.Sentence);
                 }
+
                 if (sim_rate_max > sim_rate)
                 {
                     _adopt_str = str.Sentence;
@@ -82,7 +84,7 @@ namespace MiBocaRecuerda
                 .Select(candidate => new
                 {
                     answer = candidate,
-                    partially_correct = AtLeastInputCorrect(s1, candidate.Sentence),
+                    partially_correct = AtLeastInputCorrect(input, candidate.Sentence),
                 })
                 // 部分一致しているもの
                 .Where(s => s.partially_correct == true)
@@ -98,7 +100,7 @@ namespace MiBocaRecuerda
             }
 
             // 相違確認
-            string distinction = SettingManager.LangCtrl?.GetDistinction(s1, _adopt_str);
+            string distinction = SettingManager.LangCtrl?.GetDistinction(input, _adopt_str);
 
             if (distinction != "")
             {

@@ -56,22 +56,14 @@ namespace MiBocaRecuerda
 
         public static float LevenshteinRate(string str1, string str2)
         {
-            int len1 = (str1 != null) ? str1.Length : 0;
-            int len2 = (str2 != null) ? str2.Length : 0;
+            // 短い方の長さを取得
+            int minLen = Math.Min(str1.Length, str2.Length);
 
-            if (len1 > len2)
-            {
-                int tmp = len1;
-                len1 = len2;
-                len2 = tmp;
-            }
+            // その長さに合わせて切り詰める
+            str1 = str1.Substring(0, minLen);
+            str2 = str2.Substring(0, minLen);
 
-            if (len1 == 0)
-            {
-                return (len2 == 0) ? 0.0f : 1.0f;
-            }
-
-            return LevenshteinDistance(str1, str2) / (float)len2;
+            return LevenshteinDistance(str1, str2) / (float)minLen;
         }
 
         private static int LevenshteinDistance(string str1, string str2)
