@@ -344,11 +344,11 @@ namespace MiBocaRecuerda
                 CMS_copy_all.DropDownItems.Clear();
                 CMS_copy_answer_all.DropDownItems.Clear();
 
-                if(RegionList.Count > 1)
-                {
-                    CMS_copy_all.Click -= AllCopy_Region_all;
-                    CMS_copy_answer_all.Click -= AllCopy_Region_all;
+                CMS_copy_all.Click -= AllCopy_Region_all;
+                CMS_copy_answer_all.Click -= AllCopy_Region_all;
 
+                if (RegionList.Count > 1)
+                {
                     var a = CMS_copy_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
                     a.Tag = "all";
                     var b = CMS_copy_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
@@ -542,10 +542,17 @@ namespace MiBocaRecuerda
 
             Clipboard.SetText(string.Join("\r\n", ret));
 
-            MessageBox.Show($"表全体をコピー");
+            if (tagName == "all")
+            {
+                MessageBox.Show("指定Regionの表全体をコピー");
+            }
+            else
+            {
+                MessageBox.Show("指定Regionの答えをコピー");
+            }
         }
 
-        // 表全体をコピー
+        // 全てのregionをコピー
         private void AllCopy_Region_all(object o, EventArgs e)
         {
             string quiz = "", answer;
@@ -584,7 +591,14 @@ namespace MiBocaRecuerda
 
             Clipboard.SetText(string.Join("\r\n", ret));
 
-            MessageBox.Show("表全体をコピー");
+            if (tagName == "all")
+            {
+                MessageBox.Show($"{(RegionList.Count > 1 ? "全てのRegionの" : "")}表全体をコピー");
+            }
+            else
+            {
+                MessageBox.Show($"{(RegionList.Count > 1 ? "全てのRegionの" : "")}答えをコピー");
+            }
         }
 
         // 問題全体をコピー
