@@ -230,6 +230,7 @@ namespace MiBocaRecuerda
             operationTSMI_Undo_e.ShortcutKeys = Keys.Control | Keys.Z;
 
             toolTSMI_prueba_Order.ShortcutKeys = Keys.Control | Keys.L;
+            toolTSMI_ShowAnswer.ShortcutKeys = Keys.Control | Keys.R;
             toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
 
             DBTSMI_QuizDB.ShortcutKeys = Keys.Control | Keys.D;
@@ -243,6 +244,21 @@ namespace MiBocaRecuerda
             txtAnswer.KeyDown += TextAnswerKeyDown;
             txtQuiz.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtConsole.KeyDown += TextBoxKeyDown_AvoidBeep;
+
+            optionTSMI_quizInfo.Enabled = false;
+
+            operationTSMI_siguiente.Enabled = false;
+            operationTSMI_anterior.Enabled = false;
+            operationTSMI_Undo_p.Enabled = false;
+            operationTSMI_Undo_e.Enabled = false;
+
+            toolTSMI_pruebaLista.Enabled = false;
+            toolTSMI_ShowAnswer.Enabled = false;
+            toolTSMI_SectionList.Enabled = false;
+            toolTSMI_EditQuiz.Enabled = false;
+            toolTSMI_translate.Enabled = false;
+
+            DBTSMI_Progress.Enabled = false;
 
             #endregion
 
@@ -287,7 +303,7 @@ namespace MiBocaRecuerda
 
             QuizFiles = QuizFiles.Where(s => !Path.GetFileName(s).StartsWith('~'.ToString())).ToArray();
 
-            ExerciseRepository exerRepo;
+            ExerciseRepository exerRepo = null;
             string type = "";
 
             foreach (string file in QuizFiles)
@@ -330,6 +346,8 @@ namespace MiBocaRecuerda
                         InitError.Add($"{ex.GetType().Name};{ex.Message};{cacheFile_common} or {cacheFile_lang}");
                     }
                 }
+
+                qfc.MaxQuizNum = exerRepo.GetExerciseCount();
 
                 // クイズ設定と言語設定の読み込み
                 SettingManager.CommonConfigManager[type][fileName] = new CommonConfig(qfc, lc);
@@ -577,6 +595,8 @@ namespace MiBocaRecuerda
 
             QuizContents = CreateQuizContents(randomSequence);
 
+            InitDisplay();
+
             RefreshDisplay();
 
             ShowQuestion();
@@ -601,6 +621,27 @@ namespace MiBocaRecuerda
             }
 
             return quizContents;
+        }
+
+        // 初期起動状態から問題開始したときのディスプレイの更新
+        private void InitDisplay()
+        {
+            bool isEnabled = QuizContents.Count != 0;
+
+            optionTSMI_quizInfo.Enabled = isEnabled;
+
+            operationTSMI_siguiente.Enabled = isEnabled;
+            operationTSMI_anterior.Enabled = isEnabled;
+            operationTSMI_Undo_p.Enabled = isEnabled;
+            operationTSMI_Undo_e.Enabled = isEnabled;
+
+            toolTSMI_pruebaLista.Enabled = isEnabled;
+            toolTSMI_ShowAnswer.Enabled = isEnabled;
+            toolTSMI_SectionList.Enabled = isEnabled;
+            toolTSMI_EditQuiz.Enabled = isEnabled;
+            toolTSMI_translate.Enabled = SettingManager.LangType != "";
+
+            DBTSMI_Progress.Enabled = isEnabled;
         }
 
         private void RefreshDisplay()
@@ -1226,40 +1267,6 @@ namespace MiBocaRecuerda
 
             #region TSMI
 
-            optionTSMI.DropDownOpened += (o, e) =>
-            {
-                bool isEnabled = QuizContents.Count != 0;
-
-                optionTSMI_quizInfo.Enabled = isEnabled;
-            };
-
-            operationTSMI.DropDownOpened += (o, e) =>
-            {
-                bool isEnabled = QuizContents.Count != 0;
-
-                operationTSMI_siguiente.Enabled = isEnabled;
-                operationTSMI_anterior.Enabled = isEnabled;
-                operationTSMI_Undo_p.Enabled = isEnabled;
-                operationTSMI_Undo_e.Enabled = isEnabled;
-            };
-
-            toolTSMI.DropDownOpened += (o, e) =>
-            {
-                bool isEnabled = QuizContents.Count != 0;
-
-                toolTSMI_pruebaLista.Enabled = isEnabled;
-                toolTSMI_SectionList.Enabled = isEnabled;
-                toolTSMI_EditQuiz.Enabled = isEnabled;
-                toolTSMI_translate.Enabled = SettingManager.LangType != "";
-            };
-
-            DBTSMI.DropDownOpened += (o, e) =>
-            {
-                bool isEnabled = QuizContents.Count != 0;
-
-                DBTSMI_Progress.Enabled = isEnabled;
-            };
-
             optionTSMI_prueba.CheckedChanged += (o, e) =>
             {
                 if (!IsLoaded) return;
@@ -1540,8 +1547,8 @@ namespace MiBocaRecuerda
                     // チャプター数
                     int chapterNum = QuizFileConfig.MaxChapter - QuizFileConfig.MinChapter + 1;
 
-                    // チャプター数と、それに対応するクイズ数が一致しているときは進捗を記録する
-                    if (chapterNum * 10 == QuizFileConfig.QuizNum)
+                    // チャプター数に応じて最大問題数であるとき進捗を記録する
+                    if (QuizFileConfig.PermitNum == QuizFileConfig.QuizNum)
                     {
                         string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
 
@@ -1623,6 +1630,11 @@ namespace MiBocaRecuerda
 
         // 正解を表示(respuesta)
         private void btnShowAnswer_Click(object sender, EventArgs e)
+        {
+            ShowAnswer();
+        }
+
+        private void ShowAnswer()
         {
             if (MessageForm_respuesta.IsDisposed == false) MessageForm_respuesta.Dispose();
             if (ExerRepo == null) return;
@@ -1971,6 +1983,11 @@ namespace MiBocaRecuerda
 
                 resultForm.Show();
             }
+        }
+
+        private void toolTSMI_ShowAnswer_Click(object sender, EventArgs e)
+        {
+            ShowAnswer();
         }
 
         // チャプターリスト表示

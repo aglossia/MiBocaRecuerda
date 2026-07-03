@@ -71,6 +71,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
             this.chboxDebug = new System.Windows.Forms.CheckBox();
+            this.toolTSMI_ShowAnswer = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -247,8 +248,8 @@
             this.operationTSMI_Undo_p,
             this.operationTSMI_Undo_e});
             this.operationTSMI.Name = "operationTSMI";
-            this.operationTSMI.Size = new System.Drawing.Size(59, 23);
-            this.operationTSMI.Text = "Manejo";
+            this.operationTSMI.Size = new System.Drawing.Size(67, 23);
+            this.operationTSMI.Text = "Acciones";
             // 
             // operationTSMI_start
             // 
@@ -289,12 +290,13 @@
             // 
             this.toolTSMI.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolTSMI_pruebaLista,
+            this.toolTSMI_ShowAnswer,
             this.toolTSMI_SectionList,
             this.toolTSMI_translate,
             this.toolTSMI_EditQuiz});
             this.toolTSMI.Name = "toolTSMI";
-            this.toolTSMI.Size = new System.Drawing.Size(84, 23);
-            this.toolTSMI.Text = "Herramienta";
+            this.toolTSMI.Size = new System.Drawing.Size(89, 23);
+            this.toolTSMI.Text = "Herramientas";
             // 
             // toolTSMI_pruebaLista
             // 
@@ -309,21 +311,21 @@
             // toolTSMI_prueba_Order
             // 
             this.toolTSMI_prueba_Order.Name = "toolTSMI_prueba_Order";
-            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(139, 22);
+            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(180, 22);
             this.toolTSMI_prueba_Order.Text = "index順表示";
             this.toolTSMI_prueba_Order.Click += new System.EventHandler(this.toolTSMI_prueba_Order_Click);
             // 
             // toolTSMI_prueba_QuizOrder
             // 
             this.toolTSMI_prueba_QuizOrder.Name = "toolTSMI_prueba_QuizOrder";
-            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(139, 22);
+            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(180, 22);
             this.toolTSMI_prueba_QuizOrder.Text = "出題順表示";
             this.toolTSMI_prueba_QuizOrder.Click += new System.EventHandler(this.toolTSMI_prueba_QuizOrder_Click);
             // 
             // toolTSMI_prueba_Select
             // 
             this.toolTSMI_prueba_Select.Name = "toolTSMI_prueba_Select";
-            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(139, 22);
+            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(180, 22);
             this.toolTSMI_prueba_Select.Text = "指定表示";
             this.toolTSMI_prueba_Select.Click += new System.EventHandler(this.toolTSMI_prueba_Select_Click);
             // 
@@ -437,6 +439,13 @@
             this.chboxDebug.UseVisualStyleBackColor = true;
             this.chboxDebug.Visible = false;
             // 
+            // toolTSMI_ShowAnswer
+            // 
+            this.toolTSMI_ShowAnswer.Name = "toolTSMI_ShowAnswer";
+            this.toolTSMI_ShowAnswer.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_ShowAnswer.Text = "Mostrar la respuesta";
+            this.toolTSMI_ShowAnswer.Click += new System.EventHandler(this.toolTSMI_ShowAnswer_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -510,6 +519,7 @@
         private System.Windows.Forms.ToolStripMenuItem optionTSMI_SettingLanguage;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz_Current;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz_Number;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_ShowAnswer;
     }
 }
 

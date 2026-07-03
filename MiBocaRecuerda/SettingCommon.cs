@@ -55,17 +55,33 @@ namespace MiBocaRecuerda
         public int MinChapterToIndex => MinChapter * 10 - 9;
         public int MaxChapter { get; set; } = 1;
         public int MaxChapterToIndex => MaxChapter * 10;
+        public bool IsMaxChapter => UtilityFunction.Techo(MaxQuizNum, 10) <= MaxChapter;
+        // 許容問題数
+        public int PermitNum
+        {
+            get
+            {
+                int permitNum = (MaxChapter - MinChapter + 1) * 10;
+
+                if (IsMaxChapter)
+                {
+                    // 最大章であれば溢れた分を差し引く
+                    permitNum -= MaxChapter * 10 - MaxQuizNum;
+                }
+
+                return permitNum;
+            }
+        }
 
         private int _quizNum = 10;
         public int QuizNum
         {
             get
             {
-                // クイズ数が最大クイズ数をこえていた場合は最大クイズ数にする
-                // シフトで次の問題に移動した時に端に来た時に調整されてズレがでたときを想定
-                if (_quizNum > MaxQuizNum)
+                // 許容問題数を超過していれば許容問題数にする
+                if (_quizNum > PermitNum)
                 {
-                    return MaxQuizNum;
+                    return PermitNum;
                 }
                 else
                 {
@@ -83,17 +99,7 @@ namespace MiBocaRecuerda
         // エラー数が満了したときにエラー数をリセットするか(ErrorAlloAllが有効のときに有効な設定)
         public bool ErrorReset { get; set; } = false;
         public string PriorityRegion { get; set; } = "";
-        public int MaxQuizNum => (MaxChapter - MinChapter + 1) * 10;
-        public int Validation(int quizCountMax)
-        {
-            if (MinChapter > MaxChapter) return 1;
-
-            if ((MaxChapter - MinChapter + 1) * 10 < QuizNum) return 2;
-
-            if ((MinChapter * 10 - quizCountMax) > 10) return 3;
-
-            return 0;
-        }
+        public int MaxQuizNum { get; set; } = -1;
 
         public void Copy(QuizFileConfig qfc)
         {
@@ -102,6 +108,8 @@ namespace MiBocaRecuerda
             QuizNum = qfc.QuizNum;
             ErrorAllowCnt = qfc.ErrorAllowCnt;
             ErrorAllowAll = qfc.ErrorAllowAll;
+            ErrorReset = qfc.ErrorReset;
+            PriorityRegion = qfc.PriorityRegion;
         }
     }
 

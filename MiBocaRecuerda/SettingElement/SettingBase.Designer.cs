@@ -47,8 +47,10 @@
             this.lblErrorAll = new System.Windows.Forms.Label();
             this.chboxErrorReset = new System.Windows.Forms.CheckBox();
             this.tabPageLanguage = new System.Windows.Forms.TabPage();
-            this.label5 = new System.Windows.Forms.Label();
             this.cmbRegion = new System.Windows.Forms.ComboBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.lblQuizMax = new System.Windows.Forms.Label();
+            this.lblQuizRange = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuizNum)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMinChapter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxChapter)).BeginInit();
@@ -218,6 +220,8 @@
             // tabPageQuiz
             // 
             this.tabPageQuiz.Controls.Add(this.btnQuizMax);
+            this.tabPageQuiz.Controls.Add(this.lblQuizRange);
+            this.tabPageQuiz.Controls.Add(this.lblQuizMax);
             this.tabPageQuiz.Controls.Add(this.label1);
             this.tabPageQuiz.Controls.Add(this.label2);
             this.tabPageQuiz.Controls.Add(this.label3);
@@ -300,6 +304,15 @@
             this.tabPageLanguage.Text = "Language";
             this.tabPageLanguage.UseVisualStyleBackColor = true;
             // 
+            // cmbRegion
+            // 
+            this.cmbRegion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbRegion.FormattingEnabled = true;
+            this.cmbRegion.Location = new System.Drawing.Point(116, 13);
+            this.cmbRegion.Name = "cmbRegion";
+            this.cmbRegion.Size = new System.Drawing.Size(47, 20);
+            this.cmbRegion.TabIndex = 1;
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -309,14 +322,25 @@
             this.label5.TabIndex = 0;
             this.label5.Text = "Priority region";
             // 
-            // cmbRegion
+            // lblQuizMax
             // 
-            this.cmbRegion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbRegion.FormattingEnabled = true;
-            this.cmbRegion.Location = new System.Drawing.Point(116, 13);
-            this.cmbRegion.Name = "cmbRegion";
-            this.cmbRegion.Size = new System.Drawing.Size(47, 20);
-            this.cmbRegion.TabIndex = 1;
+            this.lblQuizMax.AutoSize = true;
+            this.lblQuizMax.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.lblQuizMax.Location = new System.Drawing.Point(174, 48);
+            this.lblQuizMax.Name = "lblQuizMax";
+            this.lblQuizMax.Size = new System.Drawing.Size(39, 18);
+            this.lblQuizMax.TabIndex = 0;
+            this.lblQuizMax.Text = "max:";
+            // 
+            // lblQuizRange
+            // 
+            this.lblQuizRange.AutoSize = true;
+            this.lblQuizRange.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.lblQuizRange.Location = new System.Drawing.Point(167, 74);
+            this.lblQuizRange.Name = "lblQuizRange";
+            this.lblQuizRange.Size = new System.Drawing.Size(46, 18);
+            this.lblQuizRange.TabIndex = 0;
+            this.lblQuizRange.Text = "range:";
             // 
             // SettingBase
             // 
@@ -366,5 +390,7 @@
         private System.Windows.Forms.TabPage tabPageLanguage;
         private System.Windows.Forms.ComboBox cmbRegion;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lblQuizMax;
+        private System.Windows.Forms.Label lblQuizRange;
     }
 }

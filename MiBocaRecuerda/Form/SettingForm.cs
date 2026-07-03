@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace MiBocaRecuerda
@@ -9,13 +8,15 @@ namespace MiBocaRecuerda
     public partial class SettingForm : Form
     {
         string CurrentFile;
-        ExerciseRepository ExerRepo;
         bool close_permition = true;
         List<SettingBase> settingBases = new List<SettingBase>();
         Dictionary<string, bool> ValidLanguage = new Dictionary<string, bool>() { { "es", false }, { "en", false } };
         Dictionary<string, SettingBase> settings = new Dictionary<string, SettingBase>();
 
         Dictionary<string, string> CodeToLanguage = new Dictionary<string, string>() { { "es", "Spanish" }, { "en", "English" } };
+
+        private SettingBase CurrentSettingLaunguage => settingBases[tabLanguage.SelectedIndex];
+        private string CurrentLanguage = "";
 
         public SettingForm(string currentFile)
         {
@@ -27,7 +28,9 @@ namespace MiBocaRecuerda
             MinimizeBox = false;
 
             CurrentFile = currentFile;
-            ExerRepo = new ExerciseRepository($"Data Source={$"{PathManager.QuizDB}\\{CurrentFile}.db"}");
+
+            settingSpanish1.SomethingChanged += QuizConfigSomethingChanged;
+            settingEnglish1.SomethingChanged += QuizConfigSomethingChanged;
 
             tabPageSpanish.Tag = settingSpanish1;
             tabPageEnglish.Tag = settingEnglish1;
@@ -72,10 +75,12 @@ namespace MiBocaRecuerda
 
             tabLanguage.SelectedIndexChanged += (o, e) =>
             {
-                string lang = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
+                CurrentLanguage = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
 
-                btnApply.Enabled = ValidLanguage[lang];
+                btnApply.Enabled = ValidLanguage[CurrentLanguage];
             };
+
+            CurrentLanguage = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
         }
 
         private void LoadConfig()
@@ -104,39 +109,24 @@ namespace MiBocaRecuerda
 
         private bool SaveConfig()
         {
-            string cacheFile = "";
-            QuizFileConfig common = new QuizFileConfig();
-            FileLenguaConfig lengua = new FileLenguaConfig();
+            string cacheFile = CurrentSettingLaunguage.SelectedFileName;
+            QuizFileConfig common = SettingManager.CommonConfigManager[CurrentLanguage][cacheFile].QuizFileConfig;
+            FileLenguaConfig lengua = CurrentSettingLaunguage.GetLang();
 
-            int index = tabLanguage.SelectedIndex;
-
-            cacheFile = settingBases[index].SelectedFileName;
-            common = settingBases[index].GetCommon();
-            lengua = settingBases[index].GetLang();
+            common.Copy(CurrentSettingLaunguage.GetCommon());
 
             if (cacheFile == null) return false;
-
-            // 不可な設定検証
-            switch (common.Validation(ExerRepo.GetExerciseCount()))
-            {
-                case 1:
-                    MessageBox.Show("チャプタ構成に不整合があります", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    return false;
-                case 2:
-                    // 問題数が超過していた場合は最大数に収める処理が入ってるからここにはこない
-                    MessageBox.Show("チャプタ構成に関して、問題数が超過しています", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    return false;
-                case 3:
-                    MessageBox.Show("問題最大数を超過しています", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    return false;
-                default:
-                    break;
-            }
 
             CommonFunction.XmlWrite(common, PathManager.QuizFileSettingCommon(cacheFile));
             CommonFunction.XmlWrite(lengua, PathManager.QuizFileSettingLang(cacheFile));
 
             return true;
+        }
+
+        private void QuizConfigSomethingChanged(object o, EventArgs e)
+        {
+            // 不可な設定があれば保存しないようにする
+            btnApply.Enabled = CurrentSettingLaunguage.IsValid;
         }
 
         private void btnApply_Click(object sender, EventArgs e)

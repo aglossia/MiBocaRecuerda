@@ -4,6 +4,8 @@ using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
+using System;
+using System.Drawing;
 
 namespace MiBocaRecuerda
 {
@@ -12,11 +14,36 @@ namespace MiBocaRecuerda
         [Browsable(true)]
         [Category("表示")]
         [Description("言語設定")]
+
+        public event EventHandler SomethingChanged;
+
         public string LanguageName { get; set; }
 
         public string SelectedFileName => cmbboxFileName.SelectedItem?.ToString();
 
-        List<QuizFileConfig> qfc;
+        public ExerciseRepository ExerRepo;
+
+        // 妥当性検証用
+        private QuizFileConfig Current_qfc = new QuizFileConfig();
+        // 設定の妥当性
+        public bool IsValid = false;
+
+        public int QuizMax
+        {
+            get
+            {
+                if (ExerRepo != null)
+                {
+                    return ExerRepo.GetExerciseCount();
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+
+        private List<QuizFileConfig> qfc;
 
         protected ComboBox _cmbboxFileName => cmbboxFileName;
 
@@ -26,10 +53,67 @@ namespace MiBocaRecuerda
 
             cmbboxFileName.SelectedIndexChanged += (o, e) =>
             {
+                ExerRepo = new ExerciseRepository($"Data Source={$"{PathManager.QuizDB}\\{cmbboxFileName.Text}.db"}");
+                nudMinChapter.Maximum = UtilityFunction.Techo(QuizMax, 10);
+                nudMaxChapter.Maximum = UtilityFunction.Techo(QuizMax, 10);
                 SetValue(qfc[cmbboxFileName.SelectedIndex]);
+                lblQuizMax.Text = $"max: {QuizMax}";
             };
 
+            nudMinChapter.ValueChanged += NudMinValueChanged;
+            nudMinChapter.ValueChanged += QuizNudValueChanged_common;
+
+            nudMaxChapter.ValueChanged += NudMaxValueChanged;
+            nudMaxChapter.ValueChanged += QuizNudValueChanged_common;
+
+            nudQuizNum.ValueChanged += QuizNudValueChanged_common;
+
             UpdateErrorControls();
+        }
+
+        // 最小チャプター変更
+        private void NudMinValueChanged(object o, EventArgs e)
+        {
+            if (nudMinChapter.Value > nudMaxChapter.Value)
+            {
+                nudMaxChapter.Value = nudMinChapter.Value;
+            }
+        }
+
+        // 最大チャプター変更
+        private void NudMaxValueChanged(object o, EventArgs e)
+        {
+            if (nudMaxChapter.Value < nudMinChapter.Value)
+            {
+                nudMinChapter.Value = nudMaxChapter.Value;
+            }
+        }
+
+        // 問題数関係変更
+        private void QuizNudValueChanged_common(object o, EventArgs e)
+        {
+            Current_qfc.MinChapter = (int)nudMinChapter.Value;
+            Current_qfc.MaxChapter = (int)nudMaxChapter.Value;
+            Current_qfc.MaxQuizNum = QuizMax;
+            int quizNum = (int)nudQuizNum.Value;
+
+            int overflow = 0;
+
+            // 問題許容数を超過する場合に溢れ分をとる
+            if (quizNum - Current_qfc.PermitNum > 0)
+            {
+                overflow = quizNum - Current_qfc.PermitNum;
+            }
+
+            lblQuizRange.Text = $"range: {(nudMinChapter.Value - 1) * 10 + 1}~{(Current_qfc.IsMaxChapter ? QuizMax : nudMaxChapter.Value * 10) + overflow}";
+
+            // あふれがないときに設定が妥当とする
+            IsValid = !(overflow > 0);
+
+            lblQuizRange.ForeColor = IsValid ? Color.Black : Color.Red;
+
+            // 何かの変更があったことをSetting Formに通知
+            SomethingChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void SetValue(QuizFileConfig lang)
@@ -41,6 +125,11 @@ namespace MiBocaRecuerda
             chboxErrorAllowAll.Checked = lang.ErrorAllowAll;
             chboxErrorReset.Checked = lang.ErrorReset;
             cmbRegion.SelectedItem = lang.PriorityRegion;
+
+            Current_qfc.MinChapter = lang.MinChapter;
+            Current_qfc.MaxChapter = lang.MaxChapter;
+            Current_qfc.QuizNum = lang.QuizNum;
+            Current_qfc.MaxQuizNum = ExerRepo.GetExerciseCount();
         }
 
         public virtual void LoadConfig(string currentFile)
@@ -63,7 +152,8 @@ namespace MiBocaRecuerda
                 ErrorAllowCnt = (int)nudErrorAllow.Value,
                 ErrorAllowAll = chboxErrorAllowAll.Checked,
                 ErrorReset = chboxErrorReset.Checked,
-                PriorityRegion = cmbRegion.SelectedItem.ToString()
+                PriorityRegion = cmbRegion.SelectedItem.ToString(),
+                MaxQuizNum = ExerRepo.GetExerciseCount()
             };
 
             return lang;
@@ -80,12 +170,7 @@ namespace MiBocaRecuerda
 
         private void btnQuizMax_Click(object sender, System.EventArgs e)
         {
-            int min = (int)nudMinChapter.Value;
-            int max = (int)nudMaxChapter.Value;
-
-            if (max - min < 0) return;
-
-            nudQuizNum.Value = (max - min + 1) * 10;
+            nudQuizNum.Value = Current_qfc.PermitNum;
         }
 
         private void chboxErrorAllowAll_CheckedChanged(object sender, System.EventArgs e)

@@ -482,7 +482,15 @@ namespace MiBocaRecuerda
             // セルの値をクリップボードにコピー
             if (!string.IsNullOrEmpty(cellValue))
             {
-                Clipboard.SetText(cellValue);
+                try
+                {
+                    Clipboard.SetText(cellValue);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"コピー失敗：{ex.Message}");
+                    return;
+                }
 
                 MessageBox.Show($"{(ColumnIndex == 1 ? "問題" : ColumnIndex == 2 ? "答え" : "???")}をコピー");
             }
@@ -540,7 +548,15 @@ namespace MiBocaRecuerda
                 }
             }
 
-            Clipboard.SetText(string.Join("\r\n", ret));
+            try
+            {
+                Clipboard.SetText(string.Join("\r\n", ret));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"コピー失敗：{ex.Message}");
+                return;
+            }
 
             if (tagName == "all")
             {
@@ -589,7 +605,15 @@ namespace MiBocaRecuerda
                 }
             }
 
-            Clipboard.SetText(string.Join("\r\n", ret));
+            try
+            {
+                Clipboard.SetText(string.Join("\r\n", ret));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"コピー失敗：{ex.Message}");
+                return;
+            }
 
             if (tagName == "all")
             {
@@ -618,7 +642,15 @@ namespace MiBocaRecuerda
                 ret.Add($"{cnt++}\t{quiz}");
             }
 
-            Clipboard.SetText(string.Join("\r\n", ret));
+            try
+            {
+                Clipboard.SetText(string.Join("\r\n", ret));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"コピー失敗：{ex.Message}");
+                return;
+            }
 
             MessageBox.Show("問題全体をコピー");
         }
@@ -654,7 +686,15 @@ namespace MiBocaRecuerda
                 }
             }
 
-            Clipboard.SetText(string.Join("\r\n", ret));
+            try
+            {
+                Clipboard.SetText(string.Join("\r\n", ret));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"コピー失敗：{ex.Message}");
+                return;
+            }
 
             MessageBox.Show("答え全体をコピー");
         }
