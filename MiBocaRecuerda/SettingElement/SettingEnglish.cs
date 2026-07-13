@@ -19,6 +19,13 @@ namespace MiBocaRecuerda.SettingElement
             };
         }
 
+        public override void ChangeEnabled(bool isEnabled)
+        {
+            chboxCapital.Enabled = isEnabled;
+            chboxComaPunto.Enabled = isEnabled;
+            base.ChangeEnabled(isEnabled);
+        }
+
         // SettingBaseが持ってるcmbboxFileNameを教えてもらってそのイベントを拾ってそれぞれでSetValueを実行している
         public void SetValue(FileLenguaConfig _lengua)
         {

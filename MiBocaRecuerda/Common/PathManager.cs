@@ -2,7 +2,11 @@
 {
     static class PathManager
     {
-        public static string QuizDB => $"{SettingManager.RomConfig.ResourcePath}\\db";
+        public static string QuizDBDirectory => $"{SettingManager.RomConfig.ResourcePath}\\db";
+        public static string QuizDB(string fileName)
+        {
+            return $"{QuizDBDirectory}\\{fileName}.db";
+        }
 
         public static string QuizFileSettingCommon(string fileName)
         {

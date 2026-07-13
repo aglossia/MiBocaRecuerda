@@ -26,6 +26,13 @@ namespace MiBocaRecuerda.SettingElement
             chboxComaPunto.Checked = _lengua.ComaPunto;
         }
 
+        public override void ChangeEnabled(bool isEnabled)
+        {
+            chboxCapital.Enabled = isEnabled;
+            chboxComaPunto.Enabled = isEnabled;
+            base.ChangeEnabled(isEnabled);
+        }
+
         public override void LoadConfig(string currentFile)
         {
             lengua = SettingManager.CommonConfigManager[LanguageName].Values.Select(s => s.LenguaConfig).ToList();

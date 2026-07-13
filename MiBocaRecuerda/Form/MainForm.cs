@@ -14,63 +14,63 @@ namespace MiBocaRecuerda
 {
     public partial class MainForm : ResizableForm
     {
-        private ExerciseRepository ExerRepo;
-        private List<Label> label_progress = new List<Label>();
-        private List<Label> label_bar = new List<Label>();
-        private NumericUpDown nudProgress;
-        private List<List<AppRom.ProgressState>> progress_state = new List<List<AppRom.ProgressState>>();
-        private List<string> respuestas = new List<string>();
+        private ExerciseRepository _exerRepo;
+        private List<Label> _labelProgress = new List<Label>();
+        private List<Label> _labelBar = new List<Label>();
+        private NumericUpDown _nudProgress;
+        private List<List<AppRom.ProgressState>> _progressState = new List<List<AppRom.ProgressState>>();
+        private List<string> _respuestas = new List<string>();
 
-        private Label lblNumericProgress;
+        private Label _lblNumericProgress;
 
-        private ResultForm resultForm = new ResultForm();
-        private MessageForm MessageForm_respuesta = new MessageForm();
-        private MessageForm MessageForm_traducir = new MessageForm();
-        private MessageForm MessageForm_quizInfo = new MessageForm();
-        private MessageForm MessageForm_SectionList = new MessageForm();
+        private ResultForm _resultForm = new ResultForm();
+        private MessageForm _messageForm_Respuesta = new MessageForm();
+        private MessageForm _messageForm_Traducir = new MessageForm();
+        private MessageForm _messageForm_QuizInfo = new MessageForm();
+        private MessageForm _messageForm_SectionList = new MessageForm();
 
         // Resultadoに表示する為に蓄積するやつ
-        private List<QuizResult> QuizResult = new List<QuizResult>();
-        // 現在の読込ファイルの設定
-        public static QuizFileConfig QuizFileConfig;
+        private List<QuizResult> _quizResults = new List<QuizResult>();
         // 前回のクイズ設定
-        private int preMinChapter;
-        private int preMaxChapter;
+        private int _preMinChapter;
+        private int _preMaxChapter;
         // 現在の問題集(InitQuizで作成)
-        private List<QuizContents> QuizContents = new List<QuizContents>();
+        private List<QuizContents> _workBook = new List<QuizContents>();
         // セクションリスト(InitQuizで作成)
-        private List<string> SectionList = new List<string>();
+        private List<string> _sectionList = new List<string>();
 
-        private bool IsLoaded = false;
+        private bool _isLoaded = false;
         // 待機中かどうかは解答ボタンのEnabledで判断
-        private bool IsIdle => !btnAnswer.Enabled;
+        private bool _isIdle => !btnAnswer.Enabled;
 
-        // 現在のクイズDB
-        public static string CurrentQuizDB;
+        // 正解数
+        private int _correctAnswerNum = 0;
         // クイズファイルの最大行(設定オーバーを対応するため)
-        private int QuizCountMax = 0;
+        private int _quizCountMax = 0;
         // 起動時のエラー情報
-        private List<string> InitError = new List<string>();
+        private List<string> _initError = new List<string>();
         // 現在の問題のインデックス
-        private int curProgress = -1;
+        private int _curProgress = -1;
+        // 前回の最後の問題インデックス(同じ問題集をするときに最後と最初が同じになることを防ぐ)
+        private int _preLastQuiz = -1;
 
-        private int PruebaChallengeCount = -1;
-        private Counter ErrorAllowCount = new Counter(-1);
-        private Counter ErrorResetCount = new Counter(-1);
+        private int _pruebaChallengeCount = -1;
+        private Counter _errorAllowCount = new Counter(-1);
+        private Counter _errorResetCount = new Counter(-1);
 
         // 答えの表を出すときの指定インデックス記憶用
-        private int cacheDesde = -1;
-        private int cacheHasta = -1;
-        private bool cacheIsIndex = false;
+        private int _cacheDesde = -1;
+        private int _cacheHasta = -1;
+        private bool _cacheIsIndex = false;
 
         // タイトルバーのベースとなる文字列
-        private string BaseTitle = "";
+        private string _baseTitle = "";
 
         //public ClassResize _form_resize;
 
         // ダークモード制御用
-        private Dictionary<string, Color> preControlBackColor = new Dictionary<string, Color>();
-        private Dictionary<string, Color> preControlForeColor = new Dictionary<string, Color>();
+        private Dictionary<string, Color> _preControlBackColor = new Dictionary<string, Color>();
+        private Dictionary<string, Color> _preControlForeColor = new Dictionary<string, Color>();
 
         public class DarkRenderer : ToolStripProfessionalRenderer
         {
@@ -98,7 +98,7 @@ namespace MiBocaRecuerda
             public override Color MenuItemPressedGradientEnd => Color.FromArgb(50, 50, 50);
         }
 
-        ToolStripRenderer DefaultRenderer;
+        private ToolStripRenderer _defaultRenderer;
 
         #region DLL Import
 
@@ -117,7 +117,7 @@ namespace MiBocaRecuerda
         {
             InitializeComponent();
 
-            DefaultRenderer = menuStrip1.Renderer;
+            _defaultRenderer = menuStrip1.Renderer;
 
             //menuStrip1.Renderer = new DarkRenderer();
 
@@ -150,7 +150,7 @@ namespace MiBocaRecuerda
                 l.MouseLeave += Label_leave;
 
                 Controls.Add(l);
-                label_bar.Add(l);
+                _labelBar.Add(l);
             }
 
             // 問題別
@@ -171,10 +171,10 @@ namespace MiBocaRecuerda
                 l.Visible = false;
 
                 Controls.Add(l);
-                label_progress.Add(l);
+                _labelProgress.Add(l);
             }
 
-            lblNumericProgress = new Label
+            _lblNumericProgress = new Label
             {
                 Location = new Point(txtAnswer.Location.X, txtAnswer.Location.Y + txtAnswer.Size.Height + 10),
                 Text = "1000/1000",
@@ -184,23 +184,23 @@ namespace MiBocaRecuerda
                 Name = "NumericProgress"
             };
 
-            Controls.Add(lblNumericProgress);
+            Controls.Add(_lblNumericProgress);
 
-            nudProgress = new NumericUpDown
+            _nudProgress = new NumericUpDown
             {
-                Location = new Point(label_bar[9].Location.X + 50, label_bar[9].Location.Y),
+                Location = new Point(_labelBar[9].Location.X + 50, _labelBar[9].Location.Y),
                 Size = new Size(40, 20),
                 Name = "hyper_group",
                 Minimum = 0,
                 Visible = false
             };
 
-            nudProgress.ValueChanged += nud_ValueChanged;
+            _nudProgress.ValueChanged += nud_ValueChanged;
 
-            Controls.Add(nudProgress);
+            Controls.Add(_nudProgress);
 
-            ErrorAllowCount.PropertyChanged += ErrorCountPropertyChanged;
-            ErrorResetCount.PropertyChanged += ErrorCountPropertyChanged;
+            _errorAllowCount.PropertyChanged += ErrorCountPropertyChanged;
+            _errorResetCount.PropertyChanged += ErrorCountPropertyChanged;
 
             #endregion
 
@@ -236,9 +236,9 @@ namespace MiBocaRecuerda
             DBTSMI_QuizDB.ShortcutKeys = Keys.Control | Keys.D;
             DBTSMI_Progress.ShortcutKeys = Keys.Control | Keys.G;
 
-            resultForm.Dispose();
-            MessageForm_respuesta.Dispose();
-            MessageForm_traducir.Dispose();
+            _resultForm.Dispose();
+            _messageForm_Respuesta.Dispose();
+            _messageForm_Traducir.Dispose();
 
             txtAnswer.KeyDown += TextBoxKeyDown_AvoidBeep;
             txtAnswer.KeyDown += TextAnswerKeyDown;
@@ -267,15 +267,15 @@ namespace MiBocaRecuerda
             // 各コントロールの現在の色を保持
             foreach (Control ctrl in Controls)
             {
-                preControlBackColor[ctrl.Name] = ctrl.BackColor;
-                preControlForeColor[ctrl.Name] = ctrl.ForeColor;
+                _preControlBackColor[ctrl.Name] = ctrl.BackColor;
+                _preControlForeColor[ctrl.Name] = ctrl.ForeColor;
 
                 if (ctrl.GetType() == typeof(Panel))
                 {
                     foreach (Control ctrl2 in (ctrl as Panel).Controls)
                     {
-                        preControlBackColor[ctrl2.Name] = ctrl2.BackColor;
-                        preControlForeColor[ctrl2.Name] = ctrl2.ForeColor;
+                        _preControlBackColor[ctrl2.Name] = ctrl2.BackColor;
+                        _preControlForeColor[ctrl2.Name] = ctrl2.ForeColor;
                     }
                 }
 
@@ -283,8 +283,8 @@ namespace MiBocaRecuerda
                 {
                     foreach (Control ctrl2 in (ctrl as MenuStrip).Controls)
                     {
-                        preControlBackColor[ctrl2.Name] = ctrl2.BackColor;
-                        preControlForeColor[ctrl2.Name] = ctrl2.ForeColor;
+                        _preControlBackColor[ctrl2.Name] = ctrl2.BackColor;
+                        _preControlForeColor[ctrl2.Name] = ctrl2.ForeColor;
                     }
                 }
             }
@@ -299,7 +299,7 @@ namespace MiBocaRecuerda
         // クイズファイルの読み込み
         private void ParseFile()
         {
-            string[] QuizFiles = Directory.GetFiles(PathManager.QuizDB, "*.db");
+            string[] QuizFiles = Directory.GetFiles(PathManager.QuizDBDirectory, "*.db");
 
             QuizFiles = QuizFiles.Where(s => !Path.GetFileName(s).StartsWith('~'.ToString())).ToArray();
 
@@ -321,7 +321,7 @@ namespace MiBocaRecuerda
                 }
                 catch (Exception ex)
                 {
-                    InitError.Add($"{ex.GetType().Name};{ex.Message};{file}");
+                    _initError.Add($"{ex.GetType().Name};{ex.Message};{file}");
                 }
 
                 string fileName = Path.GetFileNameWithoutExtension(file);
@@ -343,7 +343,7 @@ namespace MiBocaRecuerda
                     }
                     catch (Exception ex)
                     {
-                        InitError.Add($"{ex.GetType().Name};{ex.Message};{cacheFile_common} or {cacheFile_lang}");
+                        _initError.Add($"{ex.GetType().Name};{ex.Message};{cacheFile_common} or {cacheFile_lang}");
                     }
                 }
 
@@ -364,7 +364,7 @@ namespace MiBocaRecuerda
                 }
                 catch (DirectoryNotFoundException ex)
                 {
-                    InitError.Add($"{ex.GetType().Name};{ex.Message};cache");
+                    _initError.Add($"{ex.GetType().Name};{ex.Message};cache");
                 }
 
                 string lang;
@@ -381,7 +381,7 @@ namespace MiBocaRecuerda
                     }
                     catch (Exception ex)
                     {
-                        InitError.Add($"{ex.GetType().Name};{ex.Message};{file};{lang}");
+                        _initError.Add($"{ex.GetType().Name};{ex.Message};{file};{lang}");
                     }
                 }
             }
@@ -435,9 +435,9 @@ namespace MiBocaRecuerda
                     txtConsole.BackColor = SystemColors.Control;
                 }
 
-                if (resultForm.IsDisposed == false)
+                if (_resultForm.IsDisposed == false)
                 {
-                    resultForm.Visible = false;
+                    _resultForm.Visible = false;
                     result = true;
                 }
 
@@ -469,7 +469,7 @@ namespace MiBocaRecuerda
                     txtConsole.BackColor = Color.White;
                 }
 
-                if (resultForm.IsDisposed == false) resultForm.Visible = result;
+                if (_resultForm.IsDisposed == false) _resultForm.Visible = result;
                 txtAnswer.Focus();
 
                 ShowCaret(txtAnswer.Handle);
@@ -491,7 +491,7 @@ namespace MiBocaRecuerda
                 SettingManager.RomConfig = CommonFunction.XmlRead<RomConfig>("rom.config");
             }
 
-            QuizFiles = Directory.GetFiles(PathManager.QuizDB, "*.db");
+            QuizFiles = Directory.GetFiles(PathManager.QuizDBDirectory, "*.db");
 
             toolStripQuizFile.Items.AddRange(QuizFiles
                 .Where(s => !Path.GetFileName(s).StartsWith('~'.ToString()))
@@ -513,9 +513,6 @@ namespace MiBocaRecuerda
 
             optionTSMI_DarkMode.Checked = SettingManager.InputCache.DarkMode;
         }
-
-        private int preLastQuiz = -1;
-        public string CurrentQuizDBPath = "";
 
         // クイズ開始
         private void InitQuiz(bool manual)
@@ -542,19 +539,16 @@ namespace MiBocaRecuerda
             txtAnswer.Focus();
             btnAnswer.Enabled = true;
 
-            CurrentQuizDB = toolStripQuizFile.SelectedItem.ToString();
-            CurrentQuizDBPath = $"{PathManager.QuizDB}\\{CurrentQuizDB}.db";
+            SettingManager.CurrentQuizDB = toolStripQuizFile.SelectedItem.ToString();
 
             // 問題集DBを読み込む
-            ExerRepo = new ExerciseRepository($"Data Source={CurrentQuizDBPath}");
+            _exerRepo = new ExerciseRepository($"Data Source={PathManager.QuizDB(SettingManager.CurrentQuizDB)}");
 
-            SettingManager.LangType = ExerRepo.GetLanguage();
-            QuizCountMax = ExerRepo.GetExerciseCount();
-            SectionList = ExerRepo.GetAllSection();
+            SettingManager.CurrentLangType = _exerRepo.GetLanguage();
+            _quizCountMax = _exerRepo.GetExerciseCount();
+            _sectionList = _exerRepo.GetAllSection();
 
-            QuizFileConfig = SettingManager.CommonConfigManager[SettingManager.LangType][CurrentQuizDB].QuizFileConfig;
-
-            if (QuizCountMax < QuizFileConfig.MinChapterToIndex)
+            if (_quizCountMax < SettingManager.CurrentQuizFileConfig.MinChapterToIndex)
             {
                 MessageBox.Show("問題最大数を超過しています", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -564,21 +558,21 @@ namespace MiBocaRecuerda
             txtAnswer.KeyPress += SettingManager.LangCtrl.KeyPress;
 
             if (manual) txtConsole.Text = "";
-            curProgress = -1;
-            correctAnswerNum = 0;
-            QuizResult.Clear();
-            QuizContents.Clear();
-            respuestas.Clear();
-            ErrorResetCount.Cnt = 0;
+            _curProgress = -1;
+            _correctAnswerNum = 0;
+            _quizResults.Clear();
+            _workBook.Clear();
+            _respuestas.Clear();
+            _errorResetCount.Cnt = 0;
             // ErrorAllowCount,ErrorResetCountの表示に関わっているものはErrorAllowCountのプロパティを変化する前に変化させておく必要がある
-            ErrorAllowCount.Cnt = 0;
+            _errorAllowCount.Cnt = 0;
 
             // 進捗表示作成
             CreateQuizProgress();
 
             // nからmまでの整数のリストを作成
             List<int> numberList = new List<int>();
-            for (int i = QuizFileConfig.MinChapterToIndex; i <= QuizFileConfig.MaxChapterToIndex; i++)
+            for (int i = SettingManager.CurrentQuizFileConfig.MinChapterToIndex; i <= SettingManager.CurrentQuizFileConfig.MaxChapterToIndex; i++)
             {
                 numberList.Add(i);
             }
@@ -591,9 +585,9 @@ namespace MiBocaRecuerda
                 // 最後に表示していた問題が、次の最初の問題になるとシャッフルをやり直す
                 randomSequence = UtilityFunction.ShuffleList(numberList);
             }
-            while (randomSequence[0] == preLastQuiz);
+            while (randomSequence[0] == _preLastQuiz);
 
-            QuizContents = CreateQuizContents(randomSequence);
+            _workBook = CreateQuizContents(randomSequence);
 
             InitDisplay();
 
@@ -602,8 +596,8 @@ namespace MiBocaRecuerda
             ShowQuestion();
 
             // 今回のクイズ設定を保持
-            preMinChapter = QuizFileConfig.MinChapter;
-            preMaxChapter = QuizFileConfig.MaxChapter;
+            _preMinChapter = SettingManager.CurrentQuizFileConfig.MinChapter;
+            _preMaxChapter = SettingManager.CurrentQuizFileConfig.MaxChapter;
         }
 
         // インデックスリストから問題を取得する
@@ -614,7 +608,7 @@ namespace MiBocaRecuerda
             foreach (int index in indexList)
             {
                 // DBが取得できなかった場合は設定しない
-                if (ExerRepo.GetByNum(index) is ExerciseDB edb)
+                if (_exerRepo.GetByNum(index) is ExerciseDB edb)
                 {
                     quizContents.Add(new QuizContents(edb));
                 }
@@ -626,7 +620,7 @@ namespace MiBocaRecuerda
         // 初期起動状態から問題開始したときのディスプレイの更新
         private void InitDisplay()
         {
-            bool isEnabled = QuizContents.Count != 0;
+            bool isEnabled = _workBook.Count != 0;
 
             optionTSMI_quizInfo.Enabled = isEnabled;
 
@@ -639,7 +633,7 @@ namespace MiBocaRecuerda
             toolTSMI_ShowAnswer.Enabled = isEnabled;
             toolTSMI_SectionList.Enabled = isEnabled;
             toolTSMI_EditQuiz.Enabled = isEnabled;
-            toolTSMI_translate.Enabled = SettingManager.LangType != "";
+            toolTSMI_translate.Enabled = SettingManager.CurrentLangType != "";
 
             DBTSMI_Progress.Enabled = isEnabled;
         }
@@ -647,54 +641,54 @@ namespace MiBocaRecuerda
         private void RefreshDisplay()
         {
             // 前回とクイズ設定が違っていたらチャレンジ回数を初期化する
-            if ((preMinChapter != QuizFileConfig.MinChapter) ||
-                (preMaxChapter != QuizFileConfig.MaxChapter))
+            if ((_preMinChapter != SettingManager.CurrentQuizFileConfig.MinChapter) ||
+                (_preMaxChapter != SettingManager.CurrentQuizFileConfig.MaxChapter))
             {
-                PruebaChallengeCount = 0;
+                _pruebaChallengeCount = 0;
             }
             else
             {
                 // pruebaモードの時だけ
                 if (optionTSMI_prueba.Checked)
                 {
-                    PruebaChallengeCount++;
+                    _pruebaChallengeCount++;
                 }
             }
 
-            lbl_PruebaChallengeCount.Text = $"Try: {PruebaChallengeCount}";
+            lbl_PruebaChallengeCount.Text = $"Try: {_pruebaChallengeCount}";
             lbl_PruebaChallengeCount.Visible = optionTSMI_prueba.Checked;
 
             // POR HACER:settingで切り替える
             //lbl_ErrorAllowCount.Visible = false;
 
-            string baseTitle = $"MBR [{QuizFileConfig.MinChapterToIndex}~{QuizFileConfig.MaxChapterToIndex}]";
+            string baseTitle = $"MBR [{SettingManager.CurrentQuizFileConfig.MinChapterToIndex}~{SettingManager.CurrentQuizFileConfig.MaxChapterToIndex}]";
 
             // pruebaモードのとき
             if (optionTSMI_prueba.Checked)
             {
-                if (QuizFileConfig.ErrorAllowCnt > 0)
+                if (SettingManager.CurrentQuizFileConfig.ErrorAllowCnt > 0)
                 {
                     lbl_ErrorAllowCount.Visible = true;
                 }
 
                 // 練習が1章だけならPRUEBA回数を表示する
-                if (QuizFileConfig.MinChapter == QuizFileConfig.MaxChapter)
+                if (SettingManager.CurrentQuizFileConfig.MinChapter == SettingManager.CurrentQuizFileConfig.MaxChapter)
                 {
-                    string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
+                    string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{SettingManager.CurrentQuizDB}_p.csv";
 
                     if (File.Exists(path))
                     {
                         string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
 
                         // prueba回数
-                        baseTitle += $" [PR {int.Parse(lines[QuizFileConfig.MinChapter - 1].Split(',')[1])}]";
+                        baseTitle += $" [PR {int.Parse(lines[SettingManager.CurrentQuizFileConfig.MinChapter - 1].Split(',')[1])}]";
                         // 最近のprueba日
-                        baseTitle += $" {lines[QuizFileConfig.MinChapter - 1].Split(',')[0].Substring(2)}";
+                        baseTitle += $" {lines[SettingManager.CurrentQuizFileConfig.MinChapter - 1].Split(',')[0].Substring(2)}";
                     }
                 }
             }
 
-            BaseTitle = baseTitle;
+            _baseTitle = baseTitle;
         }
 
         // OKとかNGとかを表示させる
@@ -727,47 +721,77 @@ namespace MiBocaRecuerda
         private void ShowQuestion()
         {
             // 現在の問題のインデックスを進める
-            curProgress++;
+            _curProgress++;
 
             // タイトル更新
-            Text = $"{BaseTitle} {QuizContents[curProgress].Section}";
+            Text = $"{_baseTitle} {_workBook[_curProgress].Section}";
 
-            preLastQuiz = QuizContents[curProgress].QuizNum;
+            _preLastQuiz = _workBook[_curProgress].QuizNum;
 
-            if ((QuizFileConfig.ErrorAllowAll == false) && (QuizFileConfig.ErrorReset == true))
+            if ((SettingManager.CurrentQuizFileConfig.ErrorAllowAll == false) && (SettingManager.CurrentQuizFileConfig.ErrorReset == true))
             {
                 // ミス許容が全体ではないときに問題ごとのミスを初期化する
-                ErrorAllowCount.Cnt = 0;
+                _errorAllowCount.Cnt = 0;
             }
 
             // 進捗ビジュアルモード
             if (optionTSMI_progresoVisual.Checked)
             {
-                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = AppRom.ProgressState.CurrentQuiz;
+                _progressState[UtilityFunction.Suelo(_curProgress, 10)][_curProgress % 10] = AppRom.ProgressState.CurrentQuiz;
 
-                RedrawProgress(curProgress);
+                RedrawProgress(_curProgress);
             }
             else
             {
-                _ = QuizFileConfig.MaxQuizNum > QuizCountMax ? QuizCountMax : QuizFileConfig.MaxQuizNum;
-                lblNumericProgress.Text = $"{curProgress + 1}/{QuizFileConfig.QuizNum}";
+                _ = SettingManager.CurrentQuizFileConfig.MaxQuizNum > _quizCountMax ? _quizCountMax : SettingManager.CurrentQuizFileConfig.MaxQuizNum;
+                _lblNumericProgress.Text = $"{_curProgress + 1}/{SettingManager.CurrentQuizFileConfig.QuizNum}";
             }
 
-            txtQuiz.Text = QuizContents[curProgress].Quiz;
+            txtQuiz.Text = _workBook[_curProgress].Quiz;
 
-            if (MessageForm_quizInfo.Visible == true)
+            if (_messageForm_QuizInfo.Visible == true)
             {
-                // 同じ処理がTSMI_quizInfoにあるので冗長
-                List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
-                List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].Section };
-                List<string> quizInfo = new List<string>();
-
-                string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
-
-                quizInfo.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
-
-                MessageForm_quizInfo.MessageUpdate(quizInfo);
+                QuizInfoUpdate();
             }
+        }
+
+        private void QuizInfoUpdate()
+        {
+            // 同じ処理がTSMI_quizInfoにあるので冗長
+            List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
+            List<string> input_d = new List<string>() { _workBook[_curProgress].QuizNum.ToString(), _workBook[_curProgress].Section };
+            List<string> quizInfo = new List<string>();
+
+            Dictionary<string, List<string>> workAnswer = new Dictionary<string, List<string>>();
+
+            // 答えをすべて集める
+            foreach (KeyValuePair<string, List<Answer>> kvp in _workBook[_curProgress].CorrectAnswer)
+            {
+                foreach (Answer ans in kvp.Value)
+                {
+                    if (workAnswer.ContainsKey(kvp.Key))
+                    {
+                        workAnswer[kvp.Key] = workAnswer[kvp.Key].Concat(CoreProcess.ParseAnswer(ans.Sentence)).ToList();
+                    }
+                    else
+                    {
+                        workAnswer[kvp.Key] = CoreProcess.ParseAnswer(ans.Sentence);
+                    }
+                }
+            }
+
+            // Regionとその個数を追加
+            foreach (string region in workAnswer.Keys)
+            {
+                input_h.Add(region);
+                input_d.Add(workAnswer[region].Count.ToString());
+            }
+
+            string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
+
+            quizInfo.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
+
+            _messageForm_QuizInfo.MessageUpdate(quizInfo);
         }
 
         // 進捗表示を作る
@@ -776,18 +800,18 @@ namespace MiBocaRecuerda
             // 進捗ビジュアルモード
             if (optionTSMI_progresoVisual.Checked)
             {
-                lblNumericProgress.Visible = false;
+                _lblNumericProgress.Visible = false;
 
                 current_bar_index = 0;
-                label_bar[0].BackColor = AppRom.ColorCurrentGroup;
+                _labelBar[0].BackColor = AppRom.ColorCurrentGroup;
 
-                int nudSize = UtilityFunction.Suelo(QuizFileConfig.QuizNum - 1, 100);
+                int nudSize = UtilityFunction.Suelo(SettingManager.CurrentQuizFileConfig.QuizNum - 1, 100);
 
-                nudProgress.Maximum = nudSize;
-                nudProgress.Visible = nudSize != 0;
+                _nudProgress.Maximum = nudSize;
+                _nudProgress.Visible = nudSize != 0;
 
-                progress_state = new List<List<AppRom.ProgressState>>(
-                        new List<int>[UtilityFunction.Techo(QuizFileConfig.QuizNum, 10)]
+                _progressState = new List<List<AppRom.ProgressState>>(
+                        new List<int>[UtilityFunction.Techo(SettingManager.CurrentQuizFileConfig.QuizNum, 10)]
                             .Select(_ => new List<AppRom.ProgressState>(new AppRom.ProgressState[10]))
                     );
 
@@ -795,10 +819,10 @@ namespace MiBocaRecuerda
             }
             else
             {
-                label_progress.ForEach(l1 => l1.Visible = false);
-                label_bar.ForEach(l1 => l1.Visible = false);
-                nudProgress.Visible = false;
-                lblNumericProgress.Visible = true;
+                _labelProgress.ForEach(l1 => l1.Visible = false);
+                _labelBar.ForEach(l1 => l1.Visible = false);
+                _nudProgress.Visible = false;
+                _lblNumericProgress.Visible = true;
             }
         }
 
@@ -807,28 +831,28 @@ namespace MiBocaRecuerda
         {
             int hyper_index = UtilityFunction.Suelo(progress_num, 100);
 
-            nudProgress.Value = hyper_index;
+            _nudProgress.Value = hyper_index;
 
             current_bar_index = UtilityFunction.GetNDigit(progress_num, 2);
 
             // hyper group(100~)とbar index(10の位)の差をとって進捗ラベルをどこまで表示するか
-            int progSize = QuizFileConfig.QuizNum - ((int)nudProgress.Value * 100 + current_bar_index * 10);
+            int progSize = SettingManager.CurrentQuizFileConfig.QuizNum - ((int)_nudProgress.Value * 100 + current_bar_index * 10);
 
             // hyper groupが最上位にいっているかを調べる
-            int barSize = UtilityFunction.Techo(QuizFileConfig.QuizNum - ((int)nudProgress.Value * 100), 10);
+            int barSize = UtilityFunction.Techo(SettingManager.CurrentQuizFileConfig.QuizNum - ((int)_nudProgress.Value * 100), 10);
 
             // 進捗ラベルを指定箇所まで表示する
-            label_progress.Select((label, index) => new { label, index })
+            _labelProgress.Select((label, index) => new { label, index })
                         .ToList()
                         .ForEach(item => item.label.Visible = item.index < progSize);
 
             // バーラベルを指定箇所まで表示する
-            label_bar.Select((label, index) => new { label, index })
+            _labelBar.Select((label, index) => new { label, index })
                         .ToList()
                         .ForEach(item => item.label.Visible = item.index < barSize);
 
             // バーラベルを選択したやつは選択色に変えてそれ以外は未選択色
-            label_bar.Select((label, index) => new { label, index })
+            _labelBar.Select((label, index) => new { label, index })
                       .ToList()
                       .ForEach(item => item.label.BackColor = (current_bar_index != item.index) ? Color.LightBlue : Color.Turquoise);
 
@@ -836,7 +860,7 @@ namespace MiBocaRecuerda
 
             for (int cnt = 0; cnt < 10; cnt++)
             {
-                switch (progress_state[(int)nudProgress.Value * 10 + current_bar_index][cnt])
+                switch (_progressState[(int)_nudProgress.Value * 10 + current_bar_index][cnt])
                 {
                     case AppRom.ProgressState.Neutral:
                         chara = AppRom.ProgressStateCharacter_Neutral;
@@ -852,7 +876,7 @@ namespace MiBocaRecuerda
                         break;
                 }
 
-                label_progress[cnt].Text = chara;
+                _labelProgress[cnt].Text = chara;
                 //label_progress[cnt].ForeColor = chara == progressStateCharacter_CurrentQuiz ? colorOnProgress : colorOffProgress;
             }
         }
@@ -860,65 +884,65 @@ namespace MiBocaRecuerda
         // Siguiente制御
         private void MoveQuiz(bool isForward)
         {
-            if (QuizFileConfig == null)
+            if (SettingManager.CurrentQuizFileConfig == null)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            int diff = QuizFileConfig.MaxChapter - QuizFileConfig.MinChapter + 1;
+            int diff = SettingManager.CurrentQuizFileConfig.MaxChapter - SettingManager.CurrentQuizFileConfig.MinChapter + 1;
 
             if (isForward)
             {
                 // 最小章がMAX数を超えていたら何もすることがない
-                if (QuizFileConfig.MinChapter + diff > QuizCountMax / 10)
+                if (SettingManager.CurrentQuizFileConfig.MinChapter + diff > _quizCountMax / 10)
                 {
                     // 最小章が17だとて問題最大数が165だとしたら、最大出題は170まで対応してて
                     // 最大出題-問題最大数が1~10であれば対応できる
-                    if(((QuizFileConfig.MinChapter + diff) * 10) - QuizCountMax > 10)
+                    if(((SettingManager.CurrentQuizFileConfig.MinChapter + diff) * 10) - _quizCountMax > 10)
                     {
                         return;
                     }
                 }
 
-                if (QuizFileConfig.MaxChapter + diff > QuizCountMax / 10)
+                if (SettingManager.CurrentQuizFileConfig.MaxChapter + diff > _quizCountMax / 10)
                 {
-                    if (((QuizFileConfig.MinChapter + diff) * 10) - QuizCountMax > 10)
+                    if (((SettingManager.CurrentQuizFileConfig.MinChapter + diff) * 10) - _quizCountMax > 10)
                     {
                         // 最大章がMAX数を超えていたら最大章をMAX数にする
-                        QuizFileConfig.MinChapter += diff;
-                        QuizFileConfig.MaxChapter = QuizCountMax / 10;
+                        SettingManager.CurrentQuizFileConfig.MinChapter += diff;
+                        SettingManager.CurrentQuizFileConfig.MaxChapter = _quizCountMax / 10;
                     }
                     else
                     {
                         // 基準の差分分を順シフトする
-                        QuizFileConfig.MinChapter += diff;
-                        QuizFileConfig.MaxChapter += diff;
+                        SettingManager.CurrentQuizFileConfig.MinChapter += diff;
+                        SettingManager.CurrentQuizFileConfig.MaxChapter += diff;
                     }
                 }
                 else
                 {
                     // 基準の差分分を順シフトする
-                    QuizFileConfig.MinChapter += diff;
-                    QuizFileConfig.MaxChapter += diff;
+                    SettingManager.CurrentQuizFileConfig.MinChapter += diff;
+                    SettingManager.CurrentQuizFileConfig.MaxChapter += diff;
                 }
             }
             else
             {
                 // 最大章が0以下だと何もすることがない
-                if (QuizFileConfig.MaxChapter - diff < 1) return;
+                if (SettingManager.CurrentQuizFileConfig.MaxChapter - diff < 1) return;
 
-                if (QuizFileConfig.MinChapter - diff < 1)
+                if (SettingManager.CurrentQuizFileConfig.MinChapter - diff < 1)
                 {
                     // 最大章が0以下だと最小の1にする
-                    QuizFileConfig.MinChapter = 1;
-                    QuizFileConfig.MaxChapter -= diff;
+                    SettingManager.CurrentQuizFileConfig.MinChapter = 1;
+                    SettingManager.CurrentQuizFileConfig.MaxChapter -= diff;
                 }
                 else
                 {
                     // 基準の差分分を逆シフトする
-                    QuizFileConfig.MinChapter -= diff;
-                    QuizFileConfig.MaxChapter -= diff;
+                    SettingManager.CurrentQuizFileConfig.MinChapter -= diff;
+                    SettingManager.CurrentQuizFileConfig.MaxChapter -= diff;
                 }
             }
 
@@ -930,16 +954,16 @@ namespace MiBocaRecuerda
         {
             if (progNum > 10) return;
 
-            int bar_index = label_bar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
-            int quizNum = (int)nudProgress.Value * 100 + bar_index * 10 + progNum;
+            int bar_index = _labelBar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
+            int quizNum = (int)_nudProgress.Value * 100 + bar_index * 10 + progNum;
 
-            if (respuestas.Count <= quizNum || quizNum < 0) return;
+            if (_respuestas.Count <= quizNum || quizNum < 0) return;
 
             List<string> tmp = new List<string>();
 
             string answer = "";
 
-            foreach (KeyValuePair<string, List<Answer>> kvp in QuizContents[quizNum].CorrectAnswer)
+            foreach (KeyValuePair<string, List<Answer>> kvp in _workBook[quizNum].CorrectAnswer)
             {
                 foreach (Answer ans in kvp.Value)
                 {
@@ -949,7 +973,7 @@ namespace MiBocaRecuerda
 
             tmp.Add(answer);
             tmp.Add("───────");
-            tmp.Add(respuestas[quizNum]);
+            tmp.Add(_respuestas[quizNum]);
 
             MessageForm s = new MessageForm(tmp, "FE DE ERRATAS", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
@@ -962,13 +986,13 @@ namespace MiBocaRecuerda
         // 進捗ファイルひな形作成
         private void CreateNewProgressFile()
         {
-            string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
+            string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{SettingManager.CurrentQuizDB}_p.csv";
             DateTime defaultDate = new DateTime(1970, 1, 1);
 
             // ファイル作成 & 書き込み
             using (StreamWriter writer = new StreamWriter(path, false)) // false = 上書き
             {
-                foreach (string chapter in SectionList)
+                foreach (string chapter in _sectionList)
                 {
                     writer.WriteLine($"{defaultDate:yyyy/MM/dd},000,{chapter}");
                 }
@@ -1035,14 +1059,14 @@ namespace MiBocaRecuerda
                         if (e.Shift)
                         {
                             // 言語ごとの補助入力
-                            insertText = SettingManager.LanguageConfigManager[SettingManager.LangType].InputSupport[num];
+                            insertText = SettingManager.LanguageConfigManager[SettingManager.CurrentLangType].InputSupport[num];
                         }
                         else
                         {
                             // ファイルごとの補助入力
-                            if (QuizContents[curProgress].AutoNombre.Count <= num) return;
+                            if (_workBook[_curProgress].AutoNombre.Count <= num) return;
 
-                            insertText = QuizContents[curProgress].AutoNombre[num];
+                            insertText = _workBook[_curProgress].AutoNombre[num];
                         }
 
                         break;
@@ -1059,17 +1083,17 @@ namespace MiBocaRecuerda
 
         private void LabelClick(object sender, EventArgs e)
         {
-            int bar_index = label_bar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
-            int progress_index = label_progress.IndexOf(sender as Label);
-            int quizNum = (int)nudProgress.Value * 100 + bar_index * 10 + progress_index;
+            int bar_index = _labelBar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
+            int progress_index = _labelProgress.IndexOf(sender as Label);
+            int quizNum = (int)_nudProgress.Value * 100 + bar_index * 10 + progress_index;
 
-            if (respuestas.Count <= quizNum) return;
+            if (_respuestas.Count <= quizNum) return;
 
             List<string> tmp = new List<string>();
 
             string answer = "";
 
-            foreach (KeyValuePair<string, List<Answer>> kvp in QuizContents[quizNum].CorrectAnswer)
+            foreach (KeyValuePair<string, List<Answer>> kvp in _workBook[quizNum].CorrectAnswer)
             {
                 foreach (Answer ans in kvp.Value)
                 {
@@ -1079,7 +1103,7 @@ namespace MiBocaRecuerda
 
             tmp.Add(answer);
             tmp.Add("───────");
-            tmp.Add(respuestas[quizNum]);
+            tmp.Add(_respuestas[quizNum]);
 
             MessageForm s = new MessageForm(tmp, "FE DE ERRATAS", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
@@ -1093,14 +1117,14 @@ namespace MiBocaRecuerda
 
         private void Label_bar_Click(object sender, EventArgs e)
         {
-            int bar_idx = label_bar.IndexOf(sender as Label);
+            int bar_idx = _labelBar.IndexOf(sender as Label);
 
             // バーラベルを選択したやつは選択色に変えてそれ以外は未選択色
-            label_bar.Select((label, index) => new { label, index })
+            _labelBar.Select((label, index) => new { label, index })
                       .ToList()
                       .ForEach(item => item.label.BackColor = (bar_idx != item.index) ? Color.LightBlue : Color.Turquoise);
 
-            RedrawProgress((int)nudProgress.Value * 100 + bar_idx * 10);
+            RedrawProgress((int)_nudProgress.Value * 100 + bar_idx * 10);
         }
 
         private void Label_hover(object o, EventArgs e)
@@ -1114,14 +1138,14 @@ namespace MiBocaRecuerda
         {
             Label l = o as Label;
 
-            l.BackColor = label_bar[current_bar_index] == l ? AppRom.ColorCurrentGroup : AppRom.ColorNeutral;
+            l.BackColor = _labelBar[current_bar_index] == l ? AppRom.ColorCurrentGroup : AppRom.ColorNeutral;
         }
 
         private void nud_ValueChanged(object sender, EventArgs e)
         {
-            label_bar.ForEach(l => l.BackColor = Color.LightBlue);
+            _labelBar.ForEach(l => l.BackColor = Color.LightBlue);
 
-            int hyper_group = (int)nudProgress.Value * 100;
+            int hyper_group = (int)_nudProgress.Value * 100;
 
             RedrawProgress(hyper_group);
         }
@@ -1159,10 +1183,10 @@ namespace MiBocaRecuerda
         {
             if (e.PropertyName == nameof(Counter.Cnt))
             {
-                lbl_ErrorAllowCount.Text = $"{ErrorAllowCount.Cnt}/{QuizFileConfig.ErrorAllowCnt}";
-                if (QuizFileConfig.ErrorAllowAll)
+                lbl_ErrorAllowCount.Text = $"{_errorAllowCount.Cnt}/{SettingManager.CurrentQuizFileConfig.ErrorAllowCnt}";
+                if (SettingManager.CurrentQuizFileConfig.ErrorAllowAll)
                 {
-                    lbl_ErrorAllowCount.Text = $"Todo[{ErrorResetCount.Cnt}]: {lbl_ErrorAllowCount.Text}";
+                    lbl_ErrorAllowCount.Text = $"Todo[{_errorResetCount.Cnt}]: {lbl_ErrorAllowCount.Text}";
                 }
             }
         }
@@ -1173,9 +1197,9 @@ namespace MiBocaRecuerda
 
             Load += (o, e) =>
             {
-                if (InitError.Count != 0)
+                if (_initError.Count != 0)
                 {
-                    MessageForm s = new MessageForm(InitError, "Load error", MessageForm.TipoDeUbicacion.CENTRO, this, true, true, true)
+                    MessageForm s = new MessageForm(_initError, "Load error", MessageForm.TipoDeUbicacion.CENTRO, this, true, true, true)
                     {
                         ShowIcon = false
                     };
@@ -1230,7 +1254,7 @@ namespace MiBocaRecuerda
 
             Shown += (o, e) =>
             {
-                IsLoaded = true;
+                _isLoaded = true;
             };
 
             FormClosing += (o, e) =>
@@ -1269,14 +1293,14 @@ namespace MiBocaRecuerda
 
             optionTSMI_prueba.CheckedChanged += (o, e) =>
             {
-                if (!IsLoaded) return;
-                PruebaChallengeCount = -1;
+                if (!_isLoaded) return;
+                _pruebaChallengeCount = -1;
                 InitQuiz(true);
             };
 
             optionTSMI_progresoVisual.CheckedChanged += (o, e) =>
             {
-                if (!IsLoaded) return;
+                if (!_isLoaded) return;
                 InitQuiz(true);
             };
 
@@ -1359,7 +1383,7 @@ namespace MiBocaRecuerda
                 else
                 {
                     // Default
-                    menuStrip1.Renderer = DefaultRenderer;
+                    menuStrip1.Renderer = _defaultRenderer;
 
                     foreach (ToolStripItem item in menuStrip1.Items)
                     {
@@ -1377,15 +1401,15 @@ namespace MiBocaRecuerda
                         {
 
                         }
-                        ctrl.BackColor = preControlBackColor[ctrl.Name];
-                        ctrl.ForeColor = preControlForeColor[ctrl.Name];
+                        ctrl.BackColor = _preControlBackColor[ctrl.Name];
+                        ctrl.ForeColor = _preControlForeColor[ctrl.Name];
 
                         if (ctrl.GetType() == typeof(Panel))
                         {
                             foreach (Control ctrl2 in (ctrl as Panel).Controls)
                             {
-                                ctrl2.BackColor = preControlBackColor[ctrl2.Name];
-                                ctrl2.ForeColor = preControlForeColor[ctrl2.Name];
+                                ctrl2.BackColor = _preControlBackColor[ctrl2.Name];
+                                ctrl2.ForeColor = _preControlForeColor[ctrl2.Name];
                             }
                         }
 
@@ -1393,8 +1417,8 @@ namespace MiBocaRecuerda
                         {
                             foreach (Control ctrl2 in (ctrl as MenuStrip).Controls)
                             {
-                                ctrl2.BackColor = preControlBackColor[ctrl2.Name];
-                                ctrl2.ForeColor = preControlForeColor[ctrl2.Name];
+                                ctrl2.BackColor = _preControlBackColor[ctrl2.Name];
+                                ctrl2.ForeColor = _preControlForeColor[ctrl2.Name];
                             }
                         }
                     }
@@ -1429,23 +1453,20 @@ namespace MiBocaRecuerda
 
         #region イベント
 
-        // 正解数
-        private int correctAnswerNum = 0;
-
         CancellationTokenSource cts = new CancellationTokenSource();
         static object lockObject = new object();
 
         // 解答ボタンクリック(responder)
         private void btnAnswer_Click(object sender, EventArgs e)
         {
-            if (ExerRepo == null) return;
+            if (_exerRepo == null) return;
 
             cts.Cancel();
 
             txtConsole.Text = "";
 
             // POR HACER:20260106:region指定でやるモードも検討
-            var (isCorrect, adopt_str) = CoreProcess.CheckAnswer(txtAnswer.Text, QuizContents[curProgress].Answers().ToList());
+            var (isCorrect, adopt_str) = CoreProcess.CheckAnswer(txtAnswer.Text, _workBook[_curProgress].Answers().ToList());
 
 #if DEBUG
             if (chboxDebug.Checked) isCorrect = true;
@@ -1459,7 +1480,7 @@ namespace MiBocaRecuerda
 
             if (isCorrect)
             {
-                correctAnswerNum++;
+                _correctAnswerNum++;
             }
             else
             {
@@ -1467,28 +1488,28 @@ namespace MiBocaRecuerda
                 {
                     // pruebaモード
 
-                    if (QuizFileConfig.ErrorAllowCnt > 0)
+                    if (SettingManager.CurrentQuizFileConfig.ErrorAllowCnt > 0)
                     {
                         // ミス許容が設定されているとき
 
-                        if (ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllowCnt)
+                        if (_errorAllowCount.Cnt < SettingManager.CurrentQuizFileConfig.ErrorAllowCnt)
                         {
                             // ミス許容未満のあいだはミス数を加算してやり直し
-                            ErrorAllowCount.Cnt++;
+                            _errorAllowCount.Cnt++;
                             return;
                         }
                         else
                         {
                             // ミス許容全体はリセットカウント進める
-                            if (QuizFileConfig.ErrorAllowAll)
+                            if (SettingManager.CurrentQuizFileConfig.ErrorAllowAll)
                             {
-                                ErrorResetCount.Cnt++;
+                                _errorResetCount.Cnt++;
                             }
 
                             // ミス許容リセットのときはミス数リセットする
-                            if (QuizFileConfig.ErrorReset)
+                            if (SettingManager.CurrentQuizFileConfig.ErrorReset)
                             {
-                                ErrorAllowCount.Cnt = 0;
+                                _errorAllowCount.Cnt = 0;
                             }
 
                             IsFirstMistake = true;
@@ -1497,14 +1518,14 @@ namespace MiBocaRecuerda
                 }
                 else
                 {
-                    if (ErrorAllowCount.Cnt < QuizFileConfig.ErrorAllowCnt)
+                    if (_errorAllowCount.Cnt < SettingManager.CurrentQuizFileConfig.ErrorAllowCnt)
                     {
-                        ErrorAllowCount.Cnt++;
+                        _errorAllowCount.Cnt++;
                     }
                     else
                     {
-                        ErrorResetCount.Cnt++;
-                        ErrorAllowCount.Cnt = 0;
+                        _errorResetCount.Cnt++;
+                        _errorAllowCount.Cnt = 0;
                     }
 
                     // 完答モードの時はやり直し
@@ -1514,43 +1535,43 @@ namespace MiBocaRecuerda
 
             if (optionTSMI_progresoVisual.Checked)
             {
-                label_progress[curProgress % 10].Text = isCorrect ? AppRom.ProgressStateCharacter_Correct : AppRom.ProgressStateCharacter_Incorrect;
+                _labelProgress[_curProgress % 10].Text = isCorrect ? AppRom.ProgressStateCharacter_Correct : AppRom.ProgressStateCharacter_Incorrect;
                 //label_progress[curProgress % 10].ForeColor = colorOffProgress;
-                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
+                _progressState[UtilityFunction.Suelo(_curProgress, 10)][_curProgress % 10] = isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
             }
 
             // 解答を保存
-            respuestas.Add(txtAnswer.Text == "" ? "NONE" : txtAnswer.Text);
+            _respuestas.Add(txtAnswer.Text == "" ? "NONE" : txtAnswer.Text);
             txtAnswer.Text = "";
 
-            QuizResult.Add(new QuizResult(QuizContents[curProgress].Quiz, QuizContents[curProgress].CorrectAnswer, txtAnswer.Text, QuizContents[curProgress].QuizNum, QuizContents[curProgress].Supplement, isCorrect));
+            _quizResults.Add(new QuizResult(_workBook[_curProgress].Quiz, _workBook[_curProgress].CorrectAnswer, txtAnswer.Text, _workBook[_curProgress].QuizNum, _workBook[_curProgress].Supplement, isCorrect));
 
 
-            int endQuizNum = optionTSMI_progresoVisual.Checked ? QuizFileConfig.QuizNum - 1 : QuizFileConfig.MaxQuizNum - 1;
+            int endQuizNum = optionTSMI_progresoVisual.Checked ? SettingManager.CurrentQuizFileConfig.QuizNum - 1 : SettingManager.CurrentQuizFileConfig.MaxQuizNum - 1;
 
             // クイズ終了？
-            if (curProgress == endQuizNum || curProgress == QuizCountMax - 1)
+            if (_curProgress == endQuizNum || _curProgress == _quizCountMax - 1)
             {
                 //tokenSource.Cancel();
 
                 btnAnswer.Enabled = false;
 
                 // 問題数と正解問題数が同じでpruebaモードのとき
-                if ((endQuizNum + 1 == correctAnswerNum) && optionTSMI_prueba.Checked)
+                if ((endQuizNum + 1 == _correctAnswerNum) && optionTSMI_prueba.Checked)
                 {
                     DisplayResult("PERFECTO!", 5000);
 
                     // 綺麗な対処ではないが、のちのRefreshDisplayで++される使用のためここで調整
                     // PERFECTOしたあとは最終回数を表示していたい
-                    PruebaChallengeCount--;
+                    _pruebaChallengeCount--;
 
                     // チャプター数
-                    int chapterNum = QuizFileConfig.MaxChapter - QuizFileConfig.MinChapter + 1;
+                    int chapterNum = SettingManager.CurrentQuizFileConfig.MaxChapter - SettingManager.CurrentQuizFileConfig.MinChapter + 1;
 
                     // チャプター数に応じて最大問題数であるとき進捗を記録する
-                    if (QuizFileConfig.PermitNum == QuizFileConfig.QuizNum)
+                    if (SettingManager.CurrentQuizFileConfig.PermitNum == SettingManager.CurrentQuizFileConfig.QuizNum)
                     {
-                        string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_p.csv";
+                        string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{SettingManager.CurrentQuizDB}_p.csv";
 
                         if (File.Exists(path) == false)
                         {
@@ -1565,7 +1586,7 @@ namespace MiBocaRecuerda
                         {
                             string[] lines = File.ReadAllLines(path, Encoding.GetEncoding("utf-8"));
 
-                            string[] sp = lines[QuizFileConfig.MinChapter - 1 + cnt].Split(',');
+                            string[] sp = lines[SettingManager.CurrentQuizFileConfig.MinChapter - 1 + cnt].Split(',');
                             string today = DateTime.Now.ToString("yyyy/MM/dd");
 
                             // 同日のPruebaは記録しない
@@ -1574,7 +1595,7 @@ namespace MiBocaRecuerda
                             {
                                 sp[0] = today;
                                 sp[1] = (int.Parse(sp[1]) + 1).ToString("D3");
-                                lines[QuizFileConfig.MinChapter - 1 + cnt] = string.Join(",", sp);
+                                lines[SettingManager.CurrentQuizFileConfig.MinChapter - 1 + cnt] = string.Join(",", sp);
 
                                 File.WriteAllLines(path, lines);
                             }
@@ -1583,8 +1604,8 @@ namespace MiBocaRecuerda
                         // 練習が複数の章にわたるときは、どこからどこまでかを記録する
                         if (chapterNum > 1)
                         {
-                            string path_i = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{CurrentQuizDB}_intercontinental.txt";
-                            string write_text = $"{QuizFileConfig.MinChapter}~{QuizFileConfig.MaxChapter}";
+                            string path_i = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{SettingManager.CurrentQuizDB}_intercontinental.txt";
+                            string write_text = $"{SettingManager.CurrentQuizFileConfig.MinChapter}~{SettingManager.CurrentQuizFileConfig.MaxChapter}";
 
                             if (File.Exists(path_i))
                             {
@@ -1612,14 +1633,14 @@ namespace MiBocaRecuerda
 
                 if (optionTSMI_resultados.Checked)
                 {
-                    if (resultForm.IsDisposed == false) resultForm.Dispose();
+                    if (_resultForm.IsDisposed == false) _resultForm.Dispose();
 
-                    resultForm = new ResultForm(QuizResult, this)
+                    _resultForm = new ResultForm(_quizResults, this)
                     {
                         ShowIcon = false
                     };
 
-                    resultForm.Show();
+                    _resultForm.Show();
                 }
 
                 return;
@@ -1636,15 +1657,15 @@ namespace MiBocaRecuerda
 
         private void ShowAnswer()
         {
-            if (MessageForm_respuesta.IsDisposed == false) MessageForm_respuesta.Dispose();
-            if (ExerRepo == null) return;
+            if (_messageForm_Respuesta.IsDisposed == false) _messageForm_Respuesta.Dispose();
+            if (_exerRepo == null) return;
 
             List<string> processedAnswer = new List<string>();
             // 出力加工用
             Dictionary<string, List<string>> workAnswer = new Dictionary<string, List<string>>();
 
             // 答えをすべて集める
-            foreach (KeyValuePair<string, List<Answer>> kvp in QuizContents[curProgress].CorrectAnswer)
+            foreach (KeyValuePair<string, List<Answer>> kvp in _workBook[_curProgress].CorrectAnswer)
             {
                 foreach (Answer ans in kvp.Value)
                 {
@@ -1692,12 +1713,12 @@ namespace MiBocaRecuerda
                 }
             }
 
-            MessageForm_respuesta = new MessageForm(processedAnswer, "RESPUESTA", MessageForm.TipoDeUbicacion.DERECHA, this)
+            _messageForm_Respuesta = new MessageForm(processedAnswer, "RESPUESTA", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
                 ShowIcon = false
             };
 
-            MessageForm_respuesta.Show();
+            _messageForm_Respuesta.Show();
         }
 
         #region TSMI
@@ -1707,7 +1728,7 @@ namespace MiBocaRecuerda
         // Setting
         private void optionTSMI_setting_Click(object sender, EventArgs e)
         {
-            SettingForm s = new SettingForm(toolStripQuizFile.Text)
+            SettingForm s = new SettingForm()
             {
                 ShowInTaskbar = false,
                 ShowIcon = false
@@ -1722,7 +1743,7 @@ namespace MiBocaRecuerda
 
         private void optionTSMI_SettingLanguage_Click(object sender, EventArgs e)
         {
-            SettingLanguageForm s = new SettingLanguageForm(SettingManager.LangType)
+            SettingLanguageForm s = new SettingLanguageForm(SettingManager.CurrentLangType)
             {
                 ShowInTaskbar = false,
                 ShowIcon = false
@@ -1737,28 +1758,22 @@ namespace MiBocaRecuerda
         // QuizInfo
         private void optionTSMI_quizInfo_Click(object sender, EventArgs e)
         {
-            if (MessageForm_quizInfo.IsDisposed == false) MessageForm_quizInfo.Dispose();
+            if (_messageForm_QuizInfo.IsDisposed == false) _messageForm_QuizInfo.Dispose();
 
-            if (ExerRepo == null)
+            if (_exerRepo == null)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            List<string> input_h = new List<string>() { "Quiz Number", "Quiz Title" };
-            List<string> input_d = new List<string>() { QuizContents[curProgress].QuizNum.ToString(), QuizContents[curProgress].Section };
-            List<string> quizInfo = new List<string>();
-
-            string xml_s = UtilityFunction.GenerateXmlTable(input_h, input_d);
-
-            quizInfo.AddRange(ParseXML.ConvertTextWithTable(xml_s).Split('\n'));
-
-            MessageForm_quizInfo = new MessageForm(quizInfo, "QuizInfo", MessageForm.TipoDeUbicacion.DERECHA, this)
+            _messageForm_QuizInfo = new MessageForm(new List<string>(), "QuizInfo", MessageForm.TipoDeUbicacion.DERECHA, this, true)
             {
                 ShowIcon = false
             };
 
-            MessageForm_quizInfo.Show();
+            QuizInfoUpdate();
+
+            _messageForm_QuizInfo.Show();
         }
 
         // Prueba
@@ -1811,28 +1826,28 @@ namespace MiBocaRecuerda
         // 進捗Undo
         private void UndoProgress()
         {
-            if (QuizResult.Count == 0) return;
+            if (_quizResults.Count == 0) return;
 
             if (optionTSMI_prueba.Checked)
             {
-                if (QuizResult[QuizResult.Count - 1].Result == false)
+                if (_quizResults[_quizResults.Count - 1].Result == false)
                 {
-                    ErrorAllowCount.Cnt = 0;
+                    _errorAllowCount.Cnt = 0;
                 }
             }
 
-            QuizResult.RemoveAt(QuizResult.Count - 1);
-            respuestas.RemoveAt(respuestas.Count - 1);
+            _quizResults.RemoveAt(_quizResults.Count - 1);
+            _respuestas.RemoveAt(_respuestas.Count - 1);
 
             if (optionTSMI_progresoVisual.Checked)
             {
                 // 現在のラベル★をニュートラル○にする
-                label_progress[curProgress % 10].Text = AppRom.ProgressStateCharacter_Neutral;
-                progress_state[UtilityFunction.Suelo(curProgress, 10)][curProgress % 10] = AppRom.ProgressState.Neutral;
+                _labelProgress[_curProgress % 10].Text = AppRom.ProgressStateCharacter_Neutral;
+                _progressState[UtilityFunction.Suelo(_curProgress, 10)][_curProgress % 10] = AppRom.ProgressState.Neutral;
             }
 
             // ShowQuestionで++されるからここでは-2する
-            curProgress -= 2;
+            _curProgress -= 2;
 
             ShowQuestion();
         }
@@ -1840,7 +1855,7 @@ namespace MiBocaRecuerda
         // Undo progress
         private void operationTSMI_Undo_p_Click(object sender, EventArgs e)
         {
-            if (IsIdle) return;
+            if (_isIdle) return;
 
             UndoProgress();
         }
@@ -1851,9 +1866,9 @@ namespace MiBocaRecuerda
         // Undo error
         private void operationTSMI_Undo_e_Click(object sender, EventArgs e)
         {
-            if (IsIdle) return;
+            if (_isIdle) return;
 
-            if (QuizFileConfig.ErrorAllowCnt > 0)
+            if (SettingManager.CurrentQuizFileConfig.ErrorAllowCnt > 0)
             {
                 // ミス許容が設定されているとき
 
@@ -1862,33 +1877,33 @@ namespace MiBocaRecuerda
                     // ミス確定初回の場合のUndoは進捗をUndoする
                     UndoProgress();
 
-                    ErrorResetCount.Cnt--;
-                    ErrorAllowCount.Cnt = QuizFileConfig.ErrorAllowCnt;
+                    _errorResetCount.Cnt--;
+                    _errorAllowCount.Cnt = SettingManager.CurrentQuizFileConfig.ErrorAllowCnt;
                 }
                 else
                 {
-                    if (QuizFileConfig.ErrorAllowAll)
+                    if (SettingManager.CurrentQuizFileConfig.ErrorAllowAll)
                     {
                         // ミス許容全体
 
-                        if (ErrorAllowCount.Cnt == 0)
+                        if (_errorAllowCount.Cnt == 0)
                         {
                             // ミス数が0でミス許容リセットが1以上はミス許容リセットを-1
-                            if (ErrorResetCount.Cnt > 0)
+                            if (_errorResetCount.Cnt > 0)
                             {
-                                ErrorResetCount.Cnt--;
+                                _errorResetCount.Cnt--;
                             }
                         }
                         else
                         {
                             // ミス数が1以上はミス数を-1
-                            ErrorAllowCount.Cnt--;
+                            _errorAllowCount.Cnt--;
                         }
                     }
                     else
                     {
                         // ミス許容全体ではないときはミス数を-1するだけ
-                        ErrorAllowCount.Cnt--;
+                        _errorAllowCount.Cnt--;
                     }
                 }
 
@@ -1908,41 +1923,41 @@ namespace MiBocaRecuerda
         // 正解リストindex順表示
         private void toolTSMI_prueba_Order_Click(object sender, EventArgs e)
         {
-            if (resultForm.IsDisposed == false) resultForm.Dispose();
+            if (_resultForm.IsDisposed == false) _resultForm.Dispose();
 
-            if (QuizContents.Count == 0)
+            if (_workBook.Count == 0)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            resultForm = new ResultForm(QuizContents, this, true)
+            _resultForm = new ResultForm(_workBook, this, true)
             {
                 Text = "Lista de Pruebas",
                 ShowIcon = false
             };
 
-            resultForm.Show();
+            _resultForm.Show();
         }
 
         // 正解リスト出題順表示
         private void toolTSMI_prueba_QuizOrder_Click(object sender, EventArgs e)
         {
-            if (resultForm.IsDisposed == false) resultForm.Dispose();
+            if (_resultForm.IsDisposed == false) _resultForm.Dispose();
 
-            if (QuizContents.Count == 0)
+            if (_workBook.Count == 0)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            resultForm = new ResultForm(QuizContents, this, false)
+            _resultForm = new ResultForm(_workBook, this, false)
             {
                 Text = "Lista de Pruebas",
                 ShowIcon = false
             };
 
-            resultForm.Show();
+            _resultForm.Show();
         }
 
         // 正解リスト指定表示
@@ -1950,38 +1965,38 @@ namespace MiBocaRecuerda
         {
             // Pruebaリストの問題インデックスを指定して表示する
 
-            if (QuizFileConfig == null)
+            if (SettingManager.CurrentQuizFileConfig == null)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            if (cacheDesde == -1) cacheDesde = cacheIsIndex ? QuizFileConfig.MinChapterToIndex : QuizFileConfig.MinChapter;
-            if (cacheHasta == -1) cacheHasta = cacheIsIndex ? QuizFileConfig.MaxChapterToIndex : QuizFileConfig.MaxChapter;
+            if (_cacheDesde == -1) _cacheDesde = _cacheIsIndex ? SettingManager.CurrentQuizFileConfig.MinChapterToIndex : SettingManager.CurrentQuizFileConfig.MinChapter;
+            if (_cacheHasta == -1) _cacheHasta = _cacheIsIndex ? SettingManager.CurrentQuizFileConfig.MaxChapterToIndex : SettingManager.CurrentQuizFileConfig.MaxChapter;
 
-            InputDialog id = new InputDialog(cacheDesde, cacheHasta, QuizCountMax, cacheIsIndex);
+            InputDialog id = new InputDialog(_cacheDesde, _cacheHasta, _quizCountMax, _cacheIsIndex);
 
             // 問題インデックスを入力する画面
             if (id.ShowDialog() == DialogResult.OK)
             {
-                cacheDesde = id.Desde;
-                cacheHasta = id.Hasta;
-                cacheIsIndex = id.IsIndex;
+                _cacheDesde = id.Desde;
+                _cacheHasta = id.Hasta;
+                _cacheIsIndex = id.IsIndex;
 
-                int desde = cacheIsIndex ? cacheDesde : cacheDesde * 10 - 9;
-                int hasta = cacheIsIndex ? cacheHasta : cacheHasta * 10;
-                hasta = hasta > QuizCountMax ? QuizCountMax : hasta;
+                int desde = _cacheIsIndex ? _cacheDesde : _cacheDesde * 10 - 9;
+                int hasta = _cacheIsIndex ? _cacheHasta : _cacheHasta * 10;
+                hasta = hasta > _quizCountMax ? _quizCountMax : hasta;
 
                 List<int> sequence = Enumerable.Range(desde, hasta - desde + 1).ToList();
                 List<QuizContents> quizContents = CreateQuizContents(sequence);
 
-                resultForm = new ResultForm(quizContents, this, true)
+                _resultForm = new ResultForm(quizContents, this, true)
                 {
                     Text = "Lista de Pruebas",
                     ShowIcon = false
                 };
 
-                resultForm.Show();
+                _resultForm.Show();
             }
         }
 
@@ -1993,58 +2008,58 @@ namespace MiBocaRecuerda
         // チャプターリスト表示
         private void toolTSMI_chapterList_Click(object sender, EventArgs e)
         {
-            if (MessageForm_SectionList.IsDisposed == false) MessageForm_SectionList.Dispose();
+            if (_messageForm_SectionList.IsDisposed == false) _messageForm_SectionList.Dispose();
 
-            if (ExerRepo == null)
+            if (_exerRepo == null)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            MessageForm_SectionList = new MessageForm(SectionList, "Lista de sección", MessageForm.TipoDeUbicacion.CENTRO, this)
+            _messageForm_SectionList = new MessageForm(_sectionList, "Lista de sección", MessageForm.TipoDeUbicacion.CENTRO, this)
             {
                 ShowIcon = false
             };
 
-            MessageForm_SectionList.Show();
+            _messageForm_SectionList.Show();
         }
 
         // 翻訳機能
         private void toolTSMI_translate_Click(object sender, EventArgs e)
         {
-            if (MessageForm_traducir.IsDisposed == false) MessageForm_traducir.Dispose();
-            if (SettingManager.LangType == "" || txtAnswer.Text == "")
+            if (_messageForm_Traducir.IsDisposed == false) _messageForm_Traducir.Dispose();
+            if (SettingManager.CurrentLangType == "" || txtAnswer.Text == "")
             {
                 MessageBox.Show("Fallo en la traducción", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string traduccion = Translate.DoTransrate(txtAnswer.Text, SettingManager.LangType);
+            string traduccion = Translate.DoTransrate(txtAnswer.Text, SettingManager.CurrentLangType);
 
             List<string> mostrar = new List<string>();
 
             mostrar.Add(traduccion);
 
-            MessageForm_traducir = new MessageForm(mostrar, "TRADUCCIÓN", MessageForm.TipoDeUbicacion.CENTRO, this)
+            _messageForm_Traducir = new MessageForm(mostrar, "TRADUCCIÓN", MessageForm.TipoDeUbicacion.CENTRO, this)
             {
                 ShowIcon = false
             };
 
-            MessageForm_traducir.Show();
+            _messageForm_Traducir.Show();
         }
 
         // 現在の問題を編集
         private void toolTSMI_EditQuiz_Current_Click(object sender, EventArgs e)
         {
-            if (QuizContents.Count == 0)
+            if (_workBook.Count == 0)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            List<int> quizSequence = QuizContents.Select(q => q.QuizNum).ToList();
+            List<int> quizSequence = _workBook.Select(q => q.QuizNum).ToList();
 
-            EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
+            EditDBForm edb = new EditDBForm(_workBook[_curProgress].QuizNum, quizSequence);
 
             if (!edb.IsDisposed) edb.Show(this);
         }
@@ -2052,17 +2067,17 @@ namespace MiBocaRecuerda
         // 一つ前の問題を編集
         private void toolTSMI_EditQuiz_Antes_Click(object sender, EventArgs e)
         {
-            if (QuizContents.Count == 0)
+            if (_workBook.Count == 0)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            if (curProgress - 1 >= 0)
+            if (_curProgress - 1 >= 0)
             {
-                List<int> quizSequence = QuizContents.Select(q => q.QuizNum).ToList();
+                List<int> quizSequence = _workBook.Select(q => q.QuizNum).ToList();
 
-                EditDBForm edb = new EditDBForm(CurrentQuizDBPath, QuizContents[curProgress - 1].QuizNum, QuizFileConfig.PriorityRegion, quizSequence);
+                EditDBForm edb = new EditDBForm(_workBook[_curProgress - 1].QuizNum, quizSequence);
 
                 if (!edb.IsDisposed) edb.Show(this);
             }
@@ -2071,13 +2086,13 @@ namespace MiBocaRecuerda
         // 番号を指定して編集
         private void toolTSMI_EditQuiz_Number_Click(object sender, EventArgs e)
         {
-            if (QuizContents.Count == 0)
+            if (_workBook.Count == 0)
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            int maxQuizNum = ExerRepo.GetExerciseCount();
+            int maxQuizNum = _exerRepo.GetExerciseCount();
 
             using (Form dialog = new Form())
             {
@@ -2133,9 +2148,9 @@ namespace MiBocaRecuerda
                         return;
                     }
 
-                    List<int> quizSequence = Enumerable.Range(1, QuizCountMax).ToList();
+                    List<int> quizSequence = Enumerable.Range(1, _quizCountMax).ToList();
 
-                    EditDBForm edb = new EditDBForm(CurrentQuizDBPath, number, QuizFileConfig.PriorityRegion, quizSequence);
+                    EditDBForm edb = new EditDBForm(number, quizSequence);
 
                     if (!edb.IsDisposed) edb.Show(this);
                 }
@@ -2149,15 +2164,15 @@ namespace MiBocaRecuerda
         // クイズDBを開く
         private void DBTSMI_QuizDB_Click(object sender, EventArgs e)
         {
-            if (CurrentQuizDBPath == "")
+            if (SettingManager.CurrentQuizDB == "")
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string fileName = Path.GetFileNameWithoutExtension(CurrentQuizDBPath);
+            //string fileName = Path.GetFileNameWithoutExtension(CurrentQuizDBPath);
 
-            string path = $"{PathManager.QuizDB}\\{fileName}.db";
+            string path = PathManager.QuizDB(SettingManager.CurrentQuizDB);
 
             if (File.Exists(path))
             {
@@ -2173,15 +2188,13 @@ namespace MiBocaRecuerda
         // 進捗を開く
         private void DBTSMI_Progress_Click(object sender, EventArgs e)
         {
-            if (CurrentQuizDBPath == "")
+            if (SettingManager.CurrentQuizDB == "")
             {
                 MessageBox.Show("El archivo del Quiz no se ha cargado.", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string fileName = Path.GetFileNameWithoutExtension(CurrentQuizDBPath);
-
-            string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{fileName}_p.csv";
+            string path = $"{SettingManager.RomConfig.ResourcePath}\\progreso\\{SettingManager.CurrentQuizDB}_p.csv";
 
             if (File.Exists(path))
             {

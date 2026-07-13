@@ -8,7 +8,7 @@ namespace MiBocaRecuerda
         public int Desde { get; private set; }
         public int Hasta { get; private set; }
         public bool IsIndex { get; private set; }
-        private int Max;
+        private int _max;
 
         public InputDialog(int desde, int hasta, int max, bool isIndex)
         {
@@ -19,7 +19,7 @@ namespace MiBocaRecuerda
             nudDesde.Value = desde;
             nudHasta.Value = hasta;
             chboxIndex.Checked = isIndex;
-            Max = max;
+            _max = max;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -51,8 +51,8 @@ namespace MiBocaRecuerda
 
         private void btnAhora_Click(object sender, EventArgs e)
         {
-            nudDesde.Value = chboxIndex.Checked ? MainForm.QuizFileConfig.MinChapterToIndex : MainForm.QuizFileConfig.MinChapter;
-            nudHasta.Value = chboxIndex.Checked ? MainForm.QuizFileConfig.MaxChapterToIndex : MainForm.QuizFileConfig.MaxChapter;
+            nudDesde.Value = chboxIndex.Checked ? SettingManager.CurrentQuizFileConfig.MinChapterToIndex : SettingManager.CurrentQuizFileConfig.MinChapter;
+            nudHasta.Value = chboxIndex.Checked ? SettingManager.CurrentQuizFileConfig.MaxChapterToIndex : SettingManager.CurrentQuizFileConfig.MaxChapter;
         }
 
         private void chboxChapter_CheckedChanged(object sender, EventArgs e)
@@ -71,11 +71,11 @@ namespace MiBocaRecuerda
 
             if (chboxIndex.Checked)
             {
-                nudHasta.Value = Max;
+                nudHasta.Value = _max;
             }
             else
             {
-                nudHasta.Value = UtilityFunction.Techo(Max, 10);
+                nudHasta.Value = UtilityFunction.Techo(_max, 10);
             }
         }
     }

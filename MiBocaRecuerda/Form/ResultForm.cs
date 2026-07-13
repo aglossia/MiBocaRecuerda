@@ -11,32 +11,31 @@ namespace MiBocaRecuerda
     public partial class ResultForm : Form
     {
         public ResultForm() { }
-        private Dictionary<int, string> Supplement = new Dictionary<int, string>();
+        private Dictionary<int, string> _supplement = new Dictionary<int, string>();
 
         private ClassResize _form_resize;
 
-        private List<QuizResult> QuizResults = new List<QuizResult>();
-        private MainForm MainForm;
+        private List<QuizResult> _quizResults = new List<QuizResult>();
+        private Point _parentLocation;
+        private Size _parentSize;
 
-        private DataGridViewTextBoxColumn col_num;
-        private DataGridViewTextBoxColumn col_quiz;
-        private DataGridViewTextBoxColumn col_correct;
+        private DataGridViewTextBoxColumn _col_num;
+        private DataGridViewTextBoxColumn _col_quiz;
+        private DataGridViewTextBoxColumn _col_correct;
 
-        private bool IsAuto = false;
+        private bool _isAuto = false;
 
         // 答えを含むコピー用
         private Dictionary<int, (string quiz, Answer answer)> RespuestaCopy = new Dictionary<int, (string quiz, Answer answer)>();
 
-        private string PrioridadRegion;
-        List<string> RegionList = new List<string>();
+        private string _prioridadRegion;
+        private List<string> _regionList = new List<string>();
 
         private void Init()
         {
             dgv.RowPrePaint += dataGridView1_RowPrePaint;
 
             //dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-
-
         }
 
         private void dataGridView1_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
@@ -53,20 +52,21 @@ namespace MiBocaRecuerda
             }
         }
 
-        public ResultForm(List<QuizResult> qr, MainForm mf)
+        public ResultForm(List<QuizResult> qr, MainForm mainForm)
         {
             InitializeComponent();
 
             Init();
 
-            PrioridadRegion = MainForm.QuizFileConfig.PriorityRegion;
+            _prioridadRegion = SettingManager.CurrentQuizFileConfig.PriorityRegion;
 
-            QuizResults = qr;
-            MainForm = mf;
+            _quizResults = qr;
+            _parentLocation = mainForm.Location;
+            _parentSize = mainForm.Size;
 
-            foreach (QuizResult r in QuizResults)
+            foreach (QuizResult r in _quizResults)
             {
-                Supplement.Add(r.QuizNum, r.Supplement);
+                _supplement.Add(r.QuizNum, r.Supplement);
             }
 
             CreateControls();
@@ -81,9 +81,7 @@ namespace MiBocaRecuerda
 
             Init();
 
-            MainForm = mf;
-
-            PrioridadRegion = MainForm.QuizFileConfig.PriorityRegion;
+            _prioridadRegion = SettingManager.CurrentQuizFileConfig.PriorityRegion;
 
             int cnt = 0;
             List<Answer> parseAnswer = new List<Answer>();
@@ -91,7 +89,7 @@ namespace MiBocaRecuerda
             if (isOrder) qc = qc.OrderBy(q => q.QuizNum).ToList();
 
             // regionの種類を集める
-            RegionList = qc.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
+            _regionList = qc.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
 
             foreach (QuizContents c in qc)
             {
@@ -132,10 +130,10 @@ namespace MiBocaRecuerda
                     }
                 }
 
-                QuizResults.Add(new QuizResult(c.Quiz, c.CorrectAnswer, "", c.QuizNum, c.Supplement));
+                _quizResults.Add(new QuizResult(c.Quiz, c.CorrectAnswer, "", c.QuizNum, c.Supplement));
             }
 
-            if (RegionList.Count == 1)
+            if (_regionList.Count == 1)
             {
                 // regionが一つしかないときは表示しない
                 Controls.Remove(menuStrip1);
@@ -143,20 +141,20 @@ namespace MiBocaRecuerda
             else
             {
                 // regionが複数あるときはregionを列挙する
-                TS_cmbRegion.Items.AddRange(RegionList.ToArray());
-                TS_cmbRegion.SelectedItem = PrioridadRegion;
+                TS_cmbRegion.Items.AddRange(_regionList.ToArray());
+                TS_cmbRegion.SelectedItem = _prioridadRegion;
             }
 
             TS_cmbRegion.SelectedIndexChanged += (o, e) =>
             {
                 // 優先を選択したregionに変えてデータをセットしなおす
-                PrioridadRegion = (o as ToolStripComboBox).SelectedItem.ToString();
+                _prioridadRegion = (o as ToolStripComboBox).SelectedItem.ToString();
                 SetTableData();
             };
 
-            foreach (QuizResult r in QuizResults)
+            foreach (QuizResult r in _quizResults)
             {
-                Supplement.Add(r.QuizNum, r.Supplement);
+                _supplement.Add(r.QuizNum, r.Supplement);
             }
 
             CreateControls();
@@ -174,7 +172,7 @@ namespace MiBocaRecuerda
             //dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
-            col_num = new DataGridViewTextBoxColumn
+            _col_num = new DataGridViewTextBoxColumn
             {
                 Name = "num",
                 HeaderText = "No",
@@ -183,7 +181,7 @@ namespace MiBocaRecuerda
                 ReadOnly = true
             };
 
-            col_quiz = new DataGridViewTextBoxColumn
+            _col_quiz = new DataGridViewTextBoxColumn
             {
                 Name = "quiz",
                 HeaderText = "Prueba",
@@ -191,7 +189,7 @@ namespace MiBocaRecuerda
                 SortMode = DataGridViewColumnSortMode.Automatic
             };
 
-            col_correct = new DataGridViewTextBoxColumn
+            _col_correct = new DataGridViewTextBoxColumn
             {
                 Name = "correct",
                 HeaderText = "Respuesta Correcta",
@@ -199,16 +197,16 @@ namespace MiBocaRecuerda
                 SortMode = DataGridViewColumnSortMode.Automatic
             };
 
-            col_correct.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            _col_correct.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-            col_quiz.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            col_correct.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            _col_quiz.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            _col_correct.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
-            dgv.Columns.Add(col_num);
-            dgv.Columns.Add(col_quiz);
-            dgv.Columns.Add(col_correct);
+            dgv.Columns.Add(_col_num);
+            dgv.Columns.Add(_col_quiz);
+            dgv.Columns.Add(_col_correct);
 
-            for (int cnt = 0; cnt < QuizResults.Count; cnt++)
+            for (int cnt = 0; cnt < _quizResults.Count; cnt++)
             {
                 dgv.Rows.Add();
             }
@@ -217,15 +215,15 @@ namespace MiBocaRecuerda
         private void SetTableData()
         {
             // DGVにデータを設定する
-            for (int cnt = 0; cnt < QuizResults.Count; cnt++)
+            for (int cnt = 0; cnt < _quizResults.Count; cnt++)
             {
-                dgv.Rows[cnt].Cells["num"].Value = QuizResults[cnt].QuizNum;
-                dgv.Rows[cnt].Cells["quiz"].Value = QuizResults[cnt].Quiz;
+                dgv.Rows[cnt].Cells["num"].Value = _quizResults[cnt].QuizNum;
+                dgv.Rows[cnt].Cells["quiz"].Value = _quizResults[cnt].Quiz;
 
                 List<string> parsedAnswers = new List<string>();
 
                 // パースした解答を集める
-                foreach (Answer ans in QuizResults[cnt].Answers(PrioridadRegion))
+                foreach (Answer ans in _quizResults[cnt].Answers(_prioridadRegion))
                 {
                     parsedAnswers = parsedAnswers.Concat(CoreProcess.ParseAnswer(ans.Sentence)).ToList();
                 }
@@ -240,13 +238,13 @@ namespace MiBocaRecuerda
 
                 dgv.Rows[cnt].Cells["correct"].Value = string.Join("\n", parsedAnswers);
 
-                if (QuizResults[cnt].Result == false)
+                if (_quizResults[cnt].Result == false)
                 {
                     dgv.Rows[cnt].DefaultCellStyle.BackColor = Color.AliceBlue;
                 }
 
                 // 補足があるやつは補足の目印をつける
-                if (QuizResults[cnt].Supplement != "")
+                if (_quizResults[cnt].Supplement != "")
                 {
                     dgv.Rows[cnt].Cells["quiz"].Value += " *";
                 }
@@ -263,26 +261,26 @@ namespace MiBocaRecuerda
 
                 Size = new Size(width_num + width_quiz + width_correct + 20, Size.Height);
 
-                col_num.Width = width_num;
-                col_quiz.Width = width_quiz;
-                col_correct.Width = width_correct;
+                _col_num.Width = width_num;
+                _col_quiz.Width = width_quiz;
+                _col_correct.Width = width_correct;
 
                 BaseAreaInfo baseArea = UtilityFunction.GetBaseArea();
 
-                int move_right = MainForm.Location.X + MainForm.Width + Width;
-                int move_left = MainForm.Location.X - Width;
+                int move_right = _parentLocation.X + _parentSize.Width + Width;
+                int move_left = _parentLocation.X - Width;
 
-                Console.WriteLine($"{baseArea.MaxX}, {MainForm.Location.X + MainForm.Width + Width}");
+                Console.WriteLine($"{baseArea.MaxX}, {_parentLocation.X + _parentSize.Width + Width}");
 
                 if (move_right < baseArea.MaxX)
                 {
                     // 右に表示する余地があるとき
-                    Location = new Point(move_right - Width, MainForm.Location.Y);
+                    Location = new Point(move_right - Width, _parentLocation.Y);
                 }
                 else if (move_left > baseArea.MinX)
                 {
                     // 左に表示する余地があるとき
-                    Location = new Point(move_left, MainForm.Location.Y);
+                    Location = new Point(move_left, _parentLocation.Y);
                 }
                 // 右にも左にも表示できないときはデフォルト位置
             };
@@ -296,7 +294,7 @@ namespace MiBocaRecuerda
 
             SizeChanged += (o, e) =>
             {
-                if (IsAuto) return;
+                if (_isAuto) return;
 
                 if (_form_resize != null) _form_resize._resize(false);
 
@@ -347,7 +345,7 @@ namespace MiBocaRecuerda
                 CMS_copy_all.Click -= AllCopy_Region_all;
                 CMS_copy_answer_all.Click -= AllCopy_Region_all;
 
-                if (RegionList.Count > 1)
+                if (_regionList.Count > 1)
                 {
                     var a = CMS_copy_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
                     a.Tag = "all";
@@ -413,7 +411,7 @@ namespace MiBocaRecuerda
             string correcto = dgv[2, RowIndex].Value?.ToString();
 
             // 補足がある場合
-            if (Supplement[quizNum] != "")
+            if (_supplement[quizNum] != "")
             {
                 List<string> tmp = new List<string>
                             {
@@ -421,7 +419,7 @@ namespace MiBocaRecuerda
                                 correcto,
                                 "───────"
                             };
-                tmp.AddRange(ParseXML.ConvertTextWithTable(Supplement[quizNum]).Split('\n'));
+                tmp.AddRange(ParseXML.ConvertTextWithTable(_supplement[quizNum]).Split('\n'));
 
                 MessageForm s = new MessageForm(tmp, $"Suplemento - {quizNum}", MessageForm.TipoDeUbicacion.PARENT_LINE, this)
                 {
@@ -521,7 +519,7 @@ namespace MiBocaRecuerda
                 {
                     if (reg_cnt > 1)
                     {
-                        if (!regions.Contains(PrioridadRegion))
+                        if (!regions.Contains(_prioridadRegion))
                         {
                             // Regeionが複数あるけど優先Regionの表現が存在しないときはすべて出す
                             ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{quiz}{answer}");
@@ -529,7 +527,7 @@ namespace MiBocaRecuerda
                         else
                         {
                             // 優先Regionが存在する場合はそれだけを出す
-                            if (rc.Value.answer.ID_ind().reg == PrioridadRegion)
+                            if (rc.Value.answer.ID_ind().reg == _prioridadRegion)
                             {
                                 ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
                             }
@@ -617,11 +615,11 @@ namespace MiBocaRecuerda
 
             if (tagName == "all")
             {
-                MessageBox.Show($"{(RegionList.Count > 1 ? "全てのRegionの" : "")}表全体をコピー");
+                MessageBox.Show($"{(_regionList.Count > 1 ? "全てのRegionの" : "")}表全体をコピー");
             }
             else
             {
-                MessageBox.Show($"{(RegionList.Count > 1 ? "全てのRegionの" : "")}答えをコピー");
+                MessageBox.Show($"{(_regionList.Count > 1 ? "全てのRegionの" : "")}答えをコピー");
             }
         }
 
@@ -708,7 +706,7 @@ namespace MiBocaRecuerda
                 .Select(r => Convert.ToInt32(r.Cells[0].Value))
                 .ToList();
 
-            EditDBForm edb = new EditDBForm(MainForm.CurrentQuizDBPath, int.Parse(quizNum), MainForm.QuizFileConfig.PriorityRegion, quizSequence);
+            EditDBForm edb = new EditDBForm(int.Parse(quizNum), quizSequence);
 
             if (!edb.IsDisposed) edb.Show(this);
         }
@@ -719,9 +717,9 @@ namespace MiBocaRecuerda
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
 
             // IsAutoをONにしてサイズ変更しないと想定外にフォントサイズが変更されてしまう
-            IsAuto = true;
+            _isAuto = true;
             ToggleColumnVisibility("quiz", item.Checked);
-            IsAuto = false;
+            _isAuto = false;
             _form_resize.UpdateFormSize(this);
 
             item.Checked = !item.Checked;

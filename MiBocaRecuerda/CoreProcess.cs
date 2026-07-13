@@ -89,7 +89,7 @@ namespace MiBocaRecuerda
                 // 部分一致しているもの
                 .Where(s => s.partially_correct == true)
                 // 優先Regionのもの
-                .Where(s => s.answer.ID_ind().reg == MainForm.QuizFileConfig.PriorityRegion)
+                .Where(s => s.answer.ID_ind().reg == SettingManager.CurrentQuizFileConfig.PriorityRegion)
                 .ToList();
 
             // 入力部分まですべて一致していたらLevenstein距離では対応しきれないので優先Regionの方を採用する

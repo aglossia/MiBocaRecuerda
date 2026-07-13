@@ -14,12 +14,17 @@ namespace MiBocaRecuerda
         public static RomConfig RomConfig = new RomConfig();
 
         // 現在のクイズ言語
-        public static string LangType = "";
+        public static string CurrentLangType { get; set; } = "";
+        // 現在のクイズDB
+        public static string CurrentQuizDB { get; set; }
+        // 現在の読込ファイルの設定
+        public static QuizFileConfig CurrentQuizFileConfig => CommonConfigManager[CurrentLangType][CurrentQuizDB].QuizFileConfig;
+
         public static IManageInput LangCtrl
         {
             get
             {
-                if (AppRom.ManageLanguage_Dic.TryGetValue(LangType, out var lang))
+                if (AppRom.ManageLanguage_Dic.TryGetValue(CurrentLangType, out var lang))
                 {
                     return lang;
                 }
@@ -29,7 +34,7 @@ namespace MiBocaRecuerda
 
         public static FileLenguaConfig currentLengua(string type)
         {
-            return CommonConfigManager[type][MainForm.CurrentQuizDB].LenguaConfig;
+            return CommonConfigManager[type][CurrentQuizDB].LenguaConfig;
         }
     }
 

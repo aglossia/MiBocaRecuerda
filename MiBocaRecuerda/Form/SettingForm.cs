@@ -7,18 +7,15 @@ namespace MiBocaRecuerda
 {
     public partial class SettingForm : Form
     {
-        string CurrentFile;
-        bool close_permition = true;
-        List<SettingBase> settingBases = new List<SettingBase>();
-        Dictionary<string, bool> ValidLanguage = new Dictionary<string, bool>() { { "es", false }, { "en", false } };
-        Dictionary<string, SettingBase> settings = new Dictionary<string, SettingBase>();
+        private readonly List<SettingBase> _settingBases = new List<SettingBase>();
+        private readonly Dictionary<string, SettingBase> _settings = new Dictionary<string, SettingBase>();
+        private readonly Dictionary<string, bool> _validLanguage = new Dictionary<string, bool>() { { "es", false }, { "en", false } };
+        private readonly Dictionary<string, string> _codeToLanguage = new Dictionary<string, string>() { { "es", "Spanish" }, { "en", "English" } };
 
-        Dictionary<string, string> CodeToLanguage = new Dictionary<string, string>() { { "es", "Spanish" }, { "en", "English" } };
+        private SettingBase _currentSettingLaunguage => _settingBases[tabLanguage.SelectedIndex];
+        private string _currentLanguage = "";
 
-        private SettingBase CurrentSettingLaunguage => settingBases[tabLanguage.SelectedIndex];
-        private string CurrentLanguage = "";
-
-        public SettingForm(string currentFile)
+        public SettingForm()
         {
             InitializeComponent();
 
@@ -27,27 +24,25 @@ namespace MiBocaRecuerda
             MaximizeBox = false;
             MinimizeBox = false;
 
-            CurrentFile = currentFile;
-
             settingSpanish1.SomethingChanged += QuizConfigSomethingChanged;
             settingEnglish1.SomethingChanged += QuizConfigSomethingChanged;
 
             tabPageSpanish.Tag = settingSpanish1;
             tabPageEnglish.Tag = settingEnglish1;
 
-            settings["es"] = settingSpanish1;
-            settings["en"] = settingEnglish1;
+            _settings["es"] = settingSpanish1;
+            _settings["en"] = settingEnglish1;
 
-            foreach (string lang in settings.Keys)
+            foreach (string lang in _settings.Keys)
             {
                 if (SettingManager.CommonConfigManager.ContainsKey(lang))
                 {
-                    settingBases.Add(settings[lang]);
-                    ValidLanguage[lang] = true;
+                    _settingBases.Add(_settings[lang]);
+                    _validLanguage[lang] = true;
                 }
                 else
                 {
-                    var page = tabLanguage.TabPages[$"tabPage{CodeToLanguage[lang]}"];
+                    var page = tabLanguage.TabPages[$"tabPage{_codeToLanguage[lang]}"];
                     tabLanguage.TabPages.Remove(page);
                 }
             }
@@ -63,31 +58,21 @@ namespace MiBocaRecuerda
                 LoadConfig();
             };
 
-            FormClosing += (o, e) =>
-            {
-                // 不可な設定によって閉じないようにする
-                if (close_permition == false)
-                {
-                    close_permition = true;
-                    e.Cancel = true;
-                }
-            };
-
             tabLanguage.SelectedIndexChanged += (o, e) =>
             {
-                CurrentLanguage = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
+                _currentLanguage = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
 
-                btnApply.Enabled = ValidLanguage[CurrentLanguage];
+                btnApply.Enabled = _validLanguage[_currentLanguage];
             };
 
-            CurrentLanguage = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
+            _currentLanguage = (tabLanguage.SelectedTab.Tag as SettingBase).LanguageName;
         }
 
         private void LoadConfig()
         {
-            settingBases.ForEach(sb => sb.LoadConfig(CurrentFile));
+            _settingBases.ForEach(sb => sb.LoadConfig(SettingManager.CurrentQuizDB));
 
-            string select_lang = "";
+            string selectLang = "";
 
             // 現在のファイルを捜索
             foreach (KeyValuePair<string, Dictionary<string, CommonConfig>> kvp in SettingManager.CommonConfigManager)
@@ -96,47 +81,44 @@ namespace MiBocaRecuerda
                 foreach (string file in kvp.Value.Keys)
                 {
                     // ファイルパスにひっかかった言語を抽出
-                    if (Path.GetFileNameWithoutExtension(file) == CurrentFile)
+                    if (Path.GetFileNameWithoutExtension(file) == SettingManager.CurrentQuizDB)
                     {
-                        select_lang = kvp.Key;
+                        selectLang = kvp.Key;
                     }
                 }
             }
 
             // 指定ファイルの言語のタブに切り替える
-            if (select_lang != "") tabLanguage.SelectedIndex = AppRom.LenguaIndex[select_lang];
-        }
-
-        private bool SaveConfig()
-        {
-            string cacheFile = CurrentSettingLaunguage.SelectedFileName;
-            QuizFileConfig common = SettingManager.CommonConfigManager[CurrentLanguage][cacheFile].QuizFileConfig;
-            FileLenguaConfig lengua = CurrentSettingLaunguage.GetLang();
-
-            common.Copy(CurrentSettingLaunguage.GetCommon());
-
-            if (cacheFile == null) return false;
-
-            CommonFunction.XmlWrite(common, PathManager.QuizFileSettingCommon(cacheFile));
-            CommonFunction.XmlWrite(lengua, PathManager.QuizFileSettingLang(cacheFile));
-
-            return true;
+            if (selectLang != "")
+            {
+                tabLanguage.SelectedIndex = AppRom.LenguaIndex[selectLang];
+            }
+            else
+            {
+                // 指定ファイルがないまま設定が開かれたときは操作不可にする
+                _currentSettingLaunguage.ChangeEnabled(false);
+                btnApply.Enabled = false;
+            }
         }
 
         private void QuizConfigSomethingChanged(object o, EventArgs e)
         {
             // 不可な設定があれば保存しないようにする
-            btnApply.Enabled = CurrentSettingLaunguage.IsValid;
+            btnApply.Enabled = _currentSettingLaunguage.IsValid;
         }
 
         private void btnApply_Click(object sender, EventArgs e)
         {
-            if (SaveConfig() == false)
-            {
-                close_permition = false;
+            string cacheFile = _currentSettingLaunguage.SelectedFileName;
+            QuizFileConfig common = SettingManager.CommonConfigManager[_currentLanguage][cacheFile].QuizFileConfig;
+            FileLenguaConfig lengua = _currentSettingLaunguage.GetLang();
 
-                return;
-            }
+            common.Copy(_currentSettingLaunguage.GetCommon());
+
+            if (cacheFile == null) return;
+
+            CommonFunction.XmlWrite(common, PathManager.QuizFileSettingCommon(cacheFile));
+            CommonFunction.XmlWrite(lengua, PathManager.QuizFileSettingLang(cacheFile));
         }
 
         private void btnAyudar_Click(object sender, EventArgs e)

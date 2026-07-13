@@ -8,13 +8,13 @@ namespace MiBocaRecuerda
 {
     public partial class MessageForm : ResizableForm
     {
-        bool IsKeyDown = false;
+        private bool _isKeyDown = false;
         //private ClassResize _form_resize;
         private Form _form;
 
-        private bool NotResize;
-        private bool Editable;
-        private bool WidthLimit;
+        private bool _notResize;
+        private bool _editable;
+        private bool _widthLimit;
 
         public enum TipoDeUbicacion
         {
@@ -38,15 +38,15 @@ namespace MiBocaRecuerda
             txtMensaje.SelectionStart = 0;
             txtMensaje.ReadOnly = readOnly;
 
-            NotResize = notResize;
-            Editable = editable;
-            WidthLimit = widthLimit;
+            _notResize = notResize;
+            _editable = editable;
+            _widthLimit = widthLimit;
 
             Load += (o, e) =>
             {
                 int maxWidth = 0;
 
-                if (WidthLimit)
+                if (_widthLimit)
                 {
                     // 横幅制限がある場合は親フォーム＋マージンにする
                     maxWidth = _form.Width + 30;
@@ -128,7 +128,7 @@ namespace MiBocaRecuerda
 
                 //_form_resize._resize(true, (_mf as MainForm)._form_resize.WidthRate, (_mf as MainForm)._form_resize.HeightRate);
 
-                if (!NotResize) SizeChanged += _Resize;
+                if (!_notResize) SizeChanged += _Resize;
             };
 
             //SizeChanged += _Resize;
@@ -137,16 +137,16 @@ namespace MiBocaRecuerda
 
             KeyDown += (o, e) =>
             {
-                if (IsKeyDown) return;
+                if (_isKeyDown) return;
 
-                if (Editable) return;
+                if (_editable) return;
 
                 bool ctrlPressed = (ModifierKeys & (Keys.Control | Keys.Alt)) != 0;
                 bool designatedKeyPressed = (e.KeyCode & Keys.C) == Keys.C;
 
                 if (ctrlPressed)
                 {
-                    IsKeyDown = true;
+                    _isKeyDown = true;
                     return;
                 }
 
@@ -155,7 +155,7 @@ namespace MiBocaRecuerda
 
             KeyUp += (o, e) =>
             {
-                IsKeyDown = false;
+                _isKeyDown = false;
             };
         }
 
