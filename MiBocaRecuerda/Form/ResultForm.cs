@@ -716,7 +716,7 @@ namespace MiBocaRecuerda
         {
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
 
-            // IsAutoをONにしてサイズ変更しないと想定外にフォントサイズが変更されてしまう
+            // _isAutoをONにしてサイズ変更しないと想定外にフォントサイズが変更されてしまう
             _isAuto = true;
             ToggleColumnVisibility("quiz", item.Checked);
             _isAuto = false;

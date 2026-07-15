@@ -36,6 +36,19 @@ namespace MiBocaRecuerda
         {
             return CommonConfigManager[type][CurrentQuizDB].LenguaConfig;
         }
+
+        // ファイルごとのクイズ情報をすべて取得
+        public static Dictionary<string, QuizFileConfig> GetAllQuizFileConfig(string language)
+        {
+            Dictionary<string, QuizFileConfig> ret = new Dictionary<string, QuizFileConfig>();
+
+            foreach (var item in CommonConfigManager[language])
+            {
+                ret.Add(item.Key, item.Value.QuizFileConfig.Clone());
+            }
+
+            return ret;
+        }
     }
 
     // 全体設定
@@ -115,6 +128,21 @@ namespace MiBocaRecuerda
             ErrorAllowAll = qfc.ErrorAllowAll;
             ErrorReset = qfc.ErrorReset;
             PriorityRegion = qfc.PriorityRegion;
+        }
+
+        public QuizFileConfig Clone()
+        {
+            return new QuizFileConfig
+            {
+                MinChapter = MinChapter,
+                MaxChapter = MaxChapter,
+                QuizNum = QuizNum,
+                ErrorAllowCnt = ErrorAllowCnt,
+                ErrorAllowAll = ErrorAllowAll,
+                ErrorReset = ErrorReset,
+                PriorityRegion = PriorityRegion,
+                MaxQuizNum = MaxQuizNum
+            };
         }
     }
 

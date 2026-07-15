@@ -2170,8 +2170,6 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            //string fileName = Path.GetFileNameWithoutExtension(CurrentQuizDBPath);
-
             string path = PathManager.QuizDB(SettingManager.CurrentQuizDB);
 
             if (File.Exists(path))

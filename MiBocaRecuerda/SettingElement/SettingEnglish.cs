@@ -5,7 +5,7 @@ namespace MiBocaRecuerda.SettingElement
 {
     public partial class SettingEnglish : SettingBase
     {
-        List<FileLenguaConfig> lengua;
+        private List<FileLenguaConfig> lengua;
 
         public SettingEnglish()
         {
