@@ -218,14 +218,6 @@ namespace MiBocaRecuerda
             }
         }
 
-        public QuizInfo(string quiz, Dictionary<string, List<Answer>> ca, int quizNum, string s)
-        {
-            Quiz = quiz;
-            CorrectAnswer = ca;
-            QuizNum = quizNum;
-            Supplement = s;
-        }
-
         public QuizInfo(ExerciseDB edb)
         {
             Quiz = edb.Problem;
@@ -239,37 +231,17 @@ namespace MiBocaRecuerda
     public class QuizContents : QuizInfo
     {
         public string Section { get; set; }
+        // 入力補助
         public List<string> AutoNombre { get; set; }
-
-        public QuizContents(string quiz, Dictionary<string, List<Answer>> ca, int qn, string c, string s, List<string> an) : base(quiz, ca, qn, s)
-        {
-            Section = c;
-            AutoNombre = an;
-        }
+        // ユーザ入力
+        public string Input { get; set; }
+        // 答え合わせ
+        public bool IsCorrect { get; set; }
 
         public QuizContents(ExerciseDB edb) : base(edb)
         {
             Section = edb.Section;
             AutoNombre = edb.Auxiliary;
-        }
-    }
-
-    // クイズ結果
-    public class QuizResult : QuizInfo
-    {
-        public string Input { get; set; }
-        public bool Result { get; set; }
-
-        public QuizResult(string quiz, Dictionary<string, List<Answer>> ca, string input, int qn, string s, bool result = false) : base(quiz, ca, qn, s)
-        {
-            Input = input;
-            Result = result;
-        }
-
-        public QuizResult(ExerciseDB edb, string input, bool result) : base(edb)
-        {
-            Input = input;
-            Result = result;
         }
     }
 }

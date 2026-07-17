@@ -456,6 +456,8 @@ namespace MiBocaRecuerda
 
         private void btnPreview_Click(object sender, EventArgs e)
         {
+            if (txtSupplement.Text == "") return;
+
             List<string> tmp = new List<string>();
 
             tmp.AddRange(ParseXML.ConvertTextWithTable(txtSupplement.Text).Split('\n'));

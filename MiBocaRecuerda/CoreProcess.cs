@@ -135,6 +135,156 @@ namespace MiBocaRecuerda
             return true;
         }
 
+        public static Dictionary<int, (string quiz, Answer answer)> GetHandBook(List<QuizContents> workBook)
+        {
+            // Dic<ID, (quiz, answer)>
+            // ＜IDの説明＞
+            // IDを32bitとして、下位16bitを問題番号、上位16bitを解答パターン
+            // 例えば、問題番号1として解答パターンが3個あるときは
+            // quiz1:0x00010001, quiz2:0x00020001, quiz3:0x00030001 となる
+            // 解答パターンが1個のときは上位16bitにbitはたたない→ 0x00000001となる
+
+            List<Answer> parsedAnswer = new List<Answer>();
+            int cnt = 0;
+            Dictionary<int, (string quiz, Answer answer)> handBook = new Dictionary<int, (string quiz, Answer answer)>();
+
+
+            foreach (QuizContents quizContents in workBook)
+            {
+                cnt++;
+
+                parsedAnswer.Clear();
+
+                // パース後のanswerを作る
+                foreach (KeyValuePair<string, List<Answer>> kvp in quizContents.CorrectAnswer)
+                {
+                    List<Answer> tmp = new List<Answer>();
+
+                    foreach (Answer ans in kvp.Value)
+                    {
+                        // ここまではDic<region, answers>の数通りだが、ここで分裂する可能性がある
+                        foreach (string a in ParseAnswer(ans.Sentence))
+                        {
+                            tmp.Add(new Answer(ans.ID, a));
+                        }
+                    }
+
+                    parsedAnswer = parsedAnswer.Concat(tmp).ToList();
+                }
+
+                // 答え全体コピー用を生成する(「答え」は複数パターンある場合があるのでDGVの表示をそのまま使えない)
+                if (parsedAnswer.Count == 1)
+                {
+                    // 解答パターンが複数ない場合
+                    handBook[cnt] = (quizContents.Quiz, parsedAnswer[0]);
+                }
+                else
+                {
+                    // 解答パターンが複数
+                    for (int i = 0; i < parsedAnswer.Count; i++)
+                    {
+                        // 下位16ビットは問題番号として17ビット以降を解答パターン通番にする
+                        handBook[cnt | ((i + 1) << 16)] = (quizContents.Quiz, parsedAnswer[i]);
+                    }
+                }
+            }
+
+            return handBook;
+        }
+
+        // 指定リージョン
+        public static List<string> GetHandBookContents_IndividualRegion(Dictionary<int, (string quiz, Answer answer)> handBook, bool isListAll)
+        {
+            string quiz = "", answer;
+            List<string> ret = new List<string>();
+
+            foreach (var rc in handBook)
+            {
+                // ハンドブックの問題番号が一致するやつのregion種類を数える
+                List<string> regions = handBook.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).ToList();
+                int reg_cnt = regions.Distinct().Count();
+
+                // 表全ての時のみ問題をつける
+                if (isListAll == true)
+                {
+                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                }
+                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
+
+                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
+                if ((rc.Key & 0xffff0000) != 0)
+                {
+                    if (reg_cnt > 1)
+                    {
+                        if (!regions.Contains(SettingManager.CurrentQuizFileConfig.PriorityRegion))
+                        {
+                            // Regionが複数あるけど優先Regionの表現が存在しないときはすべて出す
+                            ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{quiz}{answer}");
+                        }
+                        else
+                        {
+                            // 優先Regionが存在する場合はそれだけを出す
+                            if (rc.Value.answer.ID_ind().reg == SettingManager.CurrentQuizFileConfig.PriorityRegion)
+                            {
+                                ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Regionが一つだけのときは無条件に出す
+                        ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
+                    }
+                }
+                else
+                {
+                    // 解答パターンが複数ないとき
+                    ret.Add($"{rc.Key}\t{quiz}{answer}");
+                }
+            }
+
+            return ret;
+        }
+
+        // 全てのregion
+        public static List<string> GetHandBookContents_AllRegion(Dictionary<int, (string quiz, Answer answer)> handBook, bool isListAll)
+        {
+            string quiz = "", answer;
+            List<string> ret = new List<string>();
+
+            foreach (var rc in handBook)
+            {
+                // ハンドブックの問題番号が一致するやつのregion種類を数える
+                int reg_cnt = handBook.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).Distinct().Count();
+
+                string region = "";
+
+                if (reg_cnt > 1)
+                {
+                    region = $":({rc.Value.answer.ID_ind().reg})";
+                }
+
+                // 表全ての時のみ問題をつける
+                if (isListAll == true)
+                {
+                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                }
+                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
+
+                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
+                if ((rc.Key & 0xffff0000) != 0)
+                {
+                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{quiz}{answer}");
+                }
+                else
+                {
+                    ret.Add($"{rc.Key}{region}\t{quiz}{answer}");
+                }
+            }
+
+            return ret;
+        }
+
         // 解答DBの定義形式から解答群を抽出する ()とか[^]とかを使ってる時用
         public static List<string> ParseAnswer(string s)
         {

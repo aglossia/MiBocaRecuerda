@@ -19,7 +19,6 @@ namespace MiBocaRecuerda
         private List<Label> _labelBar = new List<Label>();
         private NumericUpDown _nudProgress;
         private List<List<AppRom.ProgressState>> _progressState = new List<List<AppRom.ProgressState>>();
-        private List<string> _respuestas = new List<string>();
 
         private Label _lblNumericProgress;
 
@@ -29,13 +28,15 @@ namespace MiBocaRecuerda
         private MessageForm _messageForm_QuizInfo = new MessageForm();
         private MessageForm _messageForm_SectionList = new MessageForm();
 
-        // Resultadoに表示する為に蓄積するやつ
-        private List<QuizResult> _quizResults = new List<QuizResult>();
         // 前回のクイズ設定
         private int _preMinChapter;
         private int _preMaxChapter;
         // 現在の問題集(InitQuizで作成)
         private List<QuizContents> _workBook = new List<QuizContents>();
+        // Regionの種類
+        private List<string> _regionList => _workBook.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
+        // 問題集の一覧
+        private Dictionary<int, (string quiz, Answer answer)> _handBook = new Dictionary<int, (string quiz, Answer answer)>();
         // セクションリスト(InitQuizで作成)
         private List<string> _sectionList = new List<string>();
 
@@ -43,8 +44,6 @@ namespace MiBocaRecuerda
         // 待機中かどうかは解答ボタンのEnabledで判断
         private bool _isIdle => !btnAnswer.Enabled;
 
-        // 正解数
-        private int _correctAnswerNum = 0;
         // クイズファイルの最大行(設定オーバーを対応するため)
         private int _quizCountMax = 0;
         // 起動時のエラー情報
@@ -255,8 +254,9 @@ namespace MiBocaRecuerda
             toolTSMI_pruebaLista.Enabled = false;
             toolTSMI_ShowAnswer.Enabled = false;
             toolTSMI_SectionList.Enabled = false;
-            toolTSMI_EditQuiz.Enabled = false;
             toolTSMI_translate.Enabled = false;
+            toolTSMI_EditQuiz.Enabled = false;
+            toolTSMI_CopyQuiz.Enabled = false;
 
             DBTSMI_Progress.Enabled = false;
 
@@ -559,10 +559,8 @@ namespace MiBocaRecuerda
 
             if (manual) txtConsole.Text = "";
             _curProgress = -1;
-            _correctAnswerNum = 0;
-            _quizResults.Clear();
             _workBook.Clear();
-            _respuestas.Clear();
+            _handBook.Clear();
             _errorResetCount.Cnt = 0;
             // ErrorAllowCount,ErrorResetCountの表示に関わっているものはErrorAllowCountのプロパティを変化する前に変化させておく必要がある
             _errorAllowCount.Cnt = 0;
@@ -588,6 +586,7 @@ namespace MiBocaRecuerda
             while (randomSequence[0] == _preLastQuiz);
 
             _workBook = CreateQuizContents(randomSequence);
+            _handBook = CoreProcess.GetHandBook(_workBook);
 
             InitDisplay();
 
@@ -633,6 +632,7 @@ namespace MiBocaRecuerda
             toolTSMI_ShowAnswer.Enabled = isEnabled;
             toolTSMI_SectionList.Enabled = isEnabled;
             toolTSMI_EditQuiz.Enabled = isEnabled;
+            toolTSMI_CopyQuiz.Enabled = isEnabled;
             toolTSMI_translate.Enabled = SettingManager.CurrentLangType != "";
 
             DBTSMI_Progress.Enabled = isEnabled;
@@ -957,7 +957,7 @@ namespace MiBocaRecuerda
             int bar_index = _labelBar.FindIndex(label => label.BackColor == AppRom.ColorCurrentGroup);
             int quizNum = (int)_nudProgress.Value * 100 + bar_index * 10 + progNum;
 
-            if (_respuestas.Count <= quizNum || quizNum < 0) return;
+            if (_curProgress <= quizNum || quizNum < 0) return;
 
             List<string> tmp = new List<string>();
 
@@ -973,7 +973,7 @@ namespace MiBocaRecuerda
 
             tmp.Add(answer);
             tmp.Add("───────");
-            tmp.Add(_respuestas[quizNum]);
+            tmp.Add(_workBook[quizNum].Input);
 
             MessageForm s = new MessageForm(tmp, "FE DE ERRATAS", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
@@ -1087,7 +1087,7 @@ namespace MiBocaRecuerda
             int progress_index = _labelProgress.IndexOf(sender as Label);
             int quizNum = (int)_nudProgress.Value * 100 + bar_index * 10 + progress_index;
 
-            if (_respuestas.Count <= quizNum) return;
+            if (_curProgress <= quizNum) return;
 
             List<string> tmp = new List<string>();
 
@@ -1103,7 +1103,7 @@ namespace MiBocaRecuerda
 
             tmp.Add(answer);
             tmp.Add("───────");
-            tmp.Add(_respuestas[quizNum]);
+            tmp.Add(_workBook[quizNum].Input);
 
             MessageForm s = new MessageForm(tmp, "FE DE ERRATAS", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
@@ -1188,6 +1188,58 @@ namespace MiBocaRecuerda
                 {
                     lbl_ErrorAllowCount.Text = $"Todo[{_errorResetCount.Cnt}]: {lbl_ErrorAllowCount.Text}";
                 }
+            }
+        }
+
+        private void CopyQuiz_AllRegion(object o, EventArgs e)
+        {
+            string tagName = (o as ToolStripItem).Tag as string;
+
+            List<string> contents = CoreProcess.GetHandBookContents_AllRegion(_handBook, tagName == "all");
+
+            try
+            {
+                Clipboard.SetText(string.Join("\r\n", contents));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"コピー失敗：{ex.Message}");
+                return;
+            }
+
+            if (tagName == "all")
+            {
+                MessageBox.Show($"{(_regionList.Count > 1 ? "全てのRegionの" : "")}表全体をコピー");
+            }
+            else
+            {
+                MessageBox.Show($"{(_regionList.Count > 1 ? "全てのRegionの" : "")}答えをコピー");
+            }
+        }
+
+        private void CopyQuiz_IndividualRegion(object o, EventArgs e)
+        {
+            string tagName = (o as ToolStripItem).Tag as string;
+
+            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, tagName == "all");
+
+            try
+            {
+                Clipboard.SetText(string.Join("\r\n", contents));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"コピー失敗：{ex.Message}");
+                return;
+            }
+
+            if (tagName == "all")
+            {
+                MessageBox.Show("指定Regionの表全体をコピー");
+            }
+            else
+            {
+                MessageBox.Show("指定Regionの答えをコピー");
             }
         }
 
@@ -1306,6 +1358,20 @@ namespace MiBocaRecuerda
 
             optionTSMI_DarkMode.CheckedChanged += (o, e) =>
             {
+                void SetMenuForeColorRecursive(ToolStripItem item, Color color)
+                {
+                    item.ForeColor = color;
+
+                    if (item is ToolStripMenuItem menuItem)
+                    {
+                        foreach (ToolStripItem sub in menuItem.DropDownItems)
+                        {
+                            Console.WriteLine(sub.Text);
+                            SetMenuForeColorRecursive(sub, color);
+                        }
+                    }
+                }
+
                 bool ch = (o as ToolStripMenuItem).Checked;
 
                 Color baseColor = Color.FromArgb(80, 80, 80);
@@ -1433,20 +1499,65 @@ namespace MiBocaRecuerda
                 }
             };
 
-            #endregion
-        }
-
-        private void SetMenuForeColorRecursive(ToolStripItem item, Color color)
-        {
-            item.ForeColor = color;
-
-            if (item is ToolStripMenuItem menuItem)
+            toolTSMI_CopyQuiz.DropDownOpening += (o, e) =>
             {
-                foreach (ToolStripItem sub in menuItem.DropDownItems)
+                toolTSMI_CopyQuiz_All.DropDownItems.Clear();
+                toolTSMI_CopyQuiz_Answer.DropDownItems.Clear();
+
+                toolTSMI_CopyQuiz_All.Click -= CopyQuiz_AllRegion;
+                toolTSMI_CopyQuiz_Answer.Click -= CopyQuiz_AllRegion;
+
+                if (_regionList.Count > 1)
                 {
-                    SetMenuForeColorRecursive(sub, color);
+                    // 表全体をコピー
+                    var a = toolTSMI_CopyQuiz_All.DropDownItems.Add("現在のRegion", null, CopyQuiz_IndividualRegion);
+                    a.Tag = "all";
+                    a.ForeColor = optionTSMI_DarkMode.Checked ? Color.White : Color.Black;
+                    var b = toolTSMI_CopyQuiz_All.DropDownItems.Add("全てのRegion", null, CopyQuiz_AllRegion);
+                    b.Tag = "all";
+                    b.ForeColor = optionTSMI_DarkMode.Checked ? Color.White : Color.Black;
+                    // 答え全体をコピー
+                    var c = toolTSMI_CopyQuiz_Answer.DropDownItems.Add("現在のRegion", null, CopyQuiz_IndividualRegion);
+                    c.Tag = "answer_all";
+                    c.ForeColor = optionTSMI_DarkMode.Checked ? Color.White : Color.Black;
+                    var d = toolTSMI_CopyQuiz_Answer.DropDownItems.Add("全てのRegion", null, CopyQuiz_AllRegion);
+                    d.Tag = "answer_all";
+                    d.ForeColor = optionTSMI_DarkMode.Checked ? Color.White : Color.Black;
                 }
-            }
+                else
+                {
+                    toolTSMI_CopyQuiz_All.Click += CopyQuiz_AllRegion;
+                    toolTSMI_CopyQuiz_Answer.Click += CopyQuiz_AllRegion;
+                }
+            };
+
+            toolTSMI_CopyQuiz_Quiz.Click += (o, e) =>
+            {
+                string quiz;
+                List<string> ret = new List<string>();
+                int cnt = 1;
+
+                foreach (QuizContents qc in _workBook)
+                {
+                    quiz = System.Text.RegularExpressions.Regex.Replace(qc.Quiz, @"\r\n|\r|\n", "");
+
+                    ret.Add($"{cnt++}\t{quiz}");
+                }
+
+                try
+                {
+                    Clipboard.SetText(string.Join("\r\n", ret));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"コピー失敗：{ex.Message}");
+                    return;
+                }
+
+                MessageBox.Show("問題全体をコピー");
+            };
+
+            #endregion
         }
 
         #endregion
@@ -1478,12 +1589,10 @@ namespace MiBocaRecuerda
 
             IsFirstMistake = false;
 
-            if (isCorrect)
+            if (!isCorrect)
             {
-                _correctAnswerNum++;
-            }
-            else
-            {
+                // 不正解のとき
+
                 if (optionTSMI_prueba.Checked)
                 {
                     // pruebaモード
@@ -1540,12 +1649,11 @@ namespace MiBocaRecuerda
                 _progressState[UtilityFunction.Suelo(_curProgress, 10)][_curProgress % 10] = isCorrect ? AppRom.ProgressState.Correct : AppRom.ProgressState.Incorrect;
             }
 
-            // 解答を保存
-            _respuestas.Add(txtAnswer.Text == "" ? "NONE" : txtAnswer.Text);
+            // 解答と結果を保存
+            _workBook[_curProgress].Input = txtAnswer.Text == "" ? "NONE" : txtAnswer.Text;
+            _workBook[_curProgress].IsCorrect = isCorrect;
+
             txtAnswer.Text = "";
-
-            _quizResults.Add(new QuizResult(_workBook[_curProgress].Quiz, _workBook[_curProgress].CorrectAnswer, txtAnswer.Text, _workBook[_curProgress].QuizNum, _workBook[_curProgress].Supplement, isCorrect));
-
 
             int endQuizNum = optionTSMI_progresoVisual.Checked ? SettingManager.CurrentQuizFileConfig.QuizNum - 1 : SettingManager.CurrentQuizFileConfig.MaxQuizNum - 1;
 
@@ -1556,12 +1664,12 @@ namespace MiBocaRecuerda
 
                 btnAnswer.Enabled = false;
 
-                // 問題数と正解問題数が同じでpruebaモードのとき
-                if ((endQuizNum + 1 == _correctAnswerNum) && optionTSMI_prueba.Checked)
+                // 問題集が全て正解でpruebaモードのとき
+                if (_workBook.All(x => x.IsCorrect) && optionTSMI_prueba.Checked)
                 {
                     DisplayResult("PERFECTO!", 5000);
 
-                    // 綺麗な対処ではないが、のちのRefreshDisplayで++される使用のためここで調整
+                    // 綺麗な対処ではないが、のちのRefreshDisplayで++される仕様のためここで調整
                     // PERFECTOしたあとは最終回数を表示していたい
                     _pruebaChallengeCount--;
 
@@ -1635,7 +1743,7 @@ namespace MiBocaRecuerda
                 {
                     if (_resultForm.IsDisposed == false) _resultForm.Dispose();
 
-                    _resultForm = new ResultForm(_quizResults, this)
+                    _resultForm = new ResultForm(_workBook, this)
                     {
                         ShowIcon = false
                     };
@@ -1826,18 +1934,15 @@ namespace MiBocaRecuerda
         // 進捗Undo
         private void UndoProgress()
         {
-            if (_quizResults.Count == 0) return;
+            if (_curProgress == 0) return;
 
             if (optionTSMI_prueba.Checked)
             {
-                if (_quizResults[_quizResults.Count - 1].Result == false)
+                if (_workBook[_curProgress - 1].IsCorrect == false)
                 {
                     _errorAllowCount.Cnt = 0;
                 }
             }
-
-            _quizResults.RemoveAt(_quizResults.Count - 1);
-            _respuestas.RemoveAt(_respuestas.Count - 1);
 
             if (optionTSMI_progresoVisual.Checked)
             {

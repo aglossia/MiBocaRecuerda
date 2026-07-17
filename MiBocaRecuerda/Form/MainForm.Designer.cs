@@ -58,8 +58,13 @@
             this.toolTSMI_prueba_Order = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_prueba_QuizOrder = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_prueba_Select = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_ShowAnswer = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_SectionList = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_translate = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_CopyQuiz = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_CopyQuiz_All = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_CopyQuiz_Quiz = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTSMI_CopyQuiz_Answer = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz_Current = new System.Windows.Forms.ToolStripMenuItem();
             this.toolTSMI_EditQuiz_Antes = new System.Windows.Forms.ToolStripMenuItem();
@@ -71,7 +76,6 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
             this.chboxDebug = new System.Windows.Forms.CheckBox();
-            this.toolTSMI_ShowAnswer = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -293,6 +297,7 @@
             this.toolTSMI_ShowAnswer,
             this.toolTSMI_SectionList,
             this.toolTSMI_translate,
+            this.toolTSMI_CopyQuiz,
             this.toolTSMI_EditQuiz});
             this.toolTSMI.Name = "toolTSMI";
             this.toolTSMI.Size = new System.Drawing.Size(89, 23);
@@ -311,23 +316,30 @@
             // toolTSMI_prueba_Order
             // 
             this.toolTSMI_prueba_Order.Name = "toolTSMI_prueba_Order";
-            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_Order.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_Order.Text = "index順表示";
             this.toolTSMI_prueba_Order.Click += new System.EventHandler(this.toolTSMI_prueba_Order_Click);
             // 
             // toolTSMI_prueba_QuizOrder
             // 
             this.toolTSMI_prueba_QuizOrder.Name = "toolTSMI_prueba_QuizOrder";
-            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_QuizOrder.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_QuizOrder.Text = "出題順表示";
             this.toolTSMI_prueba_QuizOrder.Click += new System.EventHandler(this.toolTSMI_prueba_QuizOrder_Click);
             // 
             // toolTSMI_prueba_Select
             // 
             this.toolTSMI_prueba_Select.Name = "toolTSMI_prueba_Select";
-            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_prueba_Select.Size = new System.Drawing.Size(139, 22);
             this.toolTSMI_prueba_Select.Text = "指定表示";
             this.toolTSMI_prueba_Select.Click += new System.EventHandler(this.toolTSMI_prueba_Select_Click);
+            // 
+            // toolTSMI_ShowAnswer
+            // 
+            this.toolTSMI_ShowAnswer.Name = "toolTSMI_ShowAnswer";
+            this.toolTSMI_ShowAnswer.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_ShowAnswer.Text = "Mostrar la respuesta";
+            this.toolTSMI_ShowAnswer.Click += new System.EventHandler(this.toolTSMI_ShowAnswer_Click);
             // 
             // toolTSMI_SectionList
             // 
@@ -342,6 +354,36 @@
             this.toolTSMI_translate.Size = new System.Drawing.Size(203, 22);
             this.toolTSMI_translate.Text = "Traducir";
             this.toolTSMI_translate.Click += new System.EventHandler(this.toolTSMI_translate_Click);
+            // 
+            // toolTSMI_CopyQuiz
+            // 
+            this.toolTSMI_CopyQuiz.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolTSMI_CopyQuiz_All,
+            this.toolTSMI_CopyQuiz_Quiz,
+            this.toolTSMI_CopyQuiz_Answer});
+            this.toolTSMI_CopyQuiz.Name = "toolTSMI_CopyQuiz";
+            this.toolTSMI_CopyQuiz.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_CopyQuiz.Text = "問題をコピー";
+            // 
+            // toolTSMI_CopyQuiz_All
+            // 
+            this.toolTSMI_CopyQuiz_All.Name = "toolTSMI_CopyQuiz_All";
+            this.toolTSMI_CopyQuiz_All.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_CopyQuiz_All.Tag = "all";
+            this.toolTSMI_CopyQuiz_All.Text = "全体をコピー";
+            // 
+            // toolTSMI_CopyQuiz_Quiz
+            // 
+            this.toolTSMI_CopyQuiz_Quiz.Name = "toolTSMI_CopyQuiz_Quiz";
+            this.toolTSMI_CopyQuiz_Quiz.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_CopyQuiz_Quiz.Text = "問題をコピー";
+            // 
+            // toolTSMI_CopyQuiz_Answer
+            // 
+            this.toolTSMI_CopyQuiz_Answer.Name = "toolTSMI_CopyQuiz_Answer";
+            this.toolTSMI_CopyQuiz_Answer.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_CopyQuiz_Answer.Tag = "answer";
+            this.toolTSMI_CopyQuiz_Answer.Text = "答えをコピー";
             // 
             // toolTSMI_EditQuiz
             // 
@@ -439,13 +481,6 @@
             this.chboxDebug.UseVisualStyleBackColor = true;
             this.chboxDebug.Visible = false;
             // 
-            // toolTSMI_ShowAnswer
-            // 
-            this.toolTSMI_ShowAnswer.Name = "toolTSMI_ShowAnswer";
-            this.toolTSMI_ShowAnswer.Size = new System.Drawing.Size(203, 22);
-            this.toolTSMI_ShowAnswer.Text = "Mostrar la respuesta";
-            this.toolTSMI_ShowAnswer.Click += new System.EventHandler(this.toolTSMI_ShowAnswer_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -520,6 +555,10 @@
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz_Current;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_EditQuiz_Number;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_ShowAnswer;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_CopyQuiz;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_CopyQuiz_All;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_CopyQuiz_Quiz;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_CopyQuiz_Answer;
     }
 }
 

@@ -10,12 +10,13 @@ namespace MiBocaRecuerda
 {
     public partial class ResultForm : Form
     {
-        public ResultForm() { }
         private Dictionary<int, string> _supplement = new Dictionary<int, string>();
 
         private ClassResize _form_resize;
 
-        private List<QuizResult> _quizResults = new List<QuizResult>();
+        private List<QuizContents> _workBook;
+        private Dictionary<int, (string quiz, Answer answer)> _handBook;
+
         private Point _parentLocation;
         private Size _parentSize;
 
@@ -24,9 +25,6 @@ namespace MiBocaRecuerda
         private DataGridViewTextBoxColumn _col_correct;
 
         private bool _isAuto = false;
-
-        // 答えを含むコピー用
-        private Dictionary<int, (string quiz, Answer answer)> RespuestaCopy = new Dictionary<int, (string quiz, Answer answer)>();
 
         private string _prioridadRegion;
         private List<string> _regionList = new List<string>();
@@ -52,7 +50,9 @@ namespace MiBocaRecuerda
             }
         }
 
-        public ResultForm(List<QuizResult> qr, MainForm mainForm)
+        public ResultForm() { }
+
+        public ResultForm(List<QuizContents> workBook, MainForm mainForm, bool isOrder = true)
         {
             InitializeComponent();
 
@@ -60,78 +60,18 @@ namespace MiBocaRecuerda
 
             _prioridadRegion = SettingManager.CurrentQuizFileConfig.PriorityRegion;
 
-            _quizResults = qr;
+            _workBook = workBook;
+            _handBook = CoreProcess.GetHandBook(workBook);
+
             _parentLocation = mainForm.Location;
             _parentSize = mainForm.Size;
 
-            foreach (QuizResult r in _quizResults)
-            {
-                _supplement.Add(r.QuizNum, r.Supplement);
-            }
-
-            CreateControls();
-
-            RegisterEvent();
-        }
-
-        // QuizContentsから表を作る用(つまり結果ではなく、答えの一覧)
-        public ResultForm(List<QuizContents> qc, MainForm mf, bool isOrder)
-        {
-            InitializeComponent();
-
-            Init();
-
-            _prioridadRegion = SettingManager.CurrentQuizFileConfig.PriorityRegion;
-
-            int cnt = 0;
             List<Answer> parseAnswer = new List<Answer>();
 
-            if (isOrder) qc = qc.OrderBy(q => q.QuizNum).ToList();
+            if (isOrder) _workBook = _workBook.OrderBy(q => q.QuizNum).ToList();
 
             // regionの種類を集める
-            _regionList = qc.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
-
-            foreach (QuizContents c in qc)
-            {
-                cnt++;
-
-                parseAnswer.Clear();
-
-                // パース後のanswerを作る
-                foreach (KeyValuePair<string, List<Answer>> kvp in c.CorrectAnswer)
-                {
-                    List<Answer> tmp = new List<Answer>();
-
-                    foreach (Answer ans in kvp.Value)
-                    {
-                        // ここまではDic<region, answers>の数通りだが、ここで分裂する可能性がある
-                        foreach (string a in CoreProcess.ParseAnswer(ans.Sentence))
-                        {
-                            tmp.Add(new Answer(ans.ID, a));
-                        }
-                    }
-
-                    parseAnswer = parseAnswer.Concat(tmp).ToList();
-                }
-
-                // 答え全体コピー用を生成する(「答え」は複数パターンある場合があるのでDGVの表示をそのまま使えない)
-                if (parseAnswer.Count == 1)
-                {
-                    // 解答パターンが複数ない場合
-                    RespuestaCopy[cnt] = (c.Quiz, parseAnswer[0]);
-                }
-                else
-                {
-                    // 解答パターンが複数
-                    for (int i = 0; i < parseAnswer.Count; i++)
-                    {
-                        // 下位16ビットは問題番号として17ビット以降を解答パターン通番にする
-                        RespuestaCopy[cnt | ((i + 1) << 16)] = (c.Quiz, parseAnswer[i]);
-                    }
-                }
-
-                _quizResults.Add(new QuizResult(c.Quiz, c.CorrectAnswer, "", c.QuizNum, c.Supplement));
-            }
+            _regionList = _workBook.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
 
             if (_regionList.Count == 1)
             {
@@ -152,9 +92,9 @@ namespace MiBocaRecuerda
                 SetTableData();
             };
 
-            foreach (QuizResult r in _quizResults)
+            foreach (QuizContents c in _workBook)
             {
-                _supplement.Add(r.QuizNum, r.Supplement);
+                _supplement.Add(c.QuizNum, c.Supplement);
             }
 
             CreateControls();
@@ -206,7 +146,7 @@ namespace MiBocaRecuerda
             dgv.Columns.Add(_col_quiz);
             dgv.Columns.Add(_col_correct);
 
-            for (int cnt = 0; cnt < _quizResults.Count; cnt++)
+            for (int cnt = 0; cnt < _workBook.Count; cnt++)
             {
                 dgv.Rows.Add();
             }
@@ -215,15 +155,15 @@ namespace MiBocaRecuerda
         private void SetTableData()
         {
             // DGVにデータを設定する
-            for (int cnt = 0; cnt < _quizResults.Count; cnt++)
+            for (int cnt = 0; cnt < _workBook.Count; cnt++)
             {
-                dgv.Rows[cnt].Cells["num"].Value = _quizResults[cnt].QuizNum;
-                dgv.Rows[cnt].Cells["quiz"].Value = _quizResults[cnt].Quiz;
+                dgv.Rows[cnt].Cells["num"].Value = _workBook[cnt].QuizNum;
+                dgv.Rows[cnt].Cells["quiz"].Value = _workBook[cnt].Quiz;
 
                 List<string> parsedAnswers = new List<string>();
 
                 // パースした解答を集める
-                foreach (Answer ans in _quizResults[cnt].Answers(_prioridadRegion))
+                foreach (Answer ans in _workBook[cnt].Answers(_prioridadRegion))
                 {
                     parsedAnswers = parsedAnswers.Concat(CoreProcess.ParseAnswer(ans.Sentence)).ToList();
                 }
@@ -238,13 +178,13 @@ namespace MiBocaRecuerda
 
                 dgv.Rows[cnt].Cells["correct"].Value = string.Join("\n", parsedAnswers);
 
-                if (_quizResults[cnt].Result == false)
+                if (_workBook[cnt].IsCorrect == false)
                 {
                     dgv.Rows[cnt].DefaultCellStyle.BackColor = Color.AliceBlue;
                 }
 
                 // 補足があるやつは補足の目印をつける
-                if (_quizResults[cnt].Supplement != "")
+                if (_workBook[cnt].Supplement != "")
                 {
                     dgv.Rows[cnt].Cells["quiz"].Value += " *";
                 }
@@ -347,10 +287,12 @@ namespace MiBocaRecuerda
 
                 if (_regionList.Count > 1)
                 {
+                    // 表全体をコピー
                     var a = CMS_copy_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
                     a.Tag = "all";
                     var b = CMS_copy_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
                     b.Tag = "all";
+                    // 答え全体をコピー
                     var c = CMS_copy_answer_all.DropDownItems.Add("現在のRegion", null, AllCopy_Region_selected);
                     c.Tag = "answer_all";
                     var d = CMS_copy_answer_all.DropDownItems.Add("全てのRegion", null, AllCopy_Region_all);
@@ -497,58 +439,13 @@ namespace MiBocaRecuerda
         // 指定リージョンをコピー
         private void AllCopy_Region_selected(object o, EventArgs e)
         {
-            string quiz = "", answer;
-            List<string> ret = new List<string>();
             string tagName = (o as ToolStripItem).Tag as string;
 
-            foreach (var rc in RespuestaCopy)
-            {
-                // コピー用に集めたやつの問題番号が一致するやつのregion種類を数える
-                List<string> regions = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).ToList();
-                int reg_cnt = regions.Distinct().Count();
-
-                // 表全ての時のみ問題をつける
-                if (tagName == "all")
-                {
-                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
-                }
-                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
-
-                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
-                if ((rc.Key & 0xffff0000) != 0)
-                {
-                    if (reg_cnt > 1)
-                    {
-                        if (!regions.Contains(_prioridadRegion))
-                        {
-                            // Regeionが複数あるけど優先Regionの表現が存在しないときはすべて出す
-                            ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{quiz}{answer}");
-                        }
-                        else
-                        {
-                            // 優先Regionが存在する場合はそれだけを出す
-                            if (rc.Value.answer.ID_ind().reg == _prioridadRegion)
-                            {
-                                ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Regionが一つだけのときは無条件に出す
-                        ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
-                    }
-                }
-                else
-                {
-                    // 解答パターンが複数ないとき
-                    ret.Add($"{rc.Key}\t{quiz}{answer}");
-                }
-            }
+            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, tagName == "all");
 
             try
             {
-                Clipboard.SetText(string.Join("\r\n", ret));
+                Clipboard.SetText(string.Join("\r\n", contents));
             }
             catch (Exception ex)
             {
@@ -569,43 +466,13 @@ namespace MiBocaRecuerda
         // 全てのregionをコピー
         private void AllCopy_Region_all(object o, EventArgs e)
         {
-            string quiz = "", answer;
-            List<string> ret = new List<string>();
             string tagName = (o as ToolStripItem).Tag as string;
 
-            foreach (var rc in RespuestaCopy)
-            {
-                // コピー用に集めたやつの問題番号が一致するやつのregion種類を数える
-                int reg_cnt = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).Distinct().Count();
-
-                string region = "";
-
-                if (reg_cnt > 1)
-                {
-                    region = $":({rc.Value.answer.ID_ind().reg})";
-                }
-
-                // 表全ての時のみ問題をつける
-                if (tagName == "all")
-                {
-                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
-                }
-                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
-
-                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
-                if ((rc.Key & 0xffff0000) != 0)
-                {
-                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{quiz}{answer}");
-                }
-                else
-                {
-                    ret.Add($"{rc.Key}{region}\t{quiz}{answer}");
-                }
-            }
+            List<string> contents = CoreProcess.GetHandBookContents_AllRegion(_handBook, tagName == "all");
 
             try
             {
-                Clipboard.SetText(string.Join("\r\n", ret));
+                Clipboard.SetText(string.Join("\r\n", contents));
             }
             catch (Exception ex)
             {
@@ -651,50 +518,6 @@ namespace MiBocaRecuerda
             }
 
             MessageBox.Show("問題全体をコピー");
-        }
-
-        // 答え全体をコピー
-        private void CMS_copy_answer_all_Click(object sender, EventArgs e)
-        {
-            string answer;
-            List<string> ret = new List<string>();
-
-            foreach (var rc in RespuestaCopy)
-            {
-                // コピー用に集めたやつの問題番号が一致するやつのregion種類を数える
-                int reg_cnt = RespuestaCopy.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).Distinct().Count();
-
-                string region = "";
-
-                if (reg_cnt > 1)
-                {
-                    region = $":({rc.Value.answer.ID_ind().reg})";
-                }
-
-                answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
-
-                // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
-                if ((rc.Key & 0xffff0000) != 0)
-                {
-                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{answer}");
-                }
-                else
-                {
-                    ret.Add($"{rc.Key}{region}\t{answer}");
-                }
-            }
-
-            try
-            {
-                Clipboard.SetText(string.Join("\r\n", ret));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"コピー失敗：{ex.Message}");
-                return;
-            }
-
-            MessageBox.Show("答え全体をコピー");
         }
 
         // 編集
