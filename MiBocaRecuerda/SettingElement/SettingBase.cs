@@ -23,6 +23,9 @@ namespace MiBocaRecuerda
         // 設定画面起動時のクイズ情報のコピー
         private Dictionary<string, QuizFileConfig> _qfc;
         private QuizFileConfig _currentQuizFileConfig => _qfc[cmbboxFileName.Text];
+
+        private bool _isUpdating = false;
+
         // 設定の妥当性
         public bool IsValid { get; private set; } = false;
 
@@ -49,17 +52,25 @@ namespace MiBocaRecuerda
 
             cmbboxFileName.SelectedIndexChanged += (o, e) =>
             {
-                _exerRepo = new ExerciseRepository($"Data Source={PathManager.QuizDB(cmbboxFileName.Text)}");
-                // MaximumをあげておいてSetValueでつぶされてしまうのを防ぐ
-                nudQuizNum.Maximum = 1000;
-                nudMinChapter.Maximum = 1000;
-                nudMaxChapter.Maximum = 1000;
-                SetValue();
-                lblQuizMax.Text = $"max: {QuizMax}";
-                nudQuizNum.Maximum = QuizMax;
-                nudMinChapter.Maximum = UtilityFunction.Techo(QuizMax, 10);
-                nudMaxChapter.Maximum = UtilityFunction.Techo(QuizMax, 10);
-                ChangeEnabled(true);
+                try
+                {
+                    _isUpdating = true;
+                    _exerRepo = new ExerciseRepository($"Data Source={PathManager.QuizDB(cmbboxFileName.Text)}");
+                    // MaximumをあげておいてSetValueでつぶされてしまうのを防ぐ
+                    nudQuizNum.Maximum = 1000;
+                    nudMinChapter.Maximum = 1000;
+                    nudMaxChapter.Maximum = 1000;
+                    SetValue();
+                    lblQuizMax.Text = $"max: {QuizMax}";
+                    nudQuizNum.Maximum = QuizMax;
+                    nudMinChapter.Maximum = UtilityFunction.Techo(QuizMax, 10);
+                    nudMaxChapter.Maximum = UtilityFunction.Techo(QuizMax, 10);
+                    ChangeEnabled(true);
+                }
+                finally
+                {
+                    _isUpdating = false;
+                }
             };
 
             nudMinChapter.ValueChanged += NudMinValueChanged;
@@ -82,6 +93,8 @@ namespace MiBocaRecuerda
         // 最小チャプター変更
         private void NudMinValueChanged(object o, EventArgs e)
         {
+            if (_isUpdating) return;
+
             if (nudMinChapter.Value > nudMaxChapter.Value)
             {
                 nudMaxChapter.Value = nudMinChapter.Value;
@@ -92,6 +105,8 @@ namespace MiBocaRecuerda
         // 最大チャプター変更
         private void NudMaxValueChanged(object o, EventArgs e)
         {
+            if (_isUpdating) return;
+
             if (nudMaxChapter.Value < nudMinChapter.Value)
             {
                 nudMinChapter.Value = nudMaxChapter.Value;
@@ -101,6 +116,8 @@ namespace MiBocaRecuerda
 
         private void NudQuizNumChanged(object o, EventArgs e)
         {
+            if (_isUpdating) return;
+
             _currentQuizFileConfig.QuizNum = (int)nudQuizNum.Value;
         }
 
