@@ -76,6 +76,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.lbl_ErrorAllowCount = new System.Windows.Forms.Label();
             this.chboxDebug = new System.Windows.Forms.CheckBox();
+            this.toolTSMI_Search = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -298,7 +299,8 @@
             this.toolTSMI_SectionList,
             this.toolTSMI_translate,
             this.toolTSMI_CopyQuiz,
-            this.toolTSMI_EditQuiz});
+            this.toolTSMI_EditQuiz,
+            this.toolTSMI_Search});
             this.toolTSMI.Name = "toolTSMI";
             this.toolTSMI.Size = new System.Drawing.Size(89, 23);
             this.toolTSMI.Text = "Herramientas";
@@ -368,20 +370,20 @@
             // toolTSMI_CopyQuiz_All
             // 
             this.toolTSMI_CopyQuiz_All.Name = "toolTSMI_CopyQuiz_All";
-            this.toolTSMI_CopyQuiz_All.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_CopyQuiz_All.Size = new System.Drawing.Size(132, 22);
             this.toolTSMI_CopyQuiz_All.Tag = "all";
             this.toolTSMI_CopyQuiz_All.Text = "全体をコピー";
             // 
             // toolTSMI_CopyQuiz_Quiz
             // 
             this.toolTSMI_CopyQuiz_Quiz.Name = "toolTSMI_CopyQuiz_Quiz";
-            this.toolTSMI_CopyQuiz_Quiz.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_CopyQuiz_Quiz.Size = new System.Drawing.Size(132, 22);
             this.toolTSMI_CopyQuiz_Quiz.Text = "問題をコピー";
             // 
             // toolTSMI_CopyQuiz_Answer
             // 
             this.toolTSMI_CopyQuiz_Answer.Name = "toolTSMI_CopyQuiz_Answer";
-            this.toolTSMI_CopyQuiz_Answer.Size = new System.Drawing.Size(180, 22);
+            this.toolTSMI_CopyQuiz_Answer.Size = new System.Drawing.Size(132, 22);
             this.toolTSMI_CopyQuiz_Answer.Tag = "answer";
             this.toolTSMI_CopyQuiz_Answer.Text = "答えをコピー";
             // 
@@ -481,6 +483,13 @@
             this.chboxDebug.UseVisualStyleBackColor = true;
             this.chboxDebug.Visible = false;
             // 
+            // toolTSMI_Search
+            // 
+            this.toolTSMI_Search.Name = "toolTSMI_Search";
+            this.toolTSMI_Search.Size = new System.Drawing.Size(203, 22);
+            this.toolTSMI_Search.Text = "問題を検索";
+            this.toolTSMI_Search.Click += new System.EventHandler(this.toolTSMI_Search_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -559,6 +568,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_CopyQuiz_All;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_CopyQuiz_Quiz;
         private System.Windows.Forms.ToolStripMenuItem toolTSMI_CopyQuiz_Answer;
+        private System.Windows.Forms.ToolStripMenuItem toolTSMI_Search;
     }
 }
 

@@ -231,6 +231,7 @@ namespace MiBocaRecuerda
             toolTSMI_prueba_Order.ShortcutKeys = Keys.Control | Keys.L;
             toolTSMI_ShowAnswer.ShortcutKeys = Keys.Control | Keys.R;
             toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
+            toolTSMI_Search.ShortcutKeys = Keys.Control | Keys.F;
 
             DBTSMI_QuizDB.ShortcutKeys = Keys.Control | Keys.D;
             DBTSMI_Progress.ShortcutKeys = Keys.Control | Keys.G;
@@ -257,6 +258,7 @@ namespace MiBocaRecuerda
             toolTSMI_translate.Enabled = false;
             toolTSMI_EditQuiz.Enabled = false;
             toolTSMI_CopyQuiz.Enabled = false;
+            toolTSMI_Search.Enabled = false;
 
             DBTSMI_Progress.Enabled = false;
 
@@ -633,6 +635,7 @@ namespace MiBocaRecuerda
             toolTSMI_SectionList.Enabled = isEnabled;
             toolTSMI_EditQuiz.Enabled = isEnabled;
             toolTSMI_CopyQuiz.Enabled = isEnabled;
+            toolTSMI_Search.Enabled = isEnabled;
             toolTSMI_translate.Enabled = SettingManager.CurrentLangType != "";
 
             DBTSMI_Progress.Enabled = isEnabled;
@@ -2259,6 +2262,29 @@ namespace MiBocaRecuerda
 
                     if (!edb.IsDisposed) edb.Show(this);
                 }
+            }
+        }
+
+        // 問題を検索
+        private void toolTSMI_Search_Click(object sender, EventArgs e)
+        {
+            SearchDialog sd = new SearchDialog();
+
+            if (sd.ShowDialog() == DialogResult.OK)
+            {
+                // 該当する問題インデックスを取得
+                List<int> ret = _exerRepo.Buscar(sd.Input, sd.Mode).Distinct().ToList();
+
+                if(ret.Count == 0)
+                {
+                    MessageBox.Show("該当なし");
+                    return;
+                }
+
+                List<QuizContents> qc = CreateQuizContents(ret);
+
+                _resultForm = new ResultForm(qc, this);
+                _resultForm.Show();
             }
         }
 

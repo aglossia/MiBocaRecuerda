@@ -14,7 +14,7 @@ namespace MiBocaRecuerda
         {
             InitializeComponent();
 
-            FormBorderStyle = FormBorderStyle.None;
+            FormBorderStyle = FormBorderStyle.FixedToolWindow;
 
             nudDesde.Value = desde;
             nudHasta.Value = hasta;

@@ -460,5 +460,45 @@ namespace MiBocaRecuerda
                 }
             }
         }
+
+        // 検索
+        public List<int> Buscar(string str, int mode)
+        {
+            // ヒットした問題のインデックスを返す
+            List<int> results = new List<int>();
+
+            string sql;
+
+            // 検索対象
+            if(mode == 0)
+            {
+                // answer
+                sql = $"SELECT num FROM answer WHERE sentence LIKE @str";
+            }
+            else
+            {
+                // problem
+                sql = $"SELECT num FROM exercise WHERE problem LIKE @str";
+            }
+
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var command = new SQLiteCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@str", $"%{str}%");
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            results.Add(reader.GetInt32(0));
+                        }
+                    }
+                }
+            }
+
+            return results;
+        }
     }
 }

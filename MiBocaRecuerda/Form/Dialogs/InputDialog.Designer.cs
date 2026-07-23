@@ -191,6 +191,7 @@
             this.Controls.Add(this.label1);
             this.Name = "InputDialog";
             this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Lista especificada";
             ((System.ComponentModel.ISupportInitialize)(this.nudDesde)).EndInit();
