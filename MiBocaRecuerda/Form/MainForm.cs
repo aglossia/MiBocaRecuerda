@@ -36,7 +36,7 @@ namespace MiBocaRecuerda
         // Regionの種類
         private List<string> _regionList => _workBook.SelectMany(q => q.CorrectAnswer.Keys).Distinct().ToList();
         // 問題集の一覧
-        private Dictionary<int, (string quiz, Answer answer)> _handBook = new Dictionary<int, (string quiz, Answer answer)>();
+        private SortedDictionary<int, (string quiz, Answer answer)> _handBook = new SortedDictionary<int, (string quiz, Answer answer)>();
         // セクションリスト(InitQuizで作成)
         private List<string> _sectionList = new List<string>();
 
@@ -1224,7 +1224,7 @@ namespace MiBocaRecuerda
         {
             string tagName = (o as ToolStripItem).Tag as string;
 
-            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, tagName == "all");
+            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, SettingManager.CurrentQuizFileConfig.PriorityRegion, tagName == "all");
 
             try
             {
@@ -1510,7 +1510,7 @@ namespace MiBocaRecuerda
                 toolTSMI_CopyQuiz_All.Click -= CopyQuiz_AllRegion;
                 toolTSMI_CopyQuiz_Answer.Click -= CopyQuiz_AllRegion;
 
-                if (_regionList.Count > 1)
+                if (_regionList.Count > 1 && SettingManager.CurrentQuizFileConfig.PriorityRegion != "")
                 {
                     // 表全体をコピー
                     var a = toolTSMI_CopyQuiz_All.DropDownItems.Add("現在のRegion", null, CopyQuiz_IndividualRegion);
@@ -1538,13 +1538,12 @@ namespace MiBocaRecuerda
             {
                 string quiz;
                 List<string> ret = new List<string>();
-                int cnt = 1;
 
-                foreach (QuizContents qc in _workBook)
+                foreach (QuizContents qc in _workBook.OrderBy(x => x.QuizNum))
                 {
                     quiz = System.Text.RegularExpressions.Regex.Replace(qc.Quiz, @"\r\n|\r|\n", "");
 
-                    ret.Add($"{cnt++}\t{quiz}");
+                    ret.Add($"{qc.QuizNum}\t{quiz}");
                 }
 
                 try
@@ -2108,6 +2107,7 @@ namespace MiBocaRecuerda
             }
         }
 
+        // 正解表示
         private void toolTSMI_ShowAnswer_Click(object sender, EventArgs e)
         {
             ShowAnswer();

@@ -174,7 +174,7 @@ namespace MiBocaRecuerda
                 ErrorAllowCnt = (int)nudErrorAllow.Value,
                 ErrorAllowAll = chboxErrorAllowAll.Checked,
                 ErrorReset = chboxErrorReset.Checked,
-                PriorityRegion = cmbRegion.SelectedItem.ToString(),
+                PriorityRegion = cmbRegion.SelectedItem?.ToString(),
                 MaxQuizNum = _exerRepo.GetExerciseCount()
             };
 

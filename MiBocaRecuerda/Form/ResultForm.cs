@@ -15,7 +15,7 @@ namespace MiBocaRecuerda
         private ClassResize _form_resize;
 
         private List<QuizContents> _workBook;
-        private Dictionary<int, (string quiz, Answer answer)> _handBook;
+        private SortedDictionary<int, (string quiz, Answer answer)> _handBook;
 
         private Point _parentLocation;
         private Size _parentSize;
@@ -28,6 +28,7 @@ namespace MiBocaRecuerda
 
         private string _prioridadRegion;
         private List<string> _regionList = new List<string>();
+        private string _selectedRegion => TS_cmbRegion.SelectedItem?.ToString();
 
         private void Init()
         {
@@ -441,7 +442,7 @@ namespace MiBocaRecuerda
         {
             string tagName = (o as ToolStripItem).Tag as string;
 
-            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, tagName == "all");
+            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, _selectedRegion, tagName == "all");
 
             try
             {

@@ -135,7 +135,7 @@ namespace MiBocaRecuerda
             return true;
         }
 
-        public static Dictionary<int, (string quiz, Answer answer)> GetHandBook(List<QuizContents> workBook)
+        public static SortedDictionary<int, (string quiz, Answer answer)> GetHandBook(List<QuizContents> workBook)
         {
             // Dic<ID, (quiz, answer)>
             // ＜IDの説明＞
@@ -145,14 +145,23 @@ namespace MiBocaRecuerda
             // 解答パターンが1個のときは上位16bitにbitはたたない→ 0x00000001となる
 
             List<Answer> parsedAnswer = new List<Answer>();
-            int cnt = 0;
-            Dictionary<int, (string quiz, Answer answer)> handBook = new Dictionary<int, (string quiz, Answer answer)>();
 
+            Comparer<int> comparer = Comparer<int>.Create((x, y) =>
+            {
+                // 下位16bitでソートされるようにする
+                int result = (x & 0xFFFF).CompareTo(y & 0xFFFF);
+
+                if (result != 0) return result;
+
+                // resultが0のとき、下位16bitが一致で全体一致とされてしまうのでその場合は改めて全体で比較する
+                // 例えば、0x00010001と0x00000001がキー重複と判断されるのをさける
+                return x.CompareTo(y);
+            });
+
+            SortedDictionary<int, (string quiz, Answer answer)> handBook = new SortedDictionary<int, (string quiz, Answer answer)>(comparer);
 
             foreach (QuizContents quizContents in workBook)
             {
-                cnt++;
-
                 parsedAnswer.Clear();
 
                 // パース後のanswerを作る
@@ -176,7 +185,7 @@ namespace MiBocaRecuerda
                 if (parsedAnswer.Count == 1)
                 {
                     // 解答パターンが複数ない場合
-                    handBook[cnt] = (quizContents.Quiz, parsedAnswer[0]);
+                    handBook[quizContents.QuizNum] = (quizContents.Quiz, parsedAnswer[0]);
                 }
                 else
                 {
@@ -184,7 +193,7 @@ namespace MiBocaRecuerda
                     for (int i = 0; i < parsedAnswer.Count; i++)
                     {
                         // 下位16ビットは問題番号として17ビット以降を解答パターン通番にする
-                        handBook[cnt | ((i + 1) << 16)] = (quizContents.Quiz, parsedAnswer[i]);
+                        handBook[quizContents.QuizNum | ((i + 1) << 16)] = (quizContents.Quiz, parsedAnswer[i]);
                     }
                 }
             }
@@ -193,7 +202,7 @@ namespace MiBocaRecuerda
         }
 
         // 指定リージョン
-        public static List<string> GetHandBookContents_IndividualRegion(Dictionary<int, (string quiz, Answer answer)> handBook, bool isListAll)
+        public static List<string> GetHandBookContents_IndividualRegion(SortedDictionary<int, (string quiz, Answer answer)> handBook,string selectedRegion, bool isListAll)
         {
             string quiz = "", answer;
             List<string> ret = new List<string>();
@@ -216,15 +225,15 @@ namespace MiBocaRecuerda
                 {
                     if (reg_cnt > 1)
                     {
-                        if (!regions.Contains(SettingManager.CurrentQuizFileConfig.PriorityRegion))
+                        if (!regions.Contains(selectedRegion))
                         {
-                            // Regionが複数あるけど優先Regionの表現が存在しないときはすべて出す
+                            // Regionが複数あるけど指定Regionの表現が存在しないときはすべて出す
                             ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{quiz}{answer}");
                         }
                         else
                         {
-                            // 優先Regionが存在する場合はそれだけを出す
-                            if (rc.Value.answer.ID_ind().reg == SettingManager.CurrentQuizFileConfig.PriorityRegion)
+                            // 指定Regionが存在する場合はそれだけを出す
+                            if (rc.Value.answer.ID_ind().reg == selectedRegion)
                             {
                                 ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
                             }
@@ -247,7 +256,7 @@ namespace MiBocaRecuerda
         }
 
         // 全てのregion
-        public static List<string> GetHandBookContents_AllRegion(Dictionary<int, (string quiz, Answer answer)> handBook, bool isListAll)
+        public static List<string> GetHandBookContents_AllRegion(SortedDictionary<int, (string quiz, Answer answer)> handBook, bool isListAll)
         {
             string quiz = "", answer;
             List<string> ret = new List<string>();
