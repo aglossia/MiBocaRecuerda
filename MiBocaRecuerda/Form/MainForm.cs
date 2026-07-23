@@ -517,7 +517,7 @@ namespace MiBocaRecuerda
         }
 
         // クイズ開始
-        private void InitQuiz(bool manual)
+        private void InitQuiz(bool isPrime)
         {
             // 非表示中はクイズを始めない
             if (isHide)
@@ -532,47 +532,53 @@ namespace MiBocaRecuerda
                 return;
             }
 
-            // 前回の言語の補助入力を解除
-            if(SettingManager.LangCtrl != null)
+            string currentQuizDB;
+
+            // スタートボタンでのみDBを切り替える
+            if (isPrime)
             {
-                txtAnswer.KeyPress -= SettingManager.LangCtrl.KeyPress;
+                currentQuizDB = toolStripQuizFile.SelectedItem.ToString();
+            }
+            else
+            {
+                currentQuizDB = SettingManager.CurrentQuizDB;
             }
 
-            txtAnswer.Focus();
-            btnAnswer.Enabled = true;
+            ExerciseRepository exerRepo = null;
+            string currentLangType = "";
+            int quizCountMax = 0;
+            List<string> sectionList = null;
 
-            SettingManager.CurrentQuizDB = toolStripQuizFile.SelectedItem.ToString();
+            // 問題集DB読み込み
 
-            // 問題集DBを読み込む
-            _exerRepo = new ExerciseRepository($"Data Source={PathManager.QuizDB(SettingManager.CurrentQuizDB)}");
+            try
+            {
+                // 問題集DBを読み込む
+                exerRepo = new ExerciseRepository($"Data Source={PathManager.QuizDB(currentQuizDB)}");
 
-            SettingManager.CurrentLangType = _exerRepo.GetLanguage();
-            _quizCountMax = _exerRepo.GetExerciseCount();
-            _sectionList = _exerRepo.GetAllSection();
+                currentLangType = exerRepo.GetLanguage();
+                quizCountMax = exerRepo.GetExerciseCount();
+                sectionList = exerRepo.GetAllSection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "問題集DB読み込みエラー");
+                return;
+            }
 
-            if (_quizCountMax < SettingManager.CurrentQuizFileConfig.MinChapterToIndex)
+            QuizFileConfig qfc_tmp = SettingManager.GetQuizFileConfig(currentLangType, currentQuizDB);
+
+            if (quizCountMax < qfc_tmp.MinChapterToIndex)
             {
                 MessageBox.Show("問題最大数を超過しています", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // 新しい言語の補助入力を登録
-            txtAnswer.KeyPress += SettingManager.LangCtrl.KeyPress;
-
-            if (manual) txtConsole.Text = "";
-            _curProgress = -1;
-            _workBook.Clear();
-            _handBook.Clear();
-            _errorResetCount.Cnt = 0;
-            // ErrorAllowCount,ErrorResetCountの表示に関わっているものはErrorAllowCountのプロパティを変化する前に変化させておく必要がある
-            _errorAllowCount.Cnt = 0;
-
-            // 進捗表示作成
-            CreateQuizProgress();
+            // 問題集DBからワークブック作成
 
             // nからmまでの整数のリストを作成
             List<int> numberList = new List<int>();
-            for (int i = SettingManager.CurrentQuizFileConfig.MinChapterToIndex; i <= SettingManager.CurrentQuizFileConfig.MaxChapterToIndex; i++)
+            for (int i = qfc_tmp.MinChapterToIndex; i <= qfc_tmp.MaxChapterToIndex; i++)
             {
                 numberList.Add(i);
             }
@@ -587,8 +593,50 @@ namespace MiBocaRecuerda
             }
             while (randomSequence[0] == _preLastQuiz);
 
-            _workBook = CreateQuizContents(randomSequence);
-            _handBook = CoreProcess.GetHandBook(_workBook);
+            List<QuizContents> workBook = null;
+            SortedDictionary<int, (string, Answer)> handBook = null;
+
+            try
+            {
+                workBook = CreateQuizContents(exerRepo, randomSequence);
+                handBook = CoreProcess.GetHandBook(_workBook);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("SQLの実行に失敗しました\n\n" + ex.Message, "SQLエラー");
+                return;
+            }
+
+            // 問題集読み込み、ワークブック作成のトランザクション正常終了でコミット
+
+            SettingManager.CurrentQuizDB = currentQuizDB;
+            _exerRepo = exerRepo;
+            SettingManager.CurrentLangType = currentLangType;
+            _quizCountMax = quizCountMax;
+            _sectionList = sectionList;
+            _workBook = workBook;
+            _handBook = handBook;
+
+            txtConsole.Text = "";
+            _curProgress = -1;
+            _errorResetCount.Cnt = 0;
+            // ErrorAllowCount,ErrorResetCountの表示に関わっているものはErrorAllowCountのプロパティを変化する前に変化させておく必要がある
+            _errorAllowCount.Cnt = 0;
+
+            // 前回の言語の補助入力を解除
+            if (SettingManager.LangCtrl != null)
+            {
+                txtAnswer.KeyPress -= SettingManager.LangCtrl.KeyPress;
+            }
+
+            // 新しい言語の補助入力を登録
+            txtAnswer.KeyPress += SettingManager.LangCtrl.KeyPress;
+
+            txtAnswer.Focus();
+            btnAnswer.Enabled = true;
+
+            // 進捗表示作成
+            CreateQuizProgress();
 
             InitDisplay();
 
@@ -602,14 +650,14 @@ namespace MiBocaRecuerda
         }
 
         // インデックスリストから問題を取得する
-        private List<QuizContents> CreateQuizContents(List<int> indexList)
+        private List<QuizContents> CreateQuizContents(ExerciseRepository exerRepo, List<int> indexList)
         {
             List<QuizContents> quizContents = new List<QuizContents>();
 
             foreach (int index in indexList)
             {
                 // DBが取得できなかった場合は設定しない
-                if (_exerRepo.GetByNum(index) is ExerciseDB edb)
+                if (exerRepo.GetByNum(index) is ExerciseDB edb)
                 {
                     quizContents.Add(new QuizContents(edb));
                 }
@@ -949,7 +997,7 @@ namespace MiBocaRecuerda
                 }
             }
 
-            InitQuiz(true);
+            InitQuiz(false);
         }
 
         // 正誤表表示
@@ -980,7 +1028,7 @@ namespace MiBocaRecuerda
 
             MessageForm s = new MessageForm(tmp, "FE DE ERRATAS", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
-                ShowIcon = false
+                Icon = Icon
             };
 
             s.Show();
@@ -1338,7 +1386,7 @@ namespace MiBocaRecuerda
             {
                 if (e.Button == MouseButtons.Right)
                 {
-                    InitQuiz(true);
+                    InitQuiz(false);
                 }
             };
 
@@ -1350,13 +1398,13 @@ namespace MiBocaRecuerda
             {
                 if (!_isLoaded) return;
                 _pruebaChallengeCount = -1;
-                InitQuiz(true);
+                InitQuiz(false);
             };
 
             optionTSMI_progresoVisual.CheckedChanged += (o, e) =>
             {
                 if (!_isLoaded) return;
-                InitQuiz(true);
+                InitQuiz(false);
             };
 
             optionTSMI_DarkMode.CheckedChanged += (o, e) =>
@@ -1825,7 +1873,7 @@ namespace MiBocaRecuerda
 
             _messageForm_Respuesta = new MessageForm(processedAnswer, "RESPUESTA", MessageForm.TipoDeUbicacion.DERECHA, this)
             {
-                ShowIcon = false
+                Icon = Icon
             };
 
             _messageForm_Respuesta.Show();
@@ -1840,14 +1888,13 @@ namespace MiBocaRecuerda
         {
             SettingForm s = new SettingForm()
             {
-                ShowInTaskbar = false,
-                ShowIcon = false
+                Icon = Icon,
+                ShowInTaskbar = false
             };
 
             if (s.ShowDialog() == DialogResult.OK)
             {
                 ParseFile();
-                //InitQuiz(true);
             }
         }
 
@@ -1855,8 +1902,8 @@ namespace MiBocaRecuerda
         {
             SettingLanguageForm s = new SettingLanguageForm(SettingManager.CurrentLangType)
             {
-                ShowInTaskbar = false,
-                ShowIcon = false
+                Icon = Icon,
+                ShowInTaskbar = false
             };
 
             if (s.ShowDialog() == DialogResult.OK)
@@ -1878,7 +1925,8 @@ namespace MiBocaRecuerda
 
             _messageForm_QuizInfo = new MessageForm(new List<string>(), "QuizInfo", MessageForm.TipoDeUbicacion.DERECHA, this, true)
             {
-                ShowIcon = false
+                Icon = Icon,
+                FormBorderStyle = FormBorderStyle.SizableToolWindow
             };
 
             QuizInfoUpdate();
@@ -2041,7 +2089,7 @@ namespace MiBocaRecuerda
             _resultForm = new ResultForm(_workBook, this, true)
             {
                 Text = "Lista de Pruebas",
-                ShowIcon = false
+                Icon = Icon
             };
 
             _resultForm.Show();
@@ -2061,7 +2109,7 @@ namespace MiBocaRecuerda
             _resultForm = new ResultForm(_workBook, this, false)
             {
                 Text = "Lista de Pruebas",
-                ShowIcon = false
+                Icon = Icon
             };
 
             _resultForm.Show();
@@ -2095,12 +2143,12 @@ namespace MiBocaRecuerda
                 hasta = hasta > _quizCountMax ? _quizCountMax : hasta;
 
                 List<int> sequence = Enumerable.Range(desde, hasta - desde + 1).ToList();
-                List<QuizContents> quizContents = CreateQuizContents(sequence);
+                List<QuizContents> quizContents = CreateQuizContents(_exerRepo, sequence);
 
                 _resultForm = new ResultForm(quizContents, this, true)
                 {
                     Text = "Lista de Pruebas",
-                    ShowIcon = false
+                    Icon = Icon
                 };
 
                 _resultForm.Show();
@@ -2126,10 +2174,13 @@ namespace MiBocaRecuerda
 
             _messageForm_SectionList = new MessageForm(_sectionList, "Lista de sección", MessageForm.TipoDeUbicacion.CENTRO, this)
             {
-                ShowIcon = false
+                MaximizeBox = false,
+                MinimizeBox = false,
+                FormBorderStyle = FormBorderStyle.FixedToolWindow,
+                ShowInTaskbar = false
             };
 
-            _messageForm_SectionList.Show();
+            _messageForm_SectionList.ShowDialog();
         }
 
         // 翻訳機能
@@ -2167,7 +2218,10 @@ namespace MiBocaRecuerda
 
             List<int> quizSequence = _workBook.Select(q => q.QuizNum).ToList();
 
-            EditDBForm edb = new EditDBForm(_workBook[_curProgress].QuizNum, quizSequence);
+            EditDBForm edb = new EditDBForm(_workBook[_curProgress].QuizNum, quizSequence)
+            {
+                Icon = Icon,
+            };
 
             if (!edb.IsDisposed) edb.Show(this);
         }
@@ -2185,7 +2239,10 @@ namespace MiBocaRecuerda
             {
                 List<int> quizSequence = _workBook.Select(q => q.QuizNum).ToList();
 
-                EditDBForm edb = new EditDBForm(_workBook[_curProgress - 1].QuizNum, quizSequence);
+                EditDBForm edb = new EditDBForm(_workBook[_curProgress - 1].QuizNum, quizSequence)
+                {
+                    Icon = Icon,
+                };
 
                 if (!edb.IsDisposed) edb.Show(this);
             }
@@ -2211,6 +2268,7 @@ namespace MiBocaRecuerda
                 dialog.ClientSize = new Size(250, 100);
                 dialog.MinimizeBox = false;
                 dialog.MaximizeBox = false;
+                dialog.ShowInTaskbar = false;
 
                 Label label = new Label() { Left = 10, Top = 10, Text = "番号：", Width = 50, Font = new Font("メイリオ", 9F) };
                 TextBox textBox = new TextBox() { Left = 60, Top = 8, Width = 150, Font = new Font("メイリオ", 9F) };
@@ -2258,7 +2316,10 @@ namespace MiBocaRecuerda
 
                     List<int> quizSequence = Enumerable.Range(1, _quizCountMax).ToList();
 
-                    EditDBForm edb = new EditDBForm(number, quizSequence);
+                    EditDBForm edb = new EditDBForm(number, quizSequence)
+                    {
+                        Icon = Icon,
+                    };
 
                     if (!edb.IsDisposed) edb.Show(this);
                 }
@@ -2281,7 +2342,7 @@ namespace MiBocaRecuerda
                     return;
                 }
 
-                List<QuizContents> qc = CreateQuizContents(ret);
+                List<QuizContents> qc = CreateQuizContents(_exerRepo, ret);
 
                 _resultForm = new ResultForm(qc, this);
                 _resultForm.Show();

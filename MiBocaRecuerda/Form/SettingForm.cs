@@ -175,11 +175,14 @@ namespace MiBocaRecuerda
 
             MessageForm s = new MessageForm(mensaje_de_ayuda, "AYUDA", MessageForm.TipoDeUbicacion.CENTRO, this, true)
             {
+                Icon = Icon,
+                MaximizeBox = false,
+                MinimizeBox = false,
                 ShowInTaskbar = false,
-                ShowIcon = false
+                FormBorderStyle = FormBorderStyle.FixedDialog
             };
 
-            s.Show();
+            s.ShowDialog();
         }
 
         private DateTime ConvertToDateTime(int daysSince2000, int secondsOfDay)

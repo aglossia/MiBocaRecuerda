@@ -20,6 +20,11 @@ namespace MiBocaRecuerda
         // 現在の読込ファイルの設定
         public static QuizFileConfig CurrentQuizFileConfig => CommonConfigManager[CurrentLangType][CurrentQuizDB].QuizFileConfig;
 
+        public static QuizFileConfig GetQuizFileConfig(string langType, string quizDB)
+        {
+            return CommonConfigManager[langType][quizDB].QuizFileConfig;
+        }
+
         public static IManageInput LangCtrl
         {
             get

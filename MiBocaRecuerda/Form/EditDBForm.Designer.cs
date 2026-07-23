@@ -265,7 +265,6 @@
             this.Controls.Add(this.txtSupplement);
             this.Controls.Add(this.txtProblem);
             this.Name = "EditDBForm";
-            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Edit";
             ((System.ComponentModel.ISupportInitialize)(this.dgvAuxiliary)).EndInit();

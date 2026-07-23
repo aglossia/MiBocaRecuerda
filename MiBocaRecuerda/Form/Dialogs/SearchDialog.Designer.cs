@@ -127,6 +127,8 @@
             this.Controls.Add(this.txtBuscar);
             this.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "SearchDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;

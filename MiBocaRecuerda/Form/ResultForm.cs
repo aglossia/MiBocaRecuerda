@@ -530,7 +530,10 @@ namespace MiBocaRecuerda
                 .Select(r => Convert.ToInt32(r.Cells[0].Value))
                 .ToList();
 
-            EditDBForm edb = new EditDBForm(int.Parse(quizNum), quizSequence);
+            EditDBForm edb = new EditDBForm(int.Parse(quizNum), quizSequence)
+            {
+                Icon = Icon
+            };
 
             if (!edb.IsDisposed) edb.Show(this);
         }
