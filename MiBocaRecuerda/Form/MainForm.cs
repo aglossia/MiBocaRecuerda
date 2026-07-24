@@ -599,7 +599,7 @@ namespace MiBocaRecuerda
             try
             {
                 workBook = CreateQuizContents(exerRepo, randomSequence);
-                handBook = CoreProcess.GetHandBook(_workBook);
+                handBook = CoreProcess.GetHandBook(workBook);
             }
             catch (Exception ex)
             {
