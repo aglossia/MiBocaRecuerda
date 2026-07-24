@@ -40,7 +40,9 @@ namespace MiBocaRecuerda
         // セクションリスト(InitQuizで作成)
         private List<string> _sectionList = new List<string>();
 
-        private bool _isLoaded = false;
+        private bool _isError = false;
+        // 初期状態かどうか
+        private bool _isInit => SettingManager.CurrentQuizDB == null;
         // 待機中かどうかは解答ボタンのEnabledで判断
         private bool _isIdle => !btnAnswer.Enabled;
 
@@ -293,13 +295,17 @@ namespace MiBocaRecuerda
 
             LoadConfig();
 
-            ParseFile();
+            if (!ParseFile())
+            {
+                txtConsole.Text = "続行不能なエラー\r\n設定ファイルやDBファイルの構成を確認してください";
+                _isError = true;
+            }
         }
 
         #region 内部処理
 
         // クイズファイルの読み込み
-        private void ParseFile()
+        private bool ParseFile()
         {
             string[] QuizFiles = Directory.GetFiles(PathManager.QuizDBDirectory, "*.db");
 
@@ -307,14 +313,23 @@ namespace MiBocaRecuerda
 
             ExerciseRepository exerRepo = null;
             string type = "";
+            int exerciseCount = 0;
 
             foreach (string file in QuizFiles)
             {
                 try
                 {
-                    exerRepo = new ExerciseRepository($"Data Source={file}");
+                    if (File.Exists(file))
+                    {
+                        exerRepo = new ExerciseRepository($"Data Source={file}");
+                    }
+                    else
+                    {
+                        continue;
+                    }
 
                     type = exerRepo.GetLanguage();
+                    exerciseCount = exerRepo.GetExerciseCount();
 
                     if (!SettingManager.CommonConfigManager.ContainsKey(type))
                     {
@@ -324,6 +339,7 @@ namespace MiBocaRecuerda
                 catch (Exception ex)
                 {
                     _initError.Add($"{ex.GetType().Name};{ex.Message};{file}");
+                    continue;
                 }
 
                 string fileName = Path.GetFileNameWithoutExtension(file);
@@ -346,10 +362,11 @@ namespace MiBocaRecuerda
                     catch (Exception ex)
                     {
                         _initError.Add($"{ex.GetType().Name};{ex.Message};{cacheFile_common} or {cacheFile_lang}");
+                        return false;
                     }
                 }
 
-                qfc.MaxQuizNum = exerRepo.GetExerciseCount();
+                qfc.MaxQuizNum = exerciseCount;
 
                 // クイズ設定と言語設定の読み込み
                 SettingManager.CommonConfigManager[type][fileName] = new CommonConfig(qfc, lc);
@@ -367,6 +384,7 @@ namespace MiBocaRecuerda
                 catch (DirectoryNotFoundException ex)
                 {
                     _initError.Add($"{ex.GetType().Name};{ex.Message};cache");
+                    return false;
                 }
 
                 string lang;
@@ -384,9 +402,12 @@ namespace MiBocaRecuerda
                     catch (Exception ex)
                     {
                         _initError.Add($"{ex.GetType().Name};{ex.Message};{file};{lang}");
+                        return false;
                     }
                 }
             }
+
+            return true;
         }
 
         // 非表示記憶用
@@ -532,6 +553,12 @@ namespace MiBocaRecuerda
                 return;
             }
 
+            if (_isError)
+            {
+                MessageBox.Show("続行不能なエラーが発生しています。設定ファイルやDBファイルの構成を確認してください。", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             string currentQuizDB;
 
             // スタートボタンでのみDBを切り替える
@@ -553,8 +580,16 @@ namespace MiBocaRecuerda
 
             try
             {
-                // 問題集DBを読み込む
-                exerRepo = new ExerciseRepository($"Data Source={PathManager.QuizDB(currentQuizDB)}");
+                if (File.Exists(PathManager.QuizDB(currentQuizDB)))
+                {
+                    // 問題集DBを読み込む
+                    exerRepo = new ExerciseRepository($"Data Source={PathManager.QuizDB(currentQuizDB)};Mode=ReadOnly");
+                }
+                else
+                {
+                    MessageBox.Show($"{PathManager.QuizDB(currentQuizDB)}が見つかりません", "問題集DB読み込みエラー");
+                    return;
+                }
 
                 currentLangType = exerRepo.GetLanguage();
                 quizCountMax = exerRepo.GetExerciseCount();
@@ -1357,7 +1392,6 @@ namespace MiBocaRecuerda
 
             Shown += (o, e) =>
             {
-                _isLoaded = true;
             };
 
             FormClosing += (o, e) =>
@@ -1382,28 +1416,20 @@ namespace MiBocaRecuerda
                 DestroyCaret();
             };
 
-            btnShowAnswer.MouseDown += (o, e) =>
-            {
-                if (e.Button == MouseButtons.Right)
-                {
-                    InitQuiz(false);
-                }
-            };
-
             #endregion
 
             #region TSMI
 
             optionTSMI_prueba.CheckedChanged += (o, e) =>
             {
-                if (!_isLoaded) return;
+                if (_isInit) return;
                 _pruebaChallengeCount = -1;
                 InitQuiz(false);
             };
 
             optionTSMI_progresoVisual.CheckedChanged += (o, e) =>
             {
-                if (!_isLoaded) return;
+                if (_isInit) return;
                 InitQuiz(false);
             };
 
@@ -1894,7 +1920,11 @@ namespace MiBocaRecuerda
 
             if (s.ShowDialog() == DialogResult.OK)
             {
-                ParseFile();
+                if (!ParseFile())
+                {
+                    txtConsole.Text = "続行不能なエラー\r\n設定ファイルやDBファイルの構成を確認してください";
+                    _isError = true;
+                }
             }
         }
 
