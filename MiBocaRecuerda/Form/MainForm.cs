@@ -234,6 +234,7 @@ namespace MiBocaRecuerda
             toolTSMI_ShowAnswer.ShortcutKeys = Keys.Control | Keys.R;
             toolTSMI_translate.ShortcutKeys = Keys.Control | Keys.F1;
             toolTSMI_Search.ShortcutKeys = Keys.Control | Keys.F;
+            toolTSMI_EditQuiz_Current.ShortcutKeys = Keys.Control | Keys.E;
 
             DBTSMI_QuizDB.ShortcutKeys = Keys.Control | Keys.D;
             DBTSMI_Progress.ShortcutKeys = Keys.Control | Keys.G;
@@ -1281,7 +1282,14 @@ namespace MiBocaRecuerda
         {
             string tagName = (o as ToolStripItem).Tag as string;
 
-            List<string> contents = CoreProcess.GetHandBookContents_AllRegion(_handBook, tagName == "all");
+            int copyMode = tagName == "all" ? 0x01 : 0x00;
+
+            if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+            {
+                copyMode |= 0x10;
+            }
+
+            List<string> contents = CoreProcess.GetHandBookContents_AllRegion(_handBook, copyMode);
 
             try
             {
@@ -1307,7 +1315,14 @@ namespace MiBocaRecuerda
         {
             string tagName = (o as ToolStripItem).Tag as string;
 
-            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, SettingManager.CurrentQuizFileConfig.PriorityRegion, tagName == "all");
+            int copyMode = tagName == "all" ? 0x01 : 0x00;
+
+            if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+            {
+                copyMode |= 0x10;
+            }
+
+            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, SettingManager.CurrentQuizFileConfig.PriorityRegion, copyMode);
 
             try
             {

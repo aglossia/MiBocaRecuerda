@@ -202,10 +202,11 @@ namespace MiBocaRecuerda
         }
 
         // 指定リージョン
-        public static List<string> GetHandBookContents_IndividualRegion(SortedDictionary<int, (string quiz, Answer answer)> handBook,string selectedRegion, bool isListAll)
+        public static List<string> GetHandBookContents_IndividualRegion(SortedDictionary<int, (string quiz, Answer answer)> handBook, string selectedRegion, int copyMode)
         {
             string quiz = "", answer;
             List<string> ret = new List<string>();
+            int quizNum = -1;
 
             foreach (var rc in handBook)
             {
@@ -213,10 +214,22 @@ namespace MiBocaRecuerda
                 List<string> regions = handBook.Where(r => (r.Key & 0xffff) == (rc.Key & 0xffff)).Select(v => v.Value.answer.ID_ind().reg).ToList();
                 int reg_cnt = regions.Distinct().Count();
 
+                quiz = "";
+
                 // 表全ての時のみ問題をつける
-                if (isListAll == true)
+                if ((copyMode & 0x01) != 0)
                 {
-                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                    if ((copyMode & 0x10) != 0)
+                    {
+                        if (quizNum != (rc.Key & 0xffff))
+                        {
+                            quiz = "\r\n" + Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\r\n";
+                        }
+                    }
+                    else
+                    {
+                        quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                    }
                 }
                 answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
 
@@ -228,38 +241,74 @@ namespace MiBocaRecuerda
                         if (!regions.Contains(selectedRegion))
                         {
                             // Regionが複数あるけど指定Regionの表現が存在しないときはすべて出す
-                            ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{quiz}{answer}");
+                            if ((copyMode & 0x10) != 0)
+                            {
+                                ret.Add($"{quiz}{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{answer}");
+                            }
+                            else
+                            {
+                                ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}:({rc.Value.answer.ID_ind().reg})\t{quiz}{answer}");
+                            }
                         }
                         else
                         {
                             // 指定Regionが存在する場合はそれだけを出す
                             if (rc.Value.answer.ID_ind().reg == selectedRegion)
                             {
-                                ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
+
+                                if ((copyMode & 0x10) != 0)
+                                {
+                                    ret.Add($"{quiz}{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{answer}");
+                                }
+                                else
+                                {
+                                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
+                                }
+                            }
+                            else
+                            {
+                                continue;
                             }
                         }
                     }
                     else
                     {
                         // Regionが一つだけのときは無条件に出す
-                        ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
+                        if ((copyMode & 0x10) != 0)
+                        {
+                            ret.Add($"{quiz}{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{answer}");
+                        }
+                        else
+                        {
+                            ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}\t{quiz}{answer}");
+                        }
                     }
                 }
                 else
                 {
                     // 解答パターンが複数ないとき
-                    ret.Add($"{rc.Key}\t{quiz}{answer}");
+                    if ((copyMode & 0x10) != 0)
+                    {
+                        ret.Add($"{quiz}{rc.Key}\t{answer}");
+                    }
+                    else
+                    {
+                        ret.Add($"{rc.Key}\t{quiz}{answer}");
+                    }
                 }
+
+                quizNum = rc.Key & 0xffff;
             }
 
             return ret;
         }
 
         // 全てのregion
-        public static List<string> GetHandBookContents_AllRegion(SortedDictionary<int, (string quiz, Answer answer)> handBook, bool isListAll)
+        public static List<string> GetHandBookContents_AllRegion(SortedDictionary<int, (string quiz, Answer answer)> handBook, int copyMode)
         {
             string quiz = "", answer;
             List<string> ret = new List<string>();
+            int quizNum = -1;
 
             foreach (var rc in handBook)
             {
@@ -273,22 +322,51 @@ namespace MiBocaRecuerda
                     region = $":({rc.Value.answer.ID_ind().reg})";
                 }
 
+                quiz = "";
+
                 // 表全ての時のみ問題をつける
-                if (isListAll == true)
+                if ((copyMode & 0x01) != 0)
                 {
-                    quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                    if((copyMode & 0x10) != 0)
+                    {
+                        if(quizNum != (rc.Key & 0xffff))
+                        {
+                            // allかつテキストモードかつ初回のとき
+                            quiz = "\r\n" + Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\r\n";
+                        }
+                    }
+                    else
+                    {
+                        quiz = Regex.Replace(rc.Value.quiz, @"\r\n|\r|\n", "") + "\t";
+                    }
                 }
                 answer = Regex.Replace(rc.Value.answer.Sentence, @"\r\n|\r|\n", "");
 
                 // 0xffff0000の部分にビットがある場合は、解答パターンが複数あるとき
                 if ((rc.Key & 0xffff0000) != 0)
                 {
-                    ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{quiz}{answer}");
+                    if ((copyMode & 0x10) != 0)
+                    {
+                        ret.Add($"{quiz}{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{answer}");
+                    }
+                    else
+                    {
+                        ret.Add($"{rc.Key & 0xffff}-{(rc.Key >> 16)}{region}\t{quiz}{answer}");
+                    }
                 }
                 else
                 {
-                    ret.Add($"{rc.Key}{region}\t{quiz}{answer}");
+                    if ((copyMode & 0x10) != 0)
+                    {
+                        ret.Add($"{quiz}{rc.Key}{region}\t{answer}");
+                    }
+                    else
+                    {
+                        ret.Add($"{rc.Key}{region}\t{quiz}{answer}");
+                    }
                 }
+
+                quizNum = rc.Key & 0xffff;
             }
 
             return ret;

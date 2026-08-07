@@ -442,7 +442,14 @@ namespace MiBocaRecuerda
         {
             string tagName = (o as ToolStripItem).Tag as string;
 
-            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, _selectedRegion, tagName == "all");
+            int copyMode = tagName == "all" ? 0x01 : 0x00;
+
+            if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+            {
+                copyMode |= 0x10;
+            }
+
+            List<string> contents = CoreProcess.GetHandBookContents_IndividualRegion(_handBook, _selectedRegion, copyMode);
 
             try
             {
@@ -469,7 +476,14 @@ namespace MiBocaRecuerda
         {
             string tagName = (o as ToolStripItem).Tag as string;
 
-            List<string> contents = CoreProcess.GetHandBookContents_AllRegion(_handBook, tagName == "all");
+            int copyMode = tagName == "all" ? 0x01 : 0x00;
+
+            if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+            {
+                copyMode |= 0x10;
+            }
+
+            List<string> contents = CoreProcess.GetHandBookContents_AllRegion(_handBook, copyMode);
 
             try
             {
